@@ -27,6 +27,30 @@ To run this project, ensure that:
   - This can be done so by installing sqlite and using the "makan_time.db" file as the database.
   - Alternatively, run the "database_dump" file to create all the necessary tables
 
+## Navigating the Project:
+
+### In the backend folder:
+
+1. index.js: main file where connection is established for the project and all the generic configurations are done here
+2. database folder: contains seeder file where it populates the database with the necessary data for the project
+3. src folder:
+  1. routes.js: centralized folder for all API endpoint routes to allow frontend to call the respective endpoints
+  2. schemas folder: contains the initialization script for different tables used for the project
+  3. models folder: contains the sequelize queries for sqlite (SQL query equivalent)
+  4. controllers folder: contains individual endpoint
+
+<br/>
+<br/>
+
+**Folder Structure Flow**:
+
+- schemas folder would create the different tables -> seeder file in database folder would populate the tables with dummy data
+- index.js would start up the project
+- When endpoints are called,
+  - First goes through routes.js to find respective endpoint called -> controllers folder to execute said endpoint -> models folder to run the respective SQL query\
+
+### In the frontend folder:
+
 ## Starting the servers:
 
 This project consists of a backend server and a frontend server.
