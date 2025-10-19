@@ -1,10 +1,10 @@
 # TIC2601 Group 4 Project
 
-TIC2601 Group 4 Project -- MakanTime
+TIC2601 Group 4 Project -- **MakanTime**
 
 # About this project -- MakanTime:
 
-MakanTime aims to streamline the restaurant reservation process by providing customers with a seamless online booking experience while enabling restaurant staff to manage reservations, tables, and schedules. By replacing manual processes with a digital platform, the system seeks to reduce booking errors, improve customer satisfaction, and optimize table turnover and operational efficiency.
+**MakanTime** aims to streamline the restaurant reservation process by providing customers with a seamless online booking experience while enabling restaurant staff to manage reservations, tables, and schedules. By replacing manual processes with a digital platform, the system seeks to reduce booking errors, improve customer satisfaction, and optimize table turnover and operational efficiency.
 
 # Contributing Members:
 
@@ -21,12 +21,12 @@ Chan Zi Yee
 To run this project, ensure that:
 <br/>
 
-- all the necessary dependencies has been installed
-- sqlite has been set up
+- All the necessary dependencies has been installed
+- SQLite has been set up
   <br/>
-  This can be done so by installing sqlite and using the "makan_time.db" file as the database.
+  - This can be done so by installing sqlite and using the "makan_time.db" file as the database.
   <br/>
-  Alternatively, run the "database_dump" file to create all the necessary tables
+  - Alternatively, run the "database_dump" file to create all the necessary tables
 
 ## Starting the servers:
 
