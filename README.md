@@ -25,7 +25,6 @@ To run this project, ensure that:
 - SQLite has been set up
   <br/>
   - This can be done so by installing sqlite and using the "makan_time.db" file as the database.
-  <br/>
   - Alternatively, run the "database_dump" file to create all the necessary tables
 
 ## Starting the servers:
