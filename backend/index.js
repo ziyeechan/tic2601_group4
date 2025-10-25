@@ -8,11 +8,16 @@ const { Seating_Plans } = require("./src/schemas/seating_plans.js");
 
 const express = require("express");
 const db = require("./database/connection");
+const routes = require("./src/routes.js");
 const port = 3000;
 
 const app = express();
+const router = express.Router();
 
 const onFirstLoad = false;
+
+app.use(express.json());
+app.use(router);
 
 app.listen(port, async (err) => {
   if (err) {
@@ -39,3 +44,5 @@ app.listen(port, async (err) => {
     }
   }
 });
+
+routes(router);
