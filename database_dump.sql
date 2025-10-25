@@ -1,3 +1,5 @@
+CREATE DATABASE IF NOT EXISTS `Makan_Time`;
+
 CREATE TABLE addresses (
     address_id INTEGER PRIMARY KEY AUTOINCREMENT,
     address_line_1 varchar(255) NOT NULL,
