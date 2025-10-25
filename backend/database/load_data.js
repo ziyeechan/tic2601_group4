@@ -8,7 +8,7 @@ module.exports.Load_Data = async () => {
     const city = "Singapore";
     const postal_code = "Singapore 611223";
 
-    await Addresses.create({
+    const address = await Addresses.create({
       address_line_1: address_line_1,
       country: country,
       city: city,
@@ -24,7 +24,7 @@ module.exports.Load_Data = async () => {
     const name = "Pasta Delights";
     const description = "A place for all to enjoy homemade pasta";
     const cuisine = "Italian";
-    const address_id = 1;
+    const address_id = address.address_id;
 
     await Restaurants.create({
       restaurant_name: name,

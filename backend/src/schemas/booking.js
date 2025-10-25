@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const db = require("../../database/connection.js");
 const { Restaurants } = require("./restaurants.js");
-const { Seating_Plans } = require("./seating_plans.js");
+const { SeatingPlans } = require("./seatingPlans.js");
 
 const Bookings = db.define(
   "bookings",
@@ -59,7 +59,7 @@ const Bookings = db.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Seating_Plans,
+        model: SeatingPlans,
         key: "seating_id",
       },
     },
