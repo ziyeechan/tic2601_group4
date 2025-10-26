@@ -45,15 +45,17 @@ const Bookings = db.define(
     status: {
       type: DataTypes.STRING(50),
       default: "confirmed",
-      isIn: [
-        "pending",
-        "confirmed",
-        "seated",
-        "completed",
-        "cancelled",
-        "no_show",
-        "cancelled",
-      ],
+      validate: {
+        isIn: [[
+          "pending",
+          "confirmed",
+          "seated",
+          "completed",
+          "cancelled",
+          "no_show",
+          "cancelled",
+        ]],
+      },
     },
     fk_seating_id: {
       type: DataTypes.INTEGER,

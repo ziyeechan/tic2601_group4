@@ -1,8 +1,8 @@
 const { SeatingPlans } = require("../schemas/seatingPlans");
 
 module.exports.findSeatingPlanByTableNum = async (tableNum, restaurantID) => {
-  const results = await SeatingPlans.findOne(tableNum, {
-    where: { table_number: tableNum, restaurantID: restaurantID },
+  const results = await SeatingPlans.findOne({
+    where: { table_number: tableNum, fk_restaurant_id: restaurantID },
   });
 
   return results;
@@ -10,7 +10,7 @@ module.exports.findSeatingPlanByTableNum = async (tableNum, restaurantID) => {
 
 module.exports.findSeatingPlanByRestaurantID = async (restaurantID) => {
   const results = await SeatingPlans.findAll({
-    where: { restaurantID: restaurantID },
+    where: { fk_restaurant_id: restaurantID },
   });
 
   return results;
@@ -23,6 +23,7 @@ module.exports.findSeatingPlanByPK = async (seatingID) => {
 };
 
 module.exports.createSeatingPlan = async (seatingInfo, restaurantID) => {
+  console.log(seatingInfo);
   await SeatingPlans.create({
     pax: seatingInfo.pax,
     table_type: seatingInfo.tableType,

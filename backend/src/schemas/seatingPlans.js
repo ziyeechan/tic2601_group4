@@ -17,7 +17,9 @@ const SeatingPlans = db.define(
     },
     table_type: {
       type: DataTypes.STRING(50),
-      isIn: ["vip", "indoor", "outdoor"],
+      validate: {
+        isIn: [["vip", 'indoor', "outdoor"]],
+      },
     },
     table_number: {
       type: DataTypes.STRING(50),
@@ -33,7 +35,13 @@ const SeatingPlans = db.define(
   }
 );
 
-Restaurants.hasMany(SeatingPlans, { foreignKey: "fk_restaurant_id" });
-SeatingPlans.belongsTo(Restaurants, { foreignKey: "fk_restaurant_id" });
+Restaurants.hasMany(SeatingPlans, {
+  foreignKey: "fk_restaurant_id",
+  onUpdate: "NO ACTION",
+});
+SeatingPlans.belongsTo(Restaurants, {
+  foreignKey: "fk_restaurant_id",
+  onUpdate: "NO ACTION",
+});
 
 module.exports = { SeatingPlans };
