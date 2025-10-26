@@ -1,7 +1,8 @@
 const { Restaurants } = require("../schemas/restaurants.js");
 
 module.exports.findRestaurantByName = async (name) => {
-  const results = await Restaurants.findOne(name, {
+  console.log("here", name);
+  const results = await Restaurants.findOne({
     where: {
       restaurant_name: name,
     },
@@ -32,13 +33,13 @@ module.exports.updateRestaurant = (restaurantID, meta) =>
     },
     {
       where: {
-        restuarant_id: restaurantID,
+        restaurant_id: restaurantID,
       },
     }
   );
 
 module.exports.deleteRestaurantByPK = async (restaurantID) => {
   await Restaurants.destroy({
-    where: { seating_id: restaurantID },
+    where: { restaurant_id: restaurantID },
   });
 };

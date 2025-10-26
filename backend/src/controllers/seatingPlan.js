@@ -28,7 +28,7 @@ module.exports.createSeatingPlan = async (req, res) => {
 module.exports.findSeatingPlanByTableNum = async (req, res) => {
   try {
     const restaurantID = parseInt(req.params.restaurantID);
-    const tableNum = parseInt(req.params.tableNum);
+    const tableNum = req.params.tableNum;
     if (isNaN(restaurantID))
       return res.status(400).json({
         message: "Invalid Parameter",

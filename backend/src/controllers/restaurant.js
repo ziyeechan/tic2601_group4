@@ -4,6 +4,7 @@ const {
   findRestaurantByName,
   createRestaurant,
   updateRestaurant,
+  deleteRestaurantByPK,
 } = require("../models/restaurant");
 
 module.exports.createRestaurant = async (req, res) => {
@@ -19,7 +20,6 @@ module.exports.createRestaurant = async (req, res) => {
       city,
       postalCode,
     } = req.body;
-    console.log(req.body);
 
     if (
       !name ||
@@ -44,7 +44,6 @@ module.exports.createRestaurant = async (req, res) => {
     };
 
     const addressId = await createAddress(addressInfo);
-    console.log("address", addressId);
     const restaurantInfo = { name, description, cuisine };
     await createRestaurant(restaurantInfo, addressId);
 
@@ -79,7 +78,7 @@ module.exports.findRestaurantByID = async (req, res) => {
 
 module.exports.findRestaurantByName = async (req, res) => {
   try {
-    const name = parseInt(req.params.name);
+    const name = req.params.name;
     if (!name)
       return res.status(400).json({
         message: "Invalid Parameter",
@@ -117,8 +116,6 @@ module.exports.updateRestaurant = async (req, res) => {
       postalCode,
     } = req.body;
 
-    const restaurant = await findRestaurantByID(restaurantID);
-
     if (name || description || cuisine) {
       const formattedData = {
         restaurant_name: name,
@@ -135,6 +132,8 @@ module.exports.updateRestaurant = async (req, res) => {
       city ||
       postalCode
     ) {
+      const restaurant = await findRestaurantByID(restaurantID);
+
       const formattedData = {
         address_line_1: addressLine1,
         address_line_2: addressLine2,
@@ -146,6 +145,7 @@ module.exports.updateRestaurant = async (req, res) => {
 
       await updateRestaurant(restaurant.fk_address_id, formattedData);
     }
+    return res.status(200).send("Restaurant has been successfully updated");
   } catch (err) {
     console.log(err);
   }
@@ -160,6 +160,7 @@ module.exports.deleteRestaurantByPK = async (req, res) => {
       });
 
     await deleteRestaurantByPK(restaurantID);
+    return res.status(200).send("Restaurant has been successfully deleted!");
   } catch (err) {
     console.log(err);
   }

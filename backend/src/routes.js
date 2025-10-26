@@ -12,15 +12,23 @@ module.exports = (router) => {
   router.post("/restaurant", restaurantController.createRestaurant);
 
   router.get(
-    "/restaurant/:restaurantID",
+    "/restaurant/id/:restaurantID",
     restaurantController.findRestaurantByID
   );
 
-  router.get("/restaurant/:name", restaurantController.findRestaurantByName);
+  router.get(
+    "/restaurant/name/:name",
+    restaurantController.findRestaurantByName
+  );
 
   router.put(
     "/restaurant/:restaurantID",
-    restaurantController.findRestaurantByName
+    restaurantController.updateRestaurant
+  );
+
+  router.delete(
+    "/restaurant/:restaurantID",
+    restaurantController.deleteRestaurantByPK
   );
 
   router.post("/seating/:restaurantID", seatingController.createSeatingPlan);
@@ -39,8 +47,5 @@ module.exports = (router) => {
 
   router.put("/seating/:seatingID", seatingController.updateSeatingPlanByPK);
 
-  router.delete(
-    "/seating/:seatingID",
-    seatingController.updateSeatingPlanByPK
-  );
+  router.delete("/seating/:seatingID", seatingController.updateSeatingPlanByPK);
 };
