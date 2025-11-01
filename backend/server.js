@@ -9,7 +9,7 @@ const { SeatingPlans } = require("./src/schemas/seatingPlans.js");
 const express = require("express");
 const db = require("./database/connection");
 const routes = require("./src/routes/index.js");
-const port = 3000;
+const port = 5000;
 
 const app = express();
 const router = express.Router();
