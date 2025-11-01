@@ -14,8 +14,10 @@ const Reviews = db.define(
     rating: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      min: 1,
-      max: 5,
+      validate: {
+        min: 1,
+        max: 5,
+      },
     },
     comment: {
       type: DataTypes.TEXT,

@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const db = require("../../database/connection.js");
 const { Restaurants } = require("./restaurants.js");
-const { Seating_Plans } = require("./seating_plans.js");
+const { SeatingPlans } = require("./seatingPlans.js");
 
 const Bookings = db.define(
   "bookings",
@@ -45,21 +45,23 @@ const Bookings = db.define(
     status: {
       type: DataTypes.STRING(50),
       default: "confirmed",
-      isIn: [
-        "pending",
-        "confirmed",
-        "seated",
-        "completed",
-        "cancelled",
-        "no_show",
-        "cancelled",
-      ],
+      validate: {
+        isIn: [[
+          "pending",
+          "confirmed",
+          "seated",
+          "completed",
+          "cancelled",
+          "no_show",
+          "cancelled",
+        ]],
+      },
     },
     fk_seating_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Seating_Plans,
+        model: SeatingPlans,
         key: "seating_id",
       },
     },

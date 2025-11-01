@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const db = require("../../database/connection.js");
 const { Restaurants } = require("./restaurants.js");
 
-const Seating_Plans = db.define(
+const SeatingPlans = db.define(
   "seating_plans",
   {
     seating_id: {
@@ -17,13 +17,17 @@ const Seating_Plans = db.define(
     },
     table_type: {
       type: DataTypes.STRING(50),
-      isIn: ["vip", "indoor", "outdoor"],
+      validate: {
+        isIn: [["vip", 'indoor', "outdoor"]],
+      },
     },
     table_number: {
       type: DataTypes.STRING(50),
+      allowNull: false,
     },
     is_available: {
       type: DataTypes.BOOLEAN,
+      defaultValue: true,
     },
   },
   {
@@ -31,7 +35,13 @@ const Seating_Plans = db.define(
   }
 );
 
-Restaurants.hasMany(Seating_Plans, { foreignKey: "fk_restaurant_id" });
-Seating_Plans.belongsTo(Restaurants, { foreignKey: "fk_restaurant_id" });
+Restaurants.hasMany(SeatingPlans, {
+  foreignKey: "fk_restaurant_id",
+  onUpdate: "NO ACTION",
+});
+SeatingPlans.belongsTo(Restaurants, {
+  foreignKey: "fk_restaurant_id",
+  onUpdate: "NO ACTION",
+});
 
-module.exports = { Seating_Plans };
+module.exports = { SeatingPlans };

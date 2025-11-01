@@ -4,7 +4,7 @@ const { Menus } = require("./src/schemas/menus.js");
 const { Promotions } = require("./src/schemas/promotions.js");
 const { Restaurants } = require("./src/schemas/restaurants.js");
 const { Reviews } = require("./src/schemas/reviews.js");
-const { Seating_Plans } = require("./src/schemas/seating_plans.js");
+const { SeatingPlans } = require("./src/schemas/seatingPlans.js");
 
 const express = require("express");
 const db = require("./database/connection");

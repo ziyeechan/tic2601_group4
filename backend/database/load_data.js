@@ -7,15 +7,17 @@ module.exports.Load_Data = async () => {
     const country = "Singapore";
     const city = "Singapore";
     const postal_code = "Singapore 611223";
-
+    var address_id;
+  
     await Addresses.create({
       address_line_1: address_line_1,
       country: country,
       city: city,
       postal_code: postal_code,
     })
-      .then(() => {
+      .then((results) => {
         console.log("success");
+        address_id = results.dataValues.address_id;
       })
       .catch((error) => {
         console.log("error", error);
@@ -24,7 +26,6 @@ module.exports.Load_Data = async () => {
     const name = "Pasta Delights";
     const description = "A place for all to enjoy homemade pasta";
     const cuisine = "Italian";
-    const address_id = 1;
 
     await Restaurants.create({
       restaurant_name: name,
