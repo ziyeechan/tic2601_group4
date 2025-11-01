@@ -10,6 +10,7 @@ const Promotions = db.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    // Why have this attribute?
     menu_types: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -19,12 +20,22 @@ const Promotions = db.define(
     },
     description: {
       type: DataTypes.TEXT,
+      allowNull: false,
     },
-    starts_at: {
+    start_at: {
       type: DataTypes.DATE,
+      allowNull: false,
     },
-    ends_at: {
+    end_at: {
       type: DataTypes.DATE,
+      allowNull: false,
+      validate: {
+        isAfterStart(value) {
+          if (value < this.start_at) {
+            throw new Error("end_at must be after start_at");
+          }
+        },
+      },
     },
     discount: {
       type: DataTypes.STRING(100),

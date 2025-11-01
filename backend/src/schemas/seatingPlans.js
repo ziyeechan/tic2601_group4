@@ -13,7 +13,7 @@ const SeatingPlans = db.define(
     pax: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      min: 0,
+      min: 1,
     },
     table_type: {
       type: DataTypes.STRING(50),

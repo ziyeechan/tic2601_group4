@@ -25,6 +25,8 @@ const Reviews = db.define(
   },
   {
     freezeTableName: true,
+    timestamps: true, // Enable sequelize to automatically manage createdAt
+    updatedAt: false, // Disable updatedAt as we don't need it
   }
 );
 

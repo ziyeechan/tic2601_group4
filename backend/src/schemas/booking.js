@@ -17,11 +17,11 @@ const Bookings = db.define(
       unique: true,
     },
     customer_name: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.STRING(100),
       allowNull: false,
     },
     customer_email: {
-      type: DataTypes.STRING(20),
+      type: DataTypes.STRING(100),
       allowNull: false,
     },
     customer_phone: {
