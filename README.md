@@ -31,13 +31,14 @@ To run this project, ensure that:
 
 ### In the backend folder:
 
-1. index.js: main file where connection is established for the project and all the generic configurations are done here
+1. server.js: main file where connection is established for the project and all the generic configurations are done here
 2. database folder: contains seeder file where it populates the database with the necessary data for the project
 3. src folder:
-  - routes.js: centralized folder for all API endpoint routes to allow frontend to call the respective endpoints
-  - schemas folder: contains the initialization script for different tables used for the project
-  - models folder: contains the sequelize queries for sqlite (SQL query equivalent)
-  - controllers folder: contains individual endpoint
+
+- routes.js: centralized folder for all API endpoint routes to allow frontend to call the respective endpoints
+- schemas folder: contains the initialization script for different tables used for the project
+- models folder: contains the sequelize queries for sqlite (SQL query equivalent)
+- controllers folder: contains individual endpoint
 
 <br/>
 <br/>
@@ -45,7 +46,7 @@ To run this project, ensure that:
 **Folder Structure Flow**:
 
 - schemas folder would create the different tables -> seeder file in database folder would populate the tables with dummy data
-- index.js would start up the project
+- server.js would start up the project
 - When endpoints are called,
   - First goes through routes.js to find respective endpoint called -> controllers folder to execute said endpoint -> models folder to run the respective SQL query\
 
