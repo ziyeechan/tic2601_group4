@@ -37,6 +37,18 @@ export function Header({ currentView, onViewChange, userRole }) {
         <>
           <button
             className={`tab-button ${
+              currentView === "restaurant-management" ? "active" : ""
+            }`}
+            onClick={() => {
+              onViewChange("restaurant-management");
+              setMobileMenuOpen(false);
+            }}
+            style={{ border: "none", background: "none" }}
+          >
+            🧑‍🍳 Restaurant
+          </button>
+          <button
+            className={`tab-button ${
               currentView === "admin-bookings" ? "active" : ""
             }`}
             onClick={() => {

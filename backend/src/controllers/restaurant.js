@@ -13,6 +13,8 @@ module.exports.createRestaurant = async (req, res) => {
       name,
       description,
       cuisine,
+      phone,
+      email,
       addressLine1,
       addressLine2,
       country,
@@ -44,7 +46,7 @@ module.exports.createRestaurant = async (req, res) => {
     };
 
     const addressId = await createAddress(addressInfo);
-    const restaurantInfo = { name, description, cuisine };
+    const restaurantInfo = { name, description, cuisine, phone, email };
     await createRestaurant(restaurantInfo, addressId);
 
     return res.status(200).send("Restaurant has been successfully created");
@@ -103,11 +105,15 @@ module.exports.updateRestaurant = async (req, res) => {
       return res.status(400).json({
         message: "Invalid Parameter",
       });
-
+    console.log("===============================================");
+    console.log("here");
+    console.log("===============================================");
     const {
       name,
       description,
       cuisine,
+      phone,
+      email,
       addressLine1,
       addressLine2,
       country,
@@ -116,11 +122,13 @@ module.exports.updateRestaurant = async (req, res) => {
       postalCode,
     } = req.body;
 
-    if (name || description || cuisine) {
+    if (name || description || cuisine || phone || email) {
       const formattedData = {
         restaurant_name: name,
         description: description,
         cuisine: cuisine,
+        phone: phone,
+        email: email,
       };
 
       await updateRestaurant(restaurantID, formattedData);

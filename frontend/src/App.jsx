@@ -9,6 +9,7 @@ import { MyBookings } from "./components/MyBookings";
 import { AdminBookings } from "./components/AdminBookings";
 import { SeatingPlan } from "./components/SeatingPlan";
 import { Analytics } from "./components/Analytics";
+import { RestaurantManagement } from "./components/RestaurantManagement2";
 import { mockRestaurants } from "./mockData";
 
 export default function App() {
@@ -133,6 +134,33 @@ export default function App() {
             </div>
           </div>
         );
+
+      case "restaurant-management":
+        return (
+          <div
+            className="container"
+            style={{
+              paddingTop: "var(--spacing-lg)",
+              paddingBottom: "var(--spacing-lg)",
+            }}
+          >
+            <RestaurantManagement
+              onBack={() => setCurrentView("home")}
+              onViewChange={setCurrentView}
+            />
+          </div>
+        );
+      // return selectedRestaurant ? (
+      //   <div
+      //     className="container"
+      //     style={{
+      //       paddingTop: "var(--spacing-lg)",
+      //       paddingBottom: "var(--spacing-lg)",
+      //     }}
+      //   >
+      //     <RestaurantManagement onBack={() => setCurrentView("home")} />
+      //   </div>
+      // ) : null;
 
       case "restaurant-detail":
         return selectedRestaurant ? (

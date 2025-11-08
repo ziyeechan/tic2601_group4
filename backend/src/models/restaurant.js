@@ -1,7 +1,6 @@
 const { Restaurants } = require("../schemas/restaurants.js");
 
 module.exports.findRestaurantByName = async (name) => {
-  console.log("here", name);
   const results = await Restaurants.findOne({
     where: {
       restaurant_name: name,
@@ -22,6 +21,8 @@ module.exports.createRestaurant = async (restaurantInfo, addressId) => {
     restaurant_name: restaurantInfo.name,
     description: restaurantInfo.description,
     cuisine: restaurantInfo.cuisine,
+    phone: restaurantInfo.phone,
+    email: restaurantInfo.email,
     fk_address_id: addressId,
   });
 };

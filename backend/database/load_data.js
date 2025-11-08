@@ -8,7 +8,7 @@ module.exports.Load_Data = async () => {
     const city = "Singapore";
     const postal_code = "Singapore 611223";
     var address_id;
-  
+
     await Addresses.create({
       address_line_1: address_line_1,
       country: country,
@@ -26,12 +26,16 @@ module.exports.Load_Data = async () => {
     const name = "Pasta Delights";
     const description = "A place for all to enjoy homemade pasta";
     const cuisine = "Italian";
+    const phone = "(555) 123-4567";
+    const email = "contact@lepetit.com";
 
     await Restaurants.create({
       restaurant_name: name,
       description: description,
       cuisine: cuisine,
       fk_address_id: address_id,
+      phone: phone,
+      email: email,
     });
 
     console.log("Initial Data Created!");
