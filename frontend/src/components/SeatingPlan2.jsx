@@ -69,13 +69,26 @@ export function SeatingPlan() {
   };
 
   // Get table icon
+  // const getTableIcon = (type) => {
+  //   switch (type) {
+  //     case "round":
+  //       return "⭕";
+  //     case "rectangular":
+  //       return "▭";
+  //     case "booth":
+  //       return "🏛️";
+  //     default:
+  //       return "◉";
+  //   }
+  // };
+
   const getTableIcon = (type) => {
     switch (type) {
-      case "round":
-        return "⭕";
-      case "rectangular":
-        return "▭";
-      case "booth":
+      case "indoor":
+        return "🏠";
+      case "outdoor":
+        return "🏖️";
+      case "vip":
         return "🏛️";
       default:
         return "◉";
@@ -98,7 +111,7 @@ export function SeatingPlan() {
   const handleDeleteTable = (tableId) => {
     if (window.confirm("Are you sure you want to delete this table?")) {
       setTables(tables.filter((t) => t.id !== tableId));
-      if (selectedTable?.id === tableId) {
+      if (selectedTable?.seatingId === tableId) {
         setSelectedTable(null);
       }
     }
@@ -106,6 +119,7 @@ export function SeatingPlan() {
 
   // Handle add table
   const handleAddTable = () => {
+    setIsAddingTable(true);
     const newTableNumber = Math.max(...tables.map((t) => t.number), 0) + 1;
     const newTable = {
       id: `table-${Date.now()}`,
@@ -118,7 +132,6 @@ export function SeatingPlan() {
       isAvailable: true,
     };
     setTables([...tables, newTable]);
-    setIsAddingTable(false);
   };
 
   // Handle assign booking to table
@@ -156,7 +169,7 @@ export function SeatingPlan() {
                 <h4 className="card-title">Restaurant Layout</h4>
                 <button
                   className="btn btn-primary btn-sm"
-                  onClick={() => setIsAddingTable(true)}
+                  onClick={() => !isAddingTable && handleAddTable()}
                 >
                   ➕ Add Table
                 </button>
@@ -248,13 +261,14 @@ export function SeatingPlan() {
                 {tables.map((table) => {
                   const status = getTableStatus(table);
                   const booking = bookings.find(
-                    (b) => b.tableId === table.id && b.date === today
+                    (b) => b.tableId === table.seatingId && b.date === today
                   );
-                  const isSelected = selectedTable?.id === table.id;
+                  const isSelected =
+                    selectedTable?.seatingId === table.seatingId;
 
                   return (
                     <div
-                      key={table.id}
+                      key={table.seatingId}
                       onClick={() => setSelectedTable(table)}
                       style={{
                         position: "absolute",
@@ -350,7 +364,7 @@ export function SeatingPlan() {
                     <p
                       style={{ fontWeight: "600", margin: 0, fontSize: "18px" }}
                     >
-                      T{selectedTable.number}
+                      {selectedTable.tableNumber}
                     </p>
                   </div>
 
@@ -368,9 +382,9 @@ export function SeatingPlan() {
                       Type
                     </p>
                     <p style={{ fontWeight: "600", margin: 0 }}>
-                      {selectedTable.type.charAt(0).toUpperCase() +
-                        selectedTable.type.slice(1)}{" "}
-                      {getTableIcon(selectedTable.type)}
+                      {/* {selectedTable.type.charAt(0).toUpperCase() +
+                        selectedTable.type.slice(1)}{" "} */}
+                      {getTableIcon(selectedTable.tableType)}
                     </p>
                   </div>
 
@@ -388,7 +402,7 @@ export function SeatingPlan() {
                       Capacity
                     </p>
                     <p style={{ fontWeight: "600", margin: 0 }}>
-                      {selectedTable.capacity} seats
+                      {selectedTable.pax} seats
                     </p>
                   </div>
 
@@ -427,18 +441,28 @@ export function SeatingPlan() {
                       gap: "var(--spacing-sm)",
                     }}
                   >
-                    <button
-                      className="btn btn-secondary btn-full"
-                      style={{ border: "1px solid var(--border-color)" }}
-                    >
-                      ✏️ Edit
-                    </button>
-                    <button
-                      className="btn btn-danger btn-full"
-                      onClick={() => handleDeleteTable(selectedTable.id)}
-                    >
-                      🗑️ Delete Table
-                    </button>
+                    {isAddingTable ? (
+                      <>
+                        <button className="btn btn-success btn-full">
+                          🗑️ Add Table
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          className="btn btn-secondary btn-full"
+                          style={{ border: "1px solid var(--border-color)" }}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          className="btn btn-danger btn-full"
+                          onClick={() => handleDeleteTable(selectedTable.id)}
+                        >
+                          🗑️ Delete Table
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
