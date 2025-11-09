@@ -74,7 +74,7 @@ module.exports.findSeatingPlanByRestaurantID = async (req, res) => {
 module.exports.findSeatingPlanByPK = async (req, res) => {
   try {
     const seatingID = parseInt(req.params.seatingID);
-    console.log(seatingID);
+
     if (isNaN(seatingID))
       return res.status(400).json({
         message: "Invalid Parameter",
@@ -101,14 +101,14 @@ module.exports.updateSeatingPlanByPK = async (req, res) => {
         message: "Invalid Parameter",
       });
 
-    const { pax, tableNum, tableType, isAvail } = req.body;
+    const { pax, tableNumber, tableType, isAvailable } = req.body;
 
-    if (pax || tableNum || tableType || isAvail) {
+    if (pax || tableNumber || tableType || isAvailable) {
       const formattedData = {
         pax: pax,
         tableType: tableType,
-        tableNumber: tableNum,
-        isAvailable: isAvail,
+        tableNumber: tableNumber,
+        isAvailable: isAvailable,
       };
 
       await updateSeatingPlanByPK(seatingID, formattedData);

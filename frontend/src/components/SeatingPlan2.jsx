@@ -9,16 +9,17 @@ export function SeatingPlan() {
   const [isAddingTable, setIsAddingTable] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
-  const [addedTable, setAddedTable] = useState(null);
-  const [refresh, setRefresh] = useState(false);
+  const [refresh, setRefresh] = useState(false); // refresh helps prevent website from rendering before data are being fetched
   const today = new Date().toISOString().split("T")[0];
 
   const GAP = 10;
 
+  // For canvas, randomizes the nodes being placed
   const rand = (offset, bound) => {
     return Math.round(offset + Math.random() * bound);
   };
 
+  // Checks if the nodes overlap with one another
   const overlaps = (x, y, placed) => {
     for (const p of placed) {
       const dx = x - p.x;
@@ -38,6 +39,7 @@ export function SeatingPlan() {
   const formatTableData = (tables) => {
     const placed = [];
 
+    // Formats + assign a coordinate for each table on the canvas
     const formattedData = tables.map((table) => {
       // set outdoor tables to left side and indoor + vip tables to right side
       let x, y;
@@ -51,6 +53,7 @@ export function SeatingPlan() {
     return formattedData;
   };
 
+  // Endpoint to grab seating plan data
   useEffect(() => {
     axios.get(`/api/seating/${1}`).then((res) => {
       setTables(formatTableData(res.data.results));
@@ -69,19 +72,6 @@ export function SeatingPlan() {
   };
 
   // Get table icon
-  // const getTableIcon = (type) => {
-  //   switch (type) {
-  //     case "round":
-  //       return "⭕";
-  //     case "rectangular":
-  //       return "▭";
-  //     case "booth":
-  //       return "🏛️";
-  //     default:
-  //       return "◉";
-  //   }
-  // };
-
   const getTableIcon = (type) => {
     switch (type) {
       case "indoor":
@@ -108,35 +98,22 @@ export function SeatingPlan() {
   };
 
   // Handle delete table
-  const handleDeleteTable = (tableId) => {
+  const handleDeleteTable = async (tableId) => {
     if (window.confirm("Are you sure you want to delete this table?")) {
-      setTables(tables.filter((t) => t.id !== tableId));
+      await axios
+        .delete(`/api/seating/${tableId}`)
+        .then((results) => console.log("sucess"))
+        .catch((error) => console.error(error));
+      setRefresh(false);
       if (selectedTable?.seatingId === tableId) {
         setSelectedTable(null);
       }
     }
   };
 
-  // Handle add table
-  // const handleAddTable = () => {
-  //   setIsAddingTable(true);
-  //   const newTableNumber = Math.max(...tables.map((t) => t.number), 0) + 1;
-  //   const newTable = {
-  //     id: `table-${Date.now()}`,
-  //     restaurantId: "1",
-  //     number: newTableNumber,
-  //     capacity: 4,
-  //     type: "rectangular",
-  //     x: 150,
-  //     y: 150,
-  //     isAvailable: true,
-  //   };
-  //   setTables([...tables, newTable]);
-  // };
-
+  // Create node on canvas for add table button
   const handleAddTable = () => {
     setIsAddingTable(true);
-    const newTableNumber = Math.max(...tables.map((t) => t.number), 0) + 1;
     const newTable = {
       restaurantId: "1",
       x: 150,
@@ -146,17 +123,19 @@ export function SeatingPlan() {
     setTables([...tables, newTable]);
   };
 
-  const handleAddTableForm = (e) => {
+  // Populate fields when form is being filled
+  const handleTableForm = (e) => {
     const { name, value } = e.target;
-    setAddedTable((prev) => ({
+    setSelectedTable((prev) => ({
       ...prev,
       [name]: name === "pax" ? parseInt(value) : value,
     }));
   };
 
+  // Submit table data when add table form is submitted
   const submitAddTable = async () => {
     await axios
-      .post(`/api/seating/${1}`, addedTable)
+      .post(`/api/seating/${1}`, selectedTable)
       .then((res) => {
         console.log("success");
       })
@@ -165,6 +144,22 @@ export function SeatingPlan() {
       });
     setIsAddingTable(false);
     setRefresh(false);
+    setSelectedTable(null);
+  };
+
+  // Submit table data when edit table form is submitted
+  const submitEditTable = async (tableId) => {
+    console.log(selectedTable);
+    await axios
+      .put(`/api/seating/${tableId}`, selectedTable)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    setRefresh(false);
+    setSelectedTable(null);
   };
 
   // Handle assign booking to table
@@ -380,122 +375,83 @@ export function SeatingPlan() {
                 <div className="card-header">
                   <h4 className="card-title">Table Details</h4>
                 </div>
-                {!isAddingTable ? (
-                  <div className="card-content">
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
+                <div className="card-content">
+                  <div
+                    className="mb-md"
+                    style={{
+                      paddingBottom: "var(--spacing-md)",
+                      borderBottom: "1px solid var(--border-color)",
+                    }}
+                  >
+                    <label
+                      htmlFor="tableNumber"
+                      className="text-muted"
+                      style={{ fontSize: "12px", margin: 0 }}
                     >
-                      <p
-                        className="text-muted"
-                        style={{ fontSize: "12px", margin: 0 }}
-                      >
-                        Table Number
-                      </p>
-                      <p
-                        style={{
-                          fontWeight: "600",
-                          margin: 0,
-                          fontSize: "18px",
-                        }}
-                      >
-                        {selectedTable.tableNumber}
-                      </p>
-                    </div>
-
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <p
-                        className="text-muted"
-                        style={{ fontSize: "12px", margin: 0 }}
-                      >
-                        Type
-                      </p>
-                      <p style={{ fontWeight: "600", margin: 0 }}>
-                        {/* {selectedTable.type.charAt(0).toUpperCase() +
-                        selectedTable.type.slice(1)}{" "} */}
-                        {getTableIcon(selectedTable.tableType)}
-                      </p>
-                    </div>
-
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <p
-                        className="text-muted"
-                        style={{ fontSize: "12px", margin: 0 }}
-                      >
-                        Capacity
-                      </p>
-                      <p style={{ fontWeight: "600", margin: 0 }}>
-                        {selectedTable.pax} seats
-                      </p>
-                    </div>
-
-                    {bookings.find(
-                      (b) => b.tableId === selectedTable.id && b.date === today
-                    ) && (
-                      <div
-                        className="mb-md"
-                        style={{
-                          paddingBottom: "var(--spacing-md)",
-                          borderBottom: "1px solid var(--border-color)",
-                        }}
-                      >
-                        <p
-                          className="text-muted"
-                          style={{ fontSize: "12px", margin: 0 }}
-                        >
-                          Current Booking
-                        </p>
-                        <p style={{ fontWeight: "600", margin: 0 }}>
-                          {
-                            bookings.find(
-                              (b) =>
-                                b.tableId === selectedTable.id &&
-                                b.date === today
-                            )?.customerName
-                          }
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Action Buttons */}
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "var(--spacing-sm)",
-                      }}
-                    >
-                      <button
-                        className="btn btn-secondary btn-full"
-                        style={{ border: "1px solid var(--border-color)" }}
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        className="btn btn-danger btn-full"
-                        onClick={() => handleDeleteTable(selectedTable.id)}
-                      >
-                        🗑️ Delete Table
-                      </button>
-                    </div>
+                      Table Number *
+                    </label>
+                    <input
+                      id="tableNumber"
+                      type="text"
+                      name="tableNumber"
+                      value={selectedTable?.tableNumber}
+                      onChange={handleTableForm}
+                      placeholder="Enter table number"
+                      required
+                    />
                   </div>
-                ) : (
-                  <div className="card-content">
+                  <div
+                    className="mb-md"
+                    style={{
+                      paddingBottom: "var(--spacing-md)",
+                      borderBottom: "1px solid var(--border-color)",
+                    }}
+                  >
+                    <label
+                      htmlFor="tableType"
+                      className="text-muted"
+                      style={{ fontSize: "12px", margin: 0 }}
+                    >
+                      Type *
+                    </label>
+                    <input
+                      id="tableType"
+                      type="text"
+                      name="tableType"
+                      value={selectedTable?.tableType}
+                      onChange={handleTableForm}
+                      placeholder="Enter table type"
+                      required
+                    />
+                  </div>
+                  <div
+                    className="mb-md"
+                    style={{
+                      paddingBottom: "var(--spacing-md)",
+                      borderBottom: "1px solid var(--border-color)",
+                    }}
+                  >
+                    <label
+                      htmlFor="pax"
+                      className="text-muted"
+                      style={{ fontSize: "12px", margin: 0 }}
+                    >
+                      Capacity *
+                    </label>
+                    <input
+                      id="pax"
+                      type="number"
+                      name="pax"
+                      value={selectedTable?.pax}
+                      onChange={handleTableForm}
+                      placeholder="Enter pax"
+                      required
+                    />
+                  </div>
+
+                  {bookings.find(
+                    (b) => b.tableId === selectedTable.id && b.date === today
+                  ) && (
                     <div
                       className="mb-md"
                       style={{
@@ -503,88 +459,61 @@ export function SeatingPlan() {
                         borderBottom: "1px solid var(--border-color)",
                       }}
                     >
-                      <label
-                        htmlFor="tableNumber"
+                      <p
                         className="text-muted"
                         style={{ fontSize: "12px", margin: 0 }}
                       >
-                        Table Number *
-                      </label>
-                      <input
-                        id="tableNumber"
-                        type="text"
-                        name="tableNumber"
-                        value={addedTable?.tableNumber}
-                        onChange={handleAddTableForm}
-                        placeholder="Enter table number"
-                        required
-                      />
+                        Current Booking
+                      </p>
+                      <p style={{ fontWeight: "600", margin: 0 }}>
+                        {
+                          bookings.find(
+                            (b) =>
+                              b.tableId === selectedTable.id && b.date === today
+                          )?.customerName
+                        }
+                      </p>
                     </div>
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <label
-                        htmlFor="tableType"
-                        className="text-muted"
-                        style={{ fontSize: "12px", margin: 0 }}
-                      >
-                        Type *
-                      </label>
-                      <input
-                        id="tableType"
-                        type="text"
-                        name="tableType"
-                        value={addedTable?.tableType}
-                        onChange={handleAddTableForm}
-                        placeholder="Enter table type"
-                        required
-                      />
-                    </div>
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <label
-                        htmlFor="pax"
-                        className="text-muted"
-                        style={{ fontSize: "12px", margin: 0 }}
-                      >
-                        Capacity *
-                      </label>
-                      <input
-                        id="pax"
-                        type="number"
-                        name="pax"
-                        value={addedTable?.pax}
-                        onChange={handleAddTableForm}
-                        placeholder="Enter pax"
-                        required
-                      />
-                    </div>
-                    {/* Action Buttons */}
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "var(--spacing-sm)",
-                      }}
-                    >
+                  )}
+
+                  {/* Action Buttons */}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "var(--spacing-sm)",
+                    }}
+                  >
+                    {isAddingTable ? (
                       <button
                         className="btn btn-success btn-full"
-                        onClick={submitAddTable}
+                        onClick={() => submitAddTable}
                       >
                         🗑️ Add Table
                       </button>
-                    </div>
+                    ) : (
+                      <>
+                        <button
+                          className="btn btn-secondary btn-full"
+                          style={{ border: "1px solid var(--border-color)" }}
+                          onClick={() =>
+                            submitEditTable(selectedTable.seatingId)
+                          }
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          className="btn btn-danger btn-full"
+                          onClick={() =>
+                            handleDeleteTable(selectedTable.seatingId)
+                          }
+                        >
+                          🗑️ Delete Table
+                        </button>
+                      </>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             )}
 
