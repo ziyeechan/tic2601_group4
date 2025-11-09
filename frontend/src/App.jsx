@@ -7,7 +7,7 @@ import { RestaurantDetail } from "./components/RestaurantDetail";
 import { BookingForm } from "./components/BookingForm";
 import { MyBookings } from "./components/MyBookings";
 import { AdminBookings } from "./components/AdminBookings";
-import { SeatingPlan } from "./components/SeatingPlan";
+import { SeatingPlan } from "./components/SeatingPlan2";
 import { Analytics } from "./components/Analytics";
 import { RestaurantManagement } from "./components/RestaurantManagement2";
 import { mockRestaurants } from "./mockData";

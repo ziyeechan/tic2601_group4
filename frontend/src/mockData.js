@@ -20,7 +20,7 @@
  * - reviewCount (count from reviews table)
  * - image (from asset management service)
  * - address (JOIN from addresses table)
- * - phone, email (NOT IN SCHEMA - need to add to restaurants table)
+ * - phone, email (NOT IN SCHEMA - need to add to restaurants table) (SETTLED, Added into SCHEMA)
  * - openingHours (NOT IN SCHEMA - need separate table)
  * - amenities (NOT IN SCHEMA - need separate table)
  * - availableTimeSlots (NOT IN SCHEMA - calculated from opening hours)
@@ -257,7 +257,7 @@ export const mockBookings = [
 ];
 
 /**
- * SEATING PLANS MOCK DATA
+ * SEATING PLANS MOCK DATA (SETTLED, Added to loadData)
  *
  * Backend schema fields:
  * - seating_id, pax, table_type, table_number, is_available, fk_restaurant_id

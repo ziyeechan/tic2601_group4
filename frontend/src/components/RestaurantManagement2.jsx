@@ -16,21 +16,17 @@ export function RestaurantManagement({ onBack, onViewChange }) {
       .then((res) => {
         const { address, restaurant } = res.data;
         setAddress({
-          addressLine1: address.address_line_1,
-          addressLine2: address.address_line_2,
           ...address,
         });
         setRestaurant({
-          name: restaurant.restaurant_name,
+          name: restaurant.restaurantName,
           ...restaurant,
         });
         setEditedAddress({
-          addressLine1: address.address_line_1,
-          addressLine2: address.address_line_2,
           ...address,
         });
         setEditedRestaurant({
-          name: restaurant.restaurant_name,
+          name: restaurant.restaurantName,
           ...restaurant,
         });
         setRefresh(true);
@@ -158,7 +154,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                 <div className="card mb-lg">
                   <div className="card-header">
                     <div className="flex-between">
-                      <h4 className="card-title">Restaurant Information</h4>
+                      <h3 className="card-title">Restaurant Information</h3>
                       <button
                         className="btn btn-primary btn-sm"
                         onClick={() => setIsEditing(true)}
