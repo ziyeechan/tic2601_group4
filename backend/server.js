@@ -36,8 +36,8 @@ app.listen(port, async (err) => {
 
     if (onFirstLoad) {
       try {
-        const { Load_Data } = require("./database/load_data.js");
-        await Load_Data();
+        const { LoadData } = require("./database/loadData.js");
+        await LoadData();
       } catch (err) {
         console.log(err);
       }
