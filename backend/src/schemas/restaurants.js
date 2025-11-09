@@ -4,12 +4,12 @@ const db = require("../../database/connection.js");
 const Restaurants = db.define(
   "restaurants",
   {
-    restaurant_id: {
+    restaurantId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    restaurant_name: {
+    restaurantName: {
       type: DataTypes.STRING,
       allowNull: false,
     },

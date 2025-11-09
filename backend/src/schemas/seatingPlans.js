@@ -3,9 +3,9 @@ const db = require("../../database/connection.js");
 const { Restaurants } = require("./restaurants.js");
 
 const SeatingPlans = db.define(
-  "seating_plans",
+  "seatingPlans",
   {
-    seating_id: {
+    seatingId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -15,17 +15,17 @@ const SeatingPlans = db.define(
       allowNull: false,
       min: 1,
     },
-    table_type: {
+    tableType: {
       type: DataTypes.STRING(50),
       validate: {
-        isIn: [["vip", 'indoor', "outdoor"]],
+        isIn: [["vip", "indoor", "outdoor"]],
       },
     },
-    table_number: {
+    tableNumber: {
       type: DataTypes.STRING(50),
       allowNull: false,
     },
-    is_available: {
+    isAvailable: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
@@ -36,11 +36,11 @@ const SeatingPlans = db.define(
 );
 
 Restaurants.hasMany(SeatingPlans, {
-  foreignKey: "fk_restaurant_id",
+  foreignKey: "fkRestaurantId",
   onUpdate: "NO ACTION",
 });
 SeatingPlans.belongsTo(Restaurants, {
-  foreignKey: "fk_restaurant_id",
+  foreignKey: "fkRestaurantId",
   onUpdate: "NO ACTION",
 });
 

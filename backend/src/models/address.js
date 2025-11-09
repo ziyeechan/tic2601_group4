@@ -2,15 +2,15 @@ const { Addresses } = require("../schemas/addresses.js");
 
 module.exports.createAddress = async (addressInfo) => {
   const results = await Addresses.create({
-    address_line_1: addressInfo.addressLine1,
-    address_line_2: addressInfo.addressLine2,
+    addressLine1: addressInfo.addressLine1,
+    addressLine2: addressInfo.addressLine2,
     country: addressInfo.country,
     state: addressInfo.state,
     city: addressInfo.city,
-    postal_code: addressInfo.postalCode,
+    postalCode: addressInfo.postalCode,
   });
 
-  return results.address_id;
+  return results.addressId;
 };
 
 module.exports.findAddressByFK = async (addressID) => {
@@ -26,7 +26,7 @@ module.exports.updateAddress = async (addressID, meta) => {
     },
     {
       where: {
-        address_id: addressID,
+        addressId: addressID,
       },
     }
   );

@@ -5,16 +5,16 @@ const { Restaurants } = require("./restaurants.js");
 const Addresses = db.define(
   "addresses",
   {
-    address_id: {
+    addressId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    address_line_1: {
+    addressLine1: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    address_line_2: {
+    addressLine2: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
@@ -30,7 +30,7 @@ const Addresses = db.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    postal_code: {
+    postalCode: {
       type: DataTypes.STRING(20),
       allowNull: false,
     },
@@ -40,7 +40,7 @@ const Addresses = db.define(
   }
 );
 
-Addresses.hasOne(Restaurants, { foreignKey: "fk_address_id" });
-Restaurants.belongsTo(Addresses, { foreignKey: "fk_address_id" });
+Addresses.hasOne(Restaurants, { foreignKey: "fkAddressId" });
+Restaurants.belongsTo(Addresses, { foreignKey: "fkAddressId" });
 
 module.exports = { Addresses };

@@ -11,16 +11,16 @@ module.exports.createBooking = async (bookingData) => {
 module.exports.findBookingByConfirmationCode = async (confirmationCode) => {
   return await Bookings.findOne({
     where: {
-      confirmation_code: confirmationCode,
+      confirmationCode: confirmationCode,
     },
     include: [
       {
         model: Restaurants,
-        attributes: ["restaurant_id", "restaurant_name"],
+        attributes: ["restaurantId", "restaurantName"],
       },
       {
         model: SeatingPlans,
-        attributes: ["seating_id", "table_number", "pax"],
+        attributes: ["seatingId", "tableNumber", "pax"],
       },
     ],
   });
@@ -30,16 +30,16 @@ module.exports.findBookingByConfirmationCode = async (confirmationCode) => {
 module.exports.findBookingsByCustomerEmail = async (email) => {
   return await Bookings.findAll({
     where: {
-      customer_email: email,
+      customerEmail: email,
     },
     include: [
       {
         model: Restaurants,
-        attributes: ["restaurant_id", "restaurant_name"],
+        attributes: ["restaurantId", "restaurantName"],
       },
       {
         model: SeatingPlans,
-        attributes: ["seating_id", "table_number", "pax"],
+        attributes: ["seatingId", "tableNumber", "pax"],
       },
     ],
     order: [["date", "DESC"]],
@@ -50,12 +50,12 @@ module.exports.findBookingsByCustomerEmail = async (email) => {
 module.exports.findBookingsByRestaurantID = async (restaurantID) => {
   return await Bookings.findAll({
     where: {
-      fk_restaurant_id: restaurantID,
+      fkRestaurantId: restaurantID,
     },
     include: [
       {
         model: SeatingPlans,
-        attributes: ["seating_id", "table_number", "pax", "types_of_table"],
+        attributes: ["seatingId", "tableNumber", "pax", "tableType"],
       },
     ],
     order: [["date", "DESC"]],
@@ -66,16 +66,16 @@ module.exports.findBookingsByRestaurantID = async (restaurantID) => {
 module.exports.findBookingByID = async (bookingID) => {
   return await Bookings.findOne({
     where: {
-      booking_id: bookingID,
+      bookingId: bookingID,
     },
     include: [
       {
         model: Restaurants,
-        attributes: ["restaurant_id", "restaurant_name"],
+        attributes: ["restaurantId", "restaurantName"],
       },
       {
         model: SeatingPlans,
-        attributes: ["seating_id", "table_number", "pax"],
+        attributes: ["seatingId", "tableType", "pax"],
       },
     ],
   });
@@ -85,13 +85,13 @@ module.exports.findBookingByID = async (bookingID) => {
 module.exports.findBookingsByStatus = async (restaurantID, status) => {
   return await Bookings.findAll({
     where: {
-      fk_restaurant_id: restaurantID,
+      fkRestaurantId: restaurantID,
       status: status,
     },
     include: [
       {
         model: SeatingPlans,
-        attributes: ["seating_id", "table_number", "pax"],
+        attributes: ["seatingId", "tableNumber", "pax"],
       },
     ],
   });
@@ -103,7 +103,7 @@ module.exports.updateBookingStatus = async (bookingID, status) => {
     { status },
     {
       where: {
-        booking_id: bookingID,
+        bookingId: bookingID,
       },
     }
   );
@@ -113,7 +113,7 @@ module.exports.updateBookingStatus = async (bookingID, status) => {
 module.exports.updateBooking = async (bookingID, bookingData) => {
   return await Bookings.update(bookingData, {
     where: {
-      booking_id: bookingID,
+      bookingId: bookingID,
     },
   });
 };
@@ -122,7 +122,7 @@ module.exports.updateBooking = async (bookingID, bookingData) => {
 module.exports.deleteBooking = async (bookingID) => {
   return await Bookings.destroy({
     where: {
-      booking_id: bookingID,
+      bookingId: bookingID,
     },
   });
 };
@@ -131,7 +131,7 @@ module.exports.deleteBooking = async (bookingID) => {
 module.exports.checkSeatingAvailability = async (seatingID, date, time) => {
   const booking = await Bookings.findOne({
     where: {
-      fk_seating_plan_id: seatingID,
+      fkSeatingId: seatingID,
       date: date,
       time: time,
       status: {
@@ -146,7 +146,7 @@ module.exports.checkSeatingAvailability = async (seatingID, date, time) => {
 module.exports.findBookingsBySeatingDate = async (seatingID, date) => {
   return await Bookings.findAll({
     where: {
-      fk_seating_plan_id: seatingID,
+      fkSeatingId: seatingID,
       date: date,
       status: {
         [require("sequelize").Op.in]: ["confirmed", "seated", "completed"],

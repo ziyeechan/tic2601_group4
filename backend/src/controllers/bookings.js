@@ -97,14 +97,14 @@ module.exports.createBooking = async (req, res) => {
 
     // Create booking
     const bookingData = {
-      confirmation_code: confirmationCode,
-      customer_name: customerName,
-      customer_email: customerEmail,
-      customer_phone: customerPhone,
-      party_size: partySize,
-      special_requests: specialRequests || null,
-      fk_restaurant_id: restaurantID,
-      fk_seating_plan_id: seatingID,
+      confirmationCode: confirmationCode,
+      customerName: customerName,
+      customerEmail: customerEmail,
+      customerPhone: customerPhone,
+      partySize: partySize,
+      specialRequests: specialRequests || null,
+      fkRestaurantId: restaurantID,
+      fkSeatingId: seatingID,
       date: bookingDate,
       time: bookingTime,
       status: "confirmed",
@@ -413,11 +413,11 @@ module.exports.updateBooking = async (req, res) => {
 
     // Allowed fields to update
     const allowedFields = [
-      "customer_name",
-      "customer_email",
-      "customer_phone",
-      "party_size",
-      "special_requests",
+      "customerName",
+      "customerEmail",
+      "customerPhone",
+      "partySize",
+      "specialRequests",
       "date",
       "time",
     ];

@@ -6,40 +6,40 @@ const { SeatingPlans } = require("./seatingPlans.js");
 const Bookings = db.define(
   "bookings",
   {
-    booking_id: {
+    bookingId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    confirmation_code: {
+    confirmationCode: {
       type: DataTypes.STRING(20),
       allowNull: false,
       unique: true,
     },
-    customer_name: {
+    customerName: {
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    customer_email: {
+    customerEmail: {
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    customer_phone: {
+    customerPhone: {
       type: DataTypes.STRING(20),
       allowNull: false,
     },
-    party_size: {
+    partySize: {
       type: DataTypes.INTEGER,
       allowNull: false,
       min: 0,
     },
-    special_requests: {
+    specialRequests: {
       type: DataTypes.TEXT,
     },
-    booking_date: {
+    bookingDate: {
       type: DataTypes.DATE,
     },
-    booking_time: {
+    bookingTime: {
       type: DataTypes.TIME,
     },
     status: {
@@ -57,12 +57,12 @@ const Bookings = db.define(
         ]],
       },
     },
-    fk_seating_id: {
+    fkSeatingId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: SeatingPlans,
-        key: "seating_id",
+        key: "seatingId",
       },
     },
   },
@@ -71,13 +71,13 @@ const Bookings = db.define(
     indexes: [
       {
         unique: true,
-        fields: ["fk_seating_id", "booking_date", "booking_time"],
+        fields: ["fkSeatingId", "bookingDate", "bookingTime"],
       },
     ],
   }
 );
 
-Restaurants.hasMany(Bookings, { foreignKey: "fk_restaurant_id" });
-Bookings.belongsTo(Restaurants, { foreignKey: "fk_restaurant_id" });
+Restaurants.hasMany(Bookings, { foreignKey: "fkRestaurantId" });
+Bookings.belongsTo(Restaurants, { foreignKey: "fkRestaurantId" });
 
 module.exports = { Bookings };

@@ -6,22 +6,22 @@ module.exports = (router) => {
   // Endpoint to create seating plan for restaurant
   router.post("/seating/:restaurantID", seatingController.createSeatingPlan);
 
-  // Endpoint to get seating plan by table_num for restaurant_id
+  // Endpoint to get seating plan by tableNum for restaurantId
   router.get(
     "/seating/restaurant/:restaurantID/tableNum/:tableNum",
     seatingController.findSeatingPlanByTableNum
   );
 
-  // Endpoint to get all seating plans for restaurant_id
+  // Endpoint to get all seating plans for restaurantId
   router.get(
     "/seating/:restaurantID",
     seatingController.findSeatingPlanByRestaurantID
   );
 
-  // Endpoint to get seating plan by seating_id
+  // Endpoint to get seating plan by seatingId
   router.get("/seating/id/:seatingID", seatingController.findSeatingPlanByPK);
 
-  // Endpoint to update seating plan by seating_id
+  // Endpoint to update seating plan by seatingId
   router.put("/seating/:seatingID", seatingController.updateSeatingPlanByPK);
 
   // Endpoint to delete existing seating plan

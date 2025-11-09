@@ -5,16 +5,16 @@ const { Restaurants } = require("./restaurants.js");
 const Menus = db.define(
   "menus",
   {
-    menu_id: {
+    menuId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    menu_types: {
+    menuTypes: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    menu_filepath: {
+    menuFilepath: {
       type: DataTypes.TEXT,
     },
   },
@@ -23,7 +23,7 @@ const Menus = db.define(
   }
 );
 
-Restaurants.hasMany(Menus, { foreignKey: "fk_restaurant_id" });
-Menus.belongsTo(Restaurants, { foreignKey: "fk_restaurant_id" });
+Restaurants.hasMany(Menus, { foreignKey: "fkRestaurantId" });
+Menus.belongsTo(Restaurants, { foreignKey: "fkRestaurantId" });
 
 module.exports = { Menus };

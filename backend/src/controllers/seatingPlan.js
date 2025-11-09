@@ -106,9 +106,9 @@ module.exports.updateSeatingPlanByPK = async (req, res) => {
     if (pax || tableNum || tableType || isAvail) {
       const formattedData = {
         pax: pax,
-        table_type: tableType,
-        table_number: tableNum,
-        is_available: isAvail,
+        tableType: tableType,
+        tableNumber: tableNum,
+        isAvailable: isAvail,
       };
 
       await updateSeatingPlanByPK(seatingID, formattedData);

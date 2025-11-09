@@ -3,7 +3,7 @@ const { Restaurants } = require("../schemas/restaurants.js");
 module.exports.findRestaurantByName = async (name) => {
   const results = await Restaurants.findOne({
     where: {
-      restaurant_name: name,
+      restaurantName: name,
     },
   });
 
@@ -18,12 +18,12 @@ module.exports.findRestaurantByID = async (restaurantID) => {
 
 module.exports.createRestaurant = async (restaurantInfo, addressId) => {
   await Restaurants.create({
-    restaurant_name: restaurantInfo.name,
+    restaurantName: restaurantInfo.name,
     description: restaurantInfo.description,
     cuisine: restaurantInfo.cuisine,
     phone: restaurantInfo.phone,
     email: restaurantInfo.email,
-    fk_address_id: addressId,
+    fkAddressId: addressId,
   });
 };
 
@@ -34,13 +34,13 @@ module.exports.updateRestaurant = (restaurantID, meta) =>
     },
     {
       where: {
-        restaurant_id: restaurantID,
+        restaurantId: restaurantID,
       },
     }
   );
 
 module.exports.deleteRestaurantByPK = async (restaurantID) => {
   await Restaurants.destroy({
-    where: { restaurant_id: restaurantID },
+    where: { restaurantId: restaurantID },
   });
 };

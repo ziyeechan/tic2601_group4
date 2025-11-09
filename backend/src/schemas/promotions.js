@@ -5,34 +5,29 @@ const { Restaurants } = require("./restaurants.js");
 const Promotions = db.define(
   "promotions",
   {
-    promotion_id: {
+    promotionId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    // Why have this attribute?
-    menu_types: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    terms_and_cond: {
+    termsNCond: {
       type: DataTypes.TEXT,
     },
     description: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    start_at: {
+    startAt: {
       type: DataTypes.DATE,
       allowNull: false,
     },
-    end_at: {
+    endAt: {
       type: DataTypes.DATE,
       allowNull: false,
       validate: {
         isAfterStart(value) {
-          if (value < this.start_at) {
-            throw new Error("end_at must be after start_at");
+          if (value < this.startAt) {
+            throw new Error("endAt must be after startAt");
           }
         },
       },
@@ -46,7 +41,7 @@ const Promotions = db.define(
   }
 );
 
-Restaurants.hasMany(Promotions, { foreignKey: "fk_restaurant_id" });
-Promotions.belongsTo(Restaurants, { foreignKey: "fk_restaurant_id" });
+Restaurants.hasMany(Promotions, { foreignKey: "fkRestaurantId" });
+Promotions.belongsTo(Restaurants, { foreignKey: "fkRestaurantId" });
 
 module.exports = { Promotions };

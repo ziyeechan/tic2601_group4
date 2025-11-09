@@ -6,7 +6,7 @@ const { Bookings } = require("./booking.js");
 const Reviews = db.define(
   "reviews",
   {
-    review_id: {
+    reviewId: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -30,10 +30,10 @@ const Reviews = db.define(
   }
 );
 
-Bookings.hasOne(Reviews, { foreignKey: "fk_booking_id" });
-Reviews.belongsTo(Bookings, { foreignKey: "fk_booking_id" });
+Bookings.hasOne(Reviews, { foreignKey: "fkBookingId" });
+Reviews.belongsTo(Bookings, { foreignKey: "fkBookingId" });
 
-Restaurants.hasMany(Reviews, { foreignKey: "fk_restaurant_id" });
-Reviews.belongsTo(Restaurants, { foreignKey: "fk_restaurant_id" });
+Restaurants.hasMany(Reviews, { foreignKey: "fkRestaurantId" });
+Reviews.belongsTo(Restaurants, { foreignKey: "fkRestaurantId" });
 
 module.exports = { Reviews };

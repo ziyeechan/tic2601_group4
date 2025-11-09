@@ -67,7 +67,7 @@ module.exports.findRestaurantByID = async (req, res) => {
       });
 
     const restaurant = await findRestaurantByID(restaurantID);
-    const address = await findAddressByFK(restaurant.fk_address_id);
+    const address = await findAddressByFK(restaurant.fkAddressId);
 
     return res.status(200).json({
       restaurant,
@@ -87,7 +87,7 @@ module.exports.findRestaurantByName = async (req, res) => {
       });
 
     const restaurant = await findRestaurantByName(name);
-    const address = await findAddressByFK(restaurant.fk_address_id);
+    const address = await findAddressByFK(restaurant.fkAddressId);
 
     return res.status(200).json({
       restaurant,
@@ -105,9 +105,7 @@ module.exports.updateRestaurant = async (req, res) => {
       return res.status(400).json({
         message: "Invalid Parameter",
       });
-    console.log("===============================================");
-    console.log("here");
-    console.log("===============================================");
+
     const {
       name,
       description,
@@ -124,7 +122,7 @@ module.exports.updateRestaurant = async (req, res) => {
 
     if (name || description || cuisine || phone || email) {
       const formattedData = {
-        restaurant_name: name,
+        restaurantName: name,
         description: description,
         cuisine: cuisine,
         phone: phone,
@@ -143,15 +141,15 @@ module.exports.updateRestaurant = async (req, res) => {
       const restaurant = await findRestaurantByID(restaurantID);
 
       const formattedData = {
-        address_line_1: addressLine1,
-        address_line_2: addressLine2,
+        addressLine1: addressLine1,
+        addressLine2: addressLine2,
         country: country,
         state: state,
         city: city,
-        postal_code: postalCode,
+        postalCode: postalCode,
       };
 
-      await updateRestaurant(restaurant.fk_address_id, formattedData);
+      await updateRestaurant(restaurant.fkAddressId, formattedData);
     }
     return res.status(200).send("Restaurant has been successfully updated");
   } catch (err) {

@@ -6,7 +6,7 @@ module.exports = (router) => {
   // Endpoint to create new restaurants
   router.post("/restaurant", restaurantController.createRestaurant);
 
-  // Endpoint to find restaurant by restaurant_id
+  // Endpoint to find restaurant by restaurantId
   router.get(
     "/restaurant/id/:restaurantID",
     restaurantController.findRestaurantByID
@@ -18,7 +18,7 @@ module.exports = (router) => {
     restaurantController.findRestaurantByName
   );
 
-  // Endpoint to update restaurant by restaurant_id
+  // Endpoint to update restaurant by restaurantId
   router.put(
     "/restaurant/:restaurantID",
     restaurantController.updateRestaurant
