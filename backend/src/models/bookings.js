@@ -1,4 +1,4 @@
-const { Bookings } = require("../schemas/booking.js");
+const { Bookings } = require("../schemas/bookings.js");
 const { SeatingPlans } = require("../schemas/seatingPlans.js");
 const { Restaurants } = require("../schemas/restaurants.js");
 

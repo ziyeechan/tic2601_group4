@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const db = require("../../database/connection.js");
 const { Restaurants } = require("./restaurants.js");
-const { Bookings } = require("./booking.js");
+const { Bookings } = require("./bookings.js");
 
 const Reviews = db.define(
   "reviews",

@@ -48,7 +48,7 @@ To run this project, ensure that:
 - schemas folder would create the different tables -> seeder file in database folder would populate the tables with dummy data
 - server.js would start up the project
 - When endpoints are called,
-  - First goes through routes.js to find respective endpoint called -> controllers folder to execute said endpoint -> models folder to run the respective SQL query\
+  - First goes through routes.js to find respective endpoint called -> controllers folder to execute said endpoint -> models folder to run the respective SQL query
 
 ### In the frontend folder:
 
@@ -64,12 +64,16 @@ $ npm i
 $ npm start
 ```
 
+In server.js file, there is a variable called onFirstLoad. This is set to false on default. It is recommended to change the value to true when first
+starting the project, as this variable helps run the loadData.js file, where it seeds the database with dummy data for usage. Once seeded, please set the value back to
+false, else it will reset the data everytime the codebase is updated.
+
 2. To start frontend server:
 
 ```
 $ cd frontend
 $ npm i
-$ npm start
+$ npm run dev
 ```
 
 ## Technologies
