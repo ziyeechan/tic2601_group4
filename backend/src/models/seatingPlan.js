@@ -23,11 +23,10 @@ module.exports.findSeatingPlanByPK = async (seatingID) => {
 };
 
 module.exports.createSeatingPlan = async (seatingInfo, restaurantID) => {
-  console.log(seatingInfo);
   await SeatingPlans.create({
     pax: seatingInfo.pax,
     tableType: seatingInfo.tableType,
-    tableNumber: seatingInfo.tableNum,
+    tableNumber: seatingInfo.tableNumber,
     fkRestaurantId: restaurantID,
   });
 };

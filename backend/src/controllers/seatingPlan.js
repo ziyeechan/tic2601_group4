@@ -14,8 +14,8 @@ module.exports.createSeatingPlan = async (req, res) => {
       return res.status(400).json({
         message: "Invalid Parameter",
       });
-    const { pax, tableType, tableNum } = req.body;
-    const seatingInfo = { pax, tableType, tableNum };
+    const { pax, tableType, tableNumber } = req.body;
+    const seatingInfo = { pax, tableType, tableNumber };
     await createSeatingPlan(seatingInfo, restaurantID);
     return res
       .status(200)

@@ -9,6 +9,7 @@ export function SeatingPlan() {
   const [isAddingTable, setIsAddingTable] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
+  const [addedTable, setAddedTable] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const today = new Date().toISOString().split("T")[0];
 
@@ -52,7 +53,6 @@ export function SeatingPlan() {
 
   useEffect(() => {
     axios.get(`/api/seating/${1}`).then((res) => {
-      console.log(res.data.results);
       setTables(formatTableData(res.data.results));
       setRefresh(true);
     });
@@ -118,20 +118,53 @@ export function SeatingPlan() {
   };
 
   // Handle add table
+  // const handleAddTable = () => {
+  //   setIsAddingTable(true);
+  //   const newTableNumber = Math.max(...tables.map((t) => t.number), 0) + 1;
+  //   const newTable = {
+  //     id: `table-${Date.now()}`,
+  //     restaurantId: "1",
+  //     number: newTableNumber,
+  //     capacity: 4,
+  //     type: "rectangular",
+  //     x: 150,
+  //     y: 150,
+  //     isAvailable: true,
+  //   };
+  //   setTables([...tables, newTable]);
+  // };
+
   const handleAddTable = () => {
     setIsAddingTable(true);
     const newTableNumber = Math.max(...tables.map((t) => t.number), 0) + 1;
     const newTable = {
-      id: `table-${Date.now()}`,
       restaurantId: "1",
-      number: newTableNumber,
-      capacity: 4,
-      type: "rectangular",
       x: 150,
       y: 150,
       isAvailable: true,
     };
     setTables([...tables, newTable]);
+  };
+
+  const handleAddTableForm = (e) => {
+    const { name, value } = e.target;
+    setAddedTable((prev) => ({
+      ...prev,
+      [name]: name === "pax" ? parseInt(value) : value,
+    }));
+  };
+
+  const submitAddTable = async () => {
+    await axios
+      .post(`/api/seating/${1}`, addedTable)
+      .then((res) => {
+        console.log("success");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    setIsAddingTable(false);
+    setRefresh(false);
   };
 
   // Handle assign booking to table
@@ -347,68 +380,8 @@ export function SeatingPlan() {
                 <div className="card-header">
                   <h4 className="card-title">Table Details</h4>
                 </div>
-                <div className="card-content">
-                  <div
-                    className="mb-md"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <p
-                      className="text-muted"
-                      style={{ fontSize: "12px", margin: 0 }}
-                    >
-                      Table Number
-                    </p>
-                    <p
-                      style={{ fontWeight: "600", margin: 0, fontSize: "18px" }}
-                    >
-                      {selectedTable.tableNumber}
-                    </p>
-                  </div>
-
-                  <div
-                    className="mb-md"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <p
-                      className="text-muted"
-                      style={{ fontSize: "12px", margin: 0 }}
-                    >
-                      Type
-                    </p>
-                    <p style={{ fontWeight: "600", margin: 0 }}>
-                      {/* {selectedTable.type.charAt(0).toUpperCase() +
-                        selectedTable.type.slice(1)}{" "} */}
-                      {getTableIcon(selectedTable.tableType)}
-                    </p>
-                  </div>
-
-                  <div
-                    className="mb-md"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <p
-                      className="text-muted"
-                      style={{ fontSize: "12px", margin: 0 }}
-                    >
-                      Capacity
-                    </p>
-                    <p style={{ fontWeight: "600", margin: 0 }}>
-                      {selectedTable.pax} seats
-                    </p>
-                  </div>
-
-                  {bookings.find(
-                    (b) => b.tableId === selectedTable.id && b.date === today
-                  ) && (
+                {!isAddingTable ? (
+                  <div className="card-content">
                     <div
                       className="mb-md"
                       style={{
@@ -420,51 +393,198 @@ export function SeatingPlan() {
                         className="text-muted"
                         style={{ fontSize: "12px", margin: 0 }}
                       >
-                        Current Booking
+                        Table Number
                       </p>
-                      <p style={{ fontWeight: "600", margin: 0 }}>
-                        {
-                          bookings.find(
-                            (b) =>
-                              b.tableId === selectedTable.id && b.date === today
-                          )?.customerName
-                        }
+                      <p
+                        style={{
+                          fontWeight: "600",
+                          margin: 0,
+                          fontSize: "18px",
+                        }}
+                      >
+                        {selectedTable.tableNumber}
                       </p>
                     </div>
-                  )}
 
-                  {/* Action Buttons */}
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--spacing-sm)",
-                    }}
-                  >
-                    {isAddingTable ? (
-                      <>
-                        <button className="btn btn-success btn-full">
-                          🗑️ Add Table
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="btn btn-secondary btn-full"
-                          style={{ border: "1px solid var(--border-color)" }}
+                    <div
+                      className="mb-md"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
+                      <p
+                        className="text-muted"
+                        style={{ fontSize: "12px", margin: 0 }}
+                      >
+                        Type
+                      </p>
+                      <p style={{ fontWeight: "600", margin: 0 }}>
+                        {/* {selectedTable.type.charAt(0).toUpperCase() +
+                        selectedTable.type.slice(1)}{" "} */}
+                        {getTableIcon(selectedTable.tableType)}
+                      </p>
+                    </div>
+
+                    <div
+                      className="mb-md"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
+                      <p
+                        className="text-muted"
+                        style={{ fontSize: "12px", margin: 0 }}
+                      >
+                        Capacity
+                      </p>
+                      <p style={{ fontWeight: "600", margin: 0 }}>
+                        {selectedTable.pax} seats
+                      </p>
+                    </div>
+
+                    {bookings.find(
+                      (b) => b.tableId === selectedTable.id && b.date === today
+                    ) && (
+                      <div
+                        className="mb-md"
+                        style={{
+                          paddingBottom: "var(--spacing-md)",
+                          borderBottom: "1px solid var(--border-color)",
+                        }}
+                      >
+                        <p
+                          className="text-muted"
+                          style={{ fontSize: "12px", margin: 0 }}
                         >
-                          ✏️ Edit
-                        </button>
-                        <button
-                          className="btn btn-danger btn-full"
-                          onClick={() => handleDeleteTable(selectedTable.id)}
-                        >
-                          🗑️ Delete Table
-                        </button>
-                      </>
+                          Current Booking
+                        </p>
+                        <p style={{ fontWeight: "600", margin: 0 }}>
+                          {
+                            bookings.find(
+                              (b) =>
+                                b.tableId === selectedTable.id &&
+                                b.date === today
+                            )?.customerName
+                          }
+                        </p>
+                      </div>
                     )}
+
+                    {/* Action Buttons */}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--spacing-sm)",
+                      }}
+                    >
+                      <button
+                        className="btn btn-secondary btn-full"
+                        style={{ border: "1px solid var(--border-color)" }}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        className="btn btn-danger btn-full"
+                        onClick={() => handleDeleteTable(selectedTable.id)}
+                      >
+                        🗑️ Delete Table
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="card-content">
+                    <div
+                      className="mb-md"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
+                      <label
+                        htmlFor="tableNumber"
+                        className="text-muted"
+                        style={{ fontSize: "12px", margin: 0 }}
+                      >
+                        Table Number *
+                      </label>
+                      <input
+                        id="tableNumber"
+                        type="text"
+                        name="tableNumber"
+                        value={addedTable?.tableNumber}
+                        onChange={handleAddTableForm}
+                        placeholder="Enter table number"
+                        required
+                      />
+                    </div>
+                    <div
+                      className="mb-md"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
+                      <label
+                        htmlFor="tableType"
+                        className="text-muted"
+                        style={{ fontSize: "12px", margin: 0 }}
+                      >
+                        Type *
+                      </label>
+                      <input
+                        id="tableType"
+                        type="text"
+                        name="tableType"
+                        value={addedTable?.tableType}
+                        onChange={handleAddTableForm}
+                        placeholder="Enter table type"
+                        required
+                      />
+                    </div>
+                    <div
+                      className="mb-md"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
+                      <label
+                        htmlFor="pax"
+                        className="text-muted"
+                        style={{ fontSize: "12px", margin: 0 }}
+                      >
+                        Capacity *
+                      </label>
+                      <input
+                        id="pax"
+                        type="number"
+                        name="pax"
+                        value={addedTable?.pax}
+                        onChange={handleAddTableForm}
+                        placeholder="Enter pax"
+                        required
+                      />
+                    </div>
+                    {/* Action Buttons */}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--spacing-sm)",
+                      }}
+                    >
+                      <button
+                        className="btn btn-success btn-full"
+                        onClick={submitAddTable}
+                      >
+                        🗑️ Add Table
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
