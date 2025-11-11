@@ -424,6 +424,7 @@ export function SeatingPlan() {
                       required
                     />
                   </div>
+                  {/* test */}
                   <div
                     className="mb-md"
                     style={{
