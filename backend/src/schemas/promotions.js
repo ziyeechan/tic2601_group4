@@ -35,6 +35,10 @@ const Promotions = db.define(
     discount: {
       type: DataTypes.STRING(100),
     },
+    isActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
   },
   {
     freezeTableName: true,
