@@ -562,6 +562,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                     <button
                       className="btn btn-secondary btn-sm btn-full"
                       style={{ textAlign: "left" }}
+                      onClick={() => onViewChange("promotions")}
                     >
                       🎉 Promotions
                     </button>
