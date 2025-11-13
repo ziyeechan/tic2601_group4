@@ -2,6 +2,7 @@ const restaurantRoutes = require("./restaurantRoutes");
 const seatingRoutes = require("./seatingRoutes");
 const bookingRoutes = require("./bookingRoutes");
 const promotionRoutes = require("./promotionRoutes");
+const analyticsRoutes = require("./analyticsRoutes");
 
 module.exports = (router) => {
   // Default Endpoint
@@ -16,4 +17,5 @@ module.exports = (router) => {
   seatingRoutes(router);
   bookingRoutes(router);
   promotionRoutes(router);
+  analyticsRoutes(router);
 };
