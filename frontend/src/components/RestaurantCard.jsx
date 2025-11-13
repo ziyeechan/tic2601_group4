@@ -24,12 +24,13 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow }) {
 
       {/* Content */}
       <div className="card-content">
-        {/* Title and Price */}
+        {/* Title */}
         <div className="flex-between mb-md" style={{ alignItems: 'flex-start' }}>
-          <h3 style={{ margin: '0', flex: 1 }}>{restaurant.name}</h3>
-          <span className="badge badge-primary" style={{ marginLeft: 'var(--spacing-sm)' }}>
+          <h3 style={{ margin: '0', flex: 1 }}>{restaurant.restaurant_name}</h3>
+          {/* Decide whether to keep */}
+          {/* <span className="badge badge-primary" style={{ marginLeft: 'var(--spacing-sm)' }}>
             {restaurant.priceRange}
-          </span>
+          </span> */}
         </div>
 
         {/* Rating */}

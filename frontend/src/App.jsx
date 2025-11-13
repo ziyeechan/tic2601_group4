@@ -56,7 +56,27 @@ export default function App() {
       );
     }
 
+    if (filters.reviews) {
+      const selected = Number(filters.reviews);
+      filtered = filtered.filter(
+        (restaurant) => {
+          const rating = Number(restaurant.rating);
+          return rating >= selected && rating < selected + 1;
+        } 
+      );
+    }
+
     setFilteredRestaurants(filtered);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      search: "",
+      cuisine: "All Cuisines",
+      reviews: "",
+      promotion: ""
+    });
+    setFilteredRestaurants(restaurants);
   };
 
   const renderCurrentView = () => {
@@ -85,6 +105,7 @@ export default function App() {
                   filters={filters}
                   onFiltersChange={handleFiltersChange}
                   onApplyFilters={handleApplyFilters}
+                  onClearFilters={handleClearFilters}
                 />
               </div>
 

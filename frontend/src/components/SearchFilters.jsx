@@ -20,7 +20,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
+export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClearFilters }) {
   const cuisineOptions = [
     'All Cuisines',
     'French',
@@ -41,13 +41,14 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
   ];
 
   const reviewsOptions = [
-    '5 stars',
-    '4 stars',
-    '3 stars'
+    { label: '5 stars', value: 5 },
+    { label: '4 stars', value: 4 },
+    { label: '3 stars', value: 3 },
   ];
 
   const promotionOptions = [
-    'Yes',
+    { label: 'All', value: '' },
+    { label: 'Show promotion only', value: 'Yes' },
   ];
 
   const handleFilterChange = (key, value) => {
@@ -88,32 +89,39 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
               </option>
             ))}
           </select>
+        </div>
 
+        {/* Reviews Filter */}
+        <div className="form-group">
           <label htmlFor="reviews">⭐ Reviews</label>
+            <select
+              id="reviews"
+              value={filters.reviews || ""}
+              onChange={(e) => handleFilterChange('reviews', e.target.value ? Number(e.target.value) : '')}
+            >
+              <option value="">All Ratings</option>
+              {reviewsOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+        </div>
+        
+        {/* Promotion Filter */}
+        <div className="form-group">
+          <label htmlFor="promtion">🏷️ Promotion</label>
           <select
-            id="reviews"
-            value={filters.reviews}
-            onChange={(e) => handleFilterChange('reviews', e.target.value)}
+            id="promotion"
+            value={filters.promotion}
+            onChange={(e) => handleFilterChange('promotion', e.target.value)}
           >
-            {reviewsOptions.map((reviews) => (
-              <option key={reviews} value={reviews}>
-                {reviews}
+            {promotionOptions.map((opt) => (
+              <option key={opt.label} value={opt.value}>
+                {opt.label}
               </option>
             ))}
           </select>
-
-          {/* <label htmlFor="peviews">🏷️ Promotions</label>
-          <select
-            id="promotions"
-            value={filters.promotions}
-            onChange={(e) => handleFilterChange('promotions', e.target.value)}
-          >
-            {promotionsOptions.map((promotions) => (
-              <option key={promotions} value={promotions}>
-                {promotions}
-              </option>
-            ))}
-          </select> */}
         </div>
 
         {/* Apply Button */}
@@ -122,6 +130,14 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
           onClick={onApplyFilters}
         >
           Apply Filters
+        </button>
+
+        {/* Clear Filters */}
+        <button
+          className="btn btn-primary btn-full"
+          onClick={onClearFilters}
+        >
+          Clear Filters
         </button>
 
         <div style={{ marginTop: 'var(--spacing-md)', padding: 'var(--spacing-sm)', backgroundColor: 'var(--primary-light)', borderRadius: 'var(--radius-md)', fontSize: '12px', color: 'var(--text-dark)' }}>
