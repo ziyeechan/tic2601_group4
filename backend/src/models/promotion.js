@@ -1,7 +1,7 @@
 const { Promotions } = require("../schemas/promotions");
 
 module.exports.findAllPromotions = async () => {
-  const results = await Promotions.findAll({ where: { isActive: true } });
+  const results = await Promotions.findAll();
 
   return results;
 };
@@ -27,7 +27,6 @@ module.exports.createPromotions = async (promotionInfo, restaurantID) => {
     startAt: promotionInfo.startAt,
     endAt: promotionInfo.endAt,
     discount: promotionInfo.discount,
-    isActive: true,
     fkRestaurantId: restaurantID,
   });
 };
@@ -37,13 +36,6 @@ module.exports.updatePromotions = async (promotionID, meta) => {
     {
       ...meta,
     },
-    { where: { promotionId: promotionID } }
-  );
-};
-
-module.exports.expiredPromotions = async (promotionID) => {
-  await Promotions.update(
-    { isActive: false },
     { where: { promotionId: promotionID } }
   );
 };

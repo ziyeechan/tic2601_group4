@@ -141,22 +141,3 @@ module.exports.updatePromotions = async (req, res) => {
     console.log(err);
   }
 };
-
-module.exports.expiredPromotions = async (req, res) => {
-  try {
-    const promotionID = req.params.promotionID;
-
-    if (isNaN(promotionID))
-      return res.status(400).json({
-        message: "Invalid Parameter",
-      });
-
-    await expiredPromotions(promotionID);
-
-    return res.status(200).json({
-      message: "Promotions has been updated",
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};

@@ -17,12 +17,6 @@ module.exports = (router) => {
     promotionController.findPromotionsByRestaurantID
   );
 
-  // Endpoint to update promotion status to expired
-  router.put(
-    "/promotion/expired/:promotionID",
-    promotionController.expiredPromotions
-  );
-
   // Endpoint to update promotion by promotionID
   router.put("/promotion/:promotionID", promotionController.updatePromotions);
 
