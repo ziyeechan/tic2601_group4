@@ -3,7 +3,7 @@ module.exports = (router) => {
   // =================================== review Endpoints =================================================================
 
   // Endpoint to create review for restaurant
-  router.post("/review/:restaurantID", reviewController.createReviews);
+  router.post("/review/:restaurantID/:bookingID", reviewController.createReviews);
 
   // Endpoint to retrieve all reviews
   router.get(
@@ -12,7 +12,7 @@ module.exports = (router) => {
   );
 
   // Endpoint to get review by reviewID
-  router.get("/review/:reviewID", reviewController.findReviewByID);
+  router.get("/review/:reviewID", reviewController.findReviewsByID);
 
   // Endpoint to get all reviews for restaurant_id
   router.get(
@@ -29,13 +29,13 @@ module.exports = (router) => {
   // Endpoint to update review by reviewId
   router.put(
     "/review/:reviewID",
-    reviewController.updatereview
+    reviewController.updateReviews
   );
 
   // Endpoint to delete existing review
   router.delete(
     "/review/:reviewID",
-    reviewController.deleteReviewByPK
+    reviewController.deleteReviews
   );
 
   // =================================== End of Restaurant Endpoints =================================================================

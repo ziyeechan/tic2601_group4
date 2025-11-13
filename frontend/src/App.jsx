@@ -32,6 +32,9 @@ export default function App() {
   //Promotion table
   const [promotions, setPromotions] = useState(false);
 
+  //Review table
+  const [reviews, setReviews] = useState(false);
+
   useEffect(() => {
     //Fetch restaurants
     axios
@@ -48,10 +51,21 @@ export default function App() {
     
     // Fetch promotions
     axios
-      .get("/api/promotion/all")
+      .get(`/api/promotion/all`)
       .then((res) => {
         console.log("promotion", res.data);
         setPromotions(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    
+    // Fetch reviews
+    axios
+      .get(`/api/review/all`)
+      .then((res) => {
+        console.log("review", res.data);
+        setReviews(res.data);
       })
       .catch((err) => {
         console.error(err);
@@ -104,12 +118,28 @@ export default function App() {
     //Rating filter
     if (filters.reviews) {
       const selected = Number(filters.reviews);
-      filtered = filtered.filter(
-        (restaurant) => {
-          const rating = Number(restaurant.rating);
-          return rating >= selected && rating < selected + 1;
-        } 
-      );
+      filtered = filtered.filter((restaurant) => {
+        // Get reviews for this restaurant
+        const restaurantReviews = reviews.filter(
+          (review) => review.fkRestaurantId === restaurant.restaurantId
+        );
+
+        if (restaurantReviews.length === 0) return false;
+
+        // Extract valid ratings
+        const ratings = restaurantReviews
+          .map((r) => Number(r.rating))
+          .filter((r) => !Number.isNaN(r));
+
+        if (ratings.length === 0) return false;
+
+        // Compute average
+        const averageRating =
+          ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+
+        // Filter by selected rating range
+        return averageRating >= selected && averageRating < selected + 1;
+      });
     }
 
     //Promotion filter

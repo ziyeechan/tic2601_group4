@@ -19,16 +19,16 @@ module.exports.findAllReviews = async (req, res) => {
 
 module.exports.findReviewsByID = async (req, res) => {
   try {
-    const reviewsID = parseInt(req.params.reviewsID);
-    if (isNaN(reviewsID))
+    const reviewID = parseInt(req.params.reviewID);
+    if (isNaN(reviewID))
       return res.status(400).json({
         message: "Invalid Parameter",
       });
 
-    const reviews = await findReviewsByPK(reviewsID);
+    const review = await findReviewsByPK(reviewID);
 
     return res.status(200).json({
-      reviews,
+      review,
     });
   } catch (err) {
     console.log(err);
@@ -37,7 +37,7 @@ module.exports.findReviewsByID = async (req, res) => {
 
 module.exports.findReviewsByRestaurantID = async (req, res) => {
   try {
-    const restaurantID = req.params.restaurantID;
+    const restaurantID = parseInt(req.params.restaurantID);
 
     if (isNaN(restaurantID))
       return res.status(400).json({
@@ -55,7 +55,7 @@ module.exports.findReviewsByRestaurantID = async (req, res) => {
 
 module.exports.findReviewsByBookingID = async (req, res) => {
   try {
-    const bookingID = req.params.bookingID;
+    const bookingID = parseInt(req.params.bookingID);
 
     if (isNaN(bookingID))
       return res.status(400).json({
@@ -138,7 +138,7 @@ module.exports.updateReviews = async (req, res) => {
 
 module.exports.deleteReviews = async (req, res) => {
   try {
-    const reviewID = req.params.reviewID;
+    const reviewID = parseInt(req.params.reviewID);
 
     if (isNaN(reviewID))
       return res.status(400).json({

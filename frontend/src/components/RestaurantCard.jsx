@@ -31,11 +31,21 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow }) {
 
         {/* Rating */}
         <div className="flex gap-sm mb-md" style={{ alignItems: 'center' }}>
-          <span>⭐</span>
-          <span style={{ fontWeight: '600' }}>{restaurant.rating}</span>
-          <span className="text-muted" style={{ fontSize: '14px' }}>
-            ({restaurant.reviewCount} reviews)
-          </span>
+          {restaurant.reviewCount > 0 ? (
+            <>
+              <span>⭐</span>
+              <span style={{ fontWeight: "600" }}>
+                {restaurant.averageRating.toFixed(1)}
+              </span>
+              <span className="text-muted" style={{ fontSize: "14px" }}>
+                ({restaurant.reviewCount} {restaurant.reviewCount === 1 ? "review" : "reviews"})
+              </span>
+            </>
+          ) : (
+            <span className="text-muted" style={{ fontSize: "14px" }}>
+              ⭐ No ratings yet
+            </span>
+          )}
         </div>
 
         {/* Cuisine Badge */}

@@ -3,7 +3,7 @@ const { Restaurants } = require("../src/schemas/restaurants.js");
 const { SeatingPlans } = require("../src/schemas/seatingPlans.js");
 const { Bookings } = require("../src/schemas/bookings.js");
 const { Promotions } = require("../src/schemas/promotions.js");
-//const { Reviews } = require("../src/schemas/reviews.js");
+const { Reviews } = require("../src/schemas/reviews.js");
 
 
 module.exports.LoadData = async () => {
@@ -242,10 +242,35 @@ module.exports.LoadData = async () => {
       },
     ]);
 
+    await Reviews.bulkCreate([
+        {
+          // Review for John Smith at Pasta Delights
+          rating: 5,
+          comment:
+            "Amazing dinner experience. The food was excellent and the staff were very attentive. The window table request was fulfilled perfectly.",
+          fkBookingId: 1, 
+          fkRestaurantId: 1, 
+        },
+        {
+          // Review for Sarah Johnson at The Garden Bistro
+          rating: 4,
+          comment:
+            "Fresh sushi and a nice atmosphere. Service was a little slow, but overall we really enjoyed our meal.",
+          fkBookingId: 2,  
+          fkRestaurantId: 2,
+        },
+        {
+          // Review for Michael Chen at Mama Rosa's Trattoria
+          rating: 5,
+          comment:
+            "Great Indian food with rich flavors. Really appreciated the vegetarian options and the staff were very accommodating.",
+          fkBookingId: 3,   
+          fkRestaurantId: 4, 
+        },
+    ]);
+
       console.log("Initial Data Created!");
     } catch (err) {
       console.log("Something went wrong! " + err);
   }
-  
-
 };
