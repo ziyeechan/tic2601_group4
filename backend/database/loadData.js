@@ -2,6 +2,7 @@ const { Addresses } = require("../src/schemas/addresses.js");
 const { Restaurants } = require("../src/schemas/restaurants.js");
 const { SeatingPlans } = require("../src/schemas/seatingPlans.js");
 const { Bookings } = require("../src/schemas/bookings.js");
+const { Reviews } = require("../src/schemas/reviews.js");
 
 module.exports.LoadData = async () => {
   try {

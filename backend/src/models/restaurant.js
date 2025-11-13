@@ -1,5 +1,11 @@
 const { Restaurants } = require("../schemas/restaurants.js");
 
+module.exports.findAllRestaurants = async (name) => {
+  const results = await Restaurants.findAll();
+
+  return results;
+};
+
 module.exports.findRestaurantByName = async (name) => {
   const results = await Restaurants.findOne({
     where: {

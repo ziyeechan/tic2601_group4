@@ -13,7 +13,7 @@
 /**
  * RESTAURANTS MOCK DATA
  *
- * Backend schema only has: restaurant_id, restaurant_name, description, cuisine, fk_address_id
+ * Backend schema only has: restaurant_id, restaurantName, description, cuisine, fk_address_id
  * Frontend needs more data - these fields are NOT in actual backend:
  * - priceRange (need separate field or calculate from menu)
  * - rating (calculated from reviews table)
@@ -29,7 +29,7 @@ export const mockRestaurants = [
   {
     // BACKEND FIELDS
     restaurant_id: 1,
-    restaurant_name: 'The Garden Bistro',
+    restaurantName: 'The Garden Bistro',
     cuisine: 'French',
     description: 'An elegant French bistro offering classic dishes with a modern twist.',
     fk_address_id: 1,
@@ -58,7 +58,7 @@ export const mockRestaurants = [
   {
     // BACKEND FIELDS
     restaurant_id: 2,
-    restaurant_name: 'Sakura Sushi & Grill',
+    restaurantName: 'Sakura Sushi & Grill',
     cuisine: 'Japanese',
     description: 'Fresh sushi and authentic Japanese cuisine in a contemporary setting.',
     fk_address_id: 2,
@@ -86,7 +86,7 @@ export const mockRestaurants = [
   {
     // BACKEND FIELDS
     restaurant_id: 3,
-    restaurant_name: 'Mama Rosa\'s Trattoria',
+    restaurantName: 'Mama Rosa\'s Trattoria',
     cuisine: 'Italian',
     description: 'Traditional Italian family recipes passed down through generations.',
     fk_address_id: 3,
@@ -114,7 +114,7 @@ export const mockRestaurants = [
   {
     // BACKEND FIELDS
     restaurant_id: 4,
-    restaurant_name: 'Spice Route',
+    restaurantName: 'Spice Route',
     cuisine: 'Indian',
     description: 'Authentic Indian cuisine with aromatic spices and traditional cooking methods.',
     fk_address_id: 4,

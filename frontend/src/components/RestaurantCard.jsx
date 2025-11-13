@@ -26,11 +26,7 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow }) {
       <div className="card-content">
         {/* Title */}
         <div className="flex-between mb-md" style={{ alignItems: 'flex-start' }}>
-          <h3 style={{ margin: '0', flex: 1 }}>{restaurant.restaurant_name}</h3>
-          {/* Decide whether to keep */}
-          {/* <span className="badge badge-primary" style={{ marginLeft: 'var(--spacing-sm)' }}>
-            {restaurant.priceRange}
-          </span> */}
+          <h3 style={{ margin: '0', flex: 1 }}>{restaurant.restaurantName}</h3>
         </div>
 
         {/* Rating */}

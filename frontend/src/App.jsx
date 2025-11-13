@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState , useEffect } from "react";
 import "./styles.css";
+import axios from "axios";
 import { Header } from "./components/Header";
 import { RestaurantCard } from "./components/RestaurantCard";
 import { SearchFilters } from "./components/SearchFilters";
@@ -13,16 +14,34 @@ import { RestaurantManagement } from "./components/RestaurantManagement2";
 import { mockRestaurants } from "./mockData";
 
 export default function App() {
+
+
   const [currentView, setCurrentView] = useState("home");
   const [userRole, setUserRole] = useState("customer");
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
-  const [restaurants, setRestaurants] = useState(mockRestaurants);
-  const [filteredRestaurants, setFilteredRestaurants] =
-    useState(mockRestaurants);
-
+  const [restaurants, setRestaurants] = useState(false);
+  const [filteredRestaurants, setFilteredRestaurants] = useState(false);
   const [filters, setFilters] = useState({
     cuisine: "All Cuisines",
+    search: "",
+    reviews: "",
+    promotion: "",
   });
+
+  
+  useEffect(() => {
+    axios
+      .get(`/api/restaurant/all`)
+      .then((res) => {
+        console.log(res.data);
+        setRestaurants(res.data);
+        setSelectedRestaurant(res.data);
+        setFilteredRestaurants(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []); 
 
   const handleViewChange = (view) => {
     setCurrentView(view);
@@ -50,6 +69,15 @@ export default function App() {
   const handleApplyFilters = () => {
     let filtered = [...restaurants];
 
+    if (filters.search && filters.search.trim() !== "") {
+      const term = filters.search.trim().toLowerCase();
+
+      filtered = filtered.filter((restaurant) => {
+        const name = (restaurant.restaurantName || "").toLowerCase();
+        return name.includes(term);
+      });
+    }
+
     if (filters.cuisine !== "All Cuisines") {
       filtered = filtered.filter(
         (restaurant) => restaurant.cuisine === filters.cuisine
@@ -66,13 +94,17 @@ export default function App() {
       );
     }
 
+    if (filters.promotion) {
+      
+    }
+
     setFilteredRestaurants(filtered);
   };
 
   const handleClearFilters = () => {
     setFilters({
-      search: "",
       cuisine: "All Cuisines",
+      search: "",
       reviews: "",
       promotion: ""
     });
@@ -138,7 +170,7 @@ export default function App() {
                   >
                     {filteredRestaurants.map((restaurant) => (
                       <RestaurantCard
-                        key={restaurant.restaurant_id}
+                        key={restaurant.restaurantId}
                         restaurant={restaurant}
                         onViewDetails={handleRestaurantSelect}
                         onBookNow={handleBookNow}

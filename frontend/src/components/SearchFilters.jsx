@@ -73,6 +73,11 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClea
             placeholder="Enter restaurant name or country"
             value={filters.search || ""}
             onChange={(e) => handleFilterChange("search", e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                onApplyFilters();
+              }
+            }}
           />
         </div>
         {/* Cuisine Filter - Only filter supported by backend */}
