@@ -11,7 +11,7 @@ module.exports = (router) => {
     promotionController.findAllPromotions
   );
 
-  // Endpoint to get promotion by promotionID for restaurant_id
+  // Endpoint to get promotion by promotionID
   router.get("/promotion/:promotionID", promotionController.findPromotionByID);
 
   // Endpoint to get all promotions for restaurant_id
