@@ -17,6 +17,9 @@
  * These have been removed to align with actual backend capabilities.
  */
 
+import React, { useState } from "react";
+import axios from "axios";
+
 export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
   const cuisineOptions = [
     'All Cuisines',
@@ -29,6 +32,22 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
     'Thai',
     'American',
     'Mediterranean'
+  ];
+
+  const menuTypeOptions = [
+    'Halal',
+    'Vegan',
+    'Vegetarian'
+  ];
+
+  const reviewsOptions = [
+    '5 stars',
+    '4 stars',
+    '3 stars'
+  ];
+
+  const promotionOptions = [
+    'Yes',
   ];
 
   const handleFilterChange = (key, value) => {
@@ -44,9 +63,20 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
         <h4 className="card-title">🔍 Search Filters</h4>
       </div>
       <div className="card-content">
+        {/* 🔍 Search Bar */}
+        <div className="form-group">
+          <label htmlFor="search">Search bar</label>
+          <input
+            type="text"
+            id="search"
+            placeholder="Enter restaurant name or country"
+            value={filters.search || ""}
+            onChange={(e) => handleFilterChange("search", e.target.value)}
+          />
+        </div>
         {/* Cuisine Filter - Only filter supported by backend */}
         <div className="form-group">
-          <label htmlFor="cuisine">🍽️ Cuisine Type</label>
+          <label htmlFor="cuisine">🍽️ Cuisine</label>
           <select
             id="cuisine"
             value={filters.cuisine}
@@ -58,6 +88,32 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
               </option>
             ))}
           </select>
+
+          <label htmlFor="reviews">⭐ Reviews</label>
+          <select
+            id="reviews"
+            value={filters.reviews}
+            onChange={(e) => handleFilterChange('reviews', e.target.value)}
+          >
+            {reviewsOptions.map((reviews) => (
+              <option key={reviews} value={reviews}>
+                {reviews}
+              </option>
+            ))}
+          </select>
+
+          {/* <label htmlFor="peviews">🏷️ Promotions</label>
+          <select
+            id="promotions"
+            value={filters.promotions}
+            onChange={(e) => handleFilterChange('promotions', e.target.value)}
+          >
+            {promotionsOptions.map((promotions) => (
+              <option key={promotions} value={promotions}>
+                {promotions}
+              </option>
+            ))}
+          </select> */}
         </div>
 
         {/* Apply Button */}
