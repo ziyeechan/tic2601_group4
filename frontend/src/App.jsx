@@ -11,13 +11,14 @@ import { AdminBookings } from "./components/AdminBookings";
 import { SeatingPlan } from "./components/SeatingPlan2";
 import { Analytics } from "./components/Analytics";
 import { RestaurantManagement } from "./components/RestaurantManagement2";
-import { mockRestaurants } from "./mockData";
 
 export default function App() {
 
 
   const [currentView, setCurrentView] = useState("home");
   const [userRole, setUserRole] = useState("customer");
+  
+  //Restaurants table
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [restaurants, setRestaurants] = useState(false);
   const [filteredRestaurants, setFilteredRestaurants] = useState(false);
@@ -28,8 +29,11 @@ export default function App() {
     promotion: "",
   });
 
-  
+  //Promotion table
+  const [promotions, setPromotions] = useState(false);
+
   useEffect(() => {
+    //Fetch restaurants
     axios
       .get(`/api/restaurant/all`)
       .then((res) => {
@@ -37,6 +41,17 @@ export default function App() {
         setRestaurants(res.data);
         setSelectedRestaurant(res.data);
         setFilteredRestaurants(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+    
+    // Fetch promotions
+    axios
+      .get("/api/promotion/all")
+      .then((res) => {
+        console.log("promotion", res.data);
+        setPromotions(res.data);
       })
       .catch((err) => {
         console.error(err);
@@ -69,6 +84,7 @@ export default function App() {
   const handleApplyFilters = () => {
     let filtered = [...restaurants];
 
+    //Search bar filter - yet to add location
     if (filters.search && filters.search.trim() !== "") {
       const term = filters.search.trim().toLowerCase();
 
@@ -78,12 +94,14 @@ export default function App() {
       });
     }
 
+    //Cuisine filter
     if (filters.cuisine !== "All Cuisines") {
       filtered = filtered.filter(
         (restaurant) => restaurant.cuisine === filters.cuisine
       );
     }
 
+    //Rating filter
     if (filters.reviews) {
       const selected = Number(filters.reviews);
       filtered = filtered.filter(
@@ -94,8 +112,16 @@ export default function App() {
       );
     }
 
-    if (filters.promotion) {
-      
+    //Promotion filter
+    if (filters.promotion == "Yes") {
+      const promoRestaurantIds = new Set(
+        promotions
+          .filter((promo) => promo.isActive) // only active promotions
+          .map((promo) => promo.fkRestaurantId)
+      );
+      filtered = filtered.filter((restaurant) => {
+        return promoRestaurantIds.has(restaurant.restaurantId)
+      });
     }
 
     setFilteredRestaurants(filtered);

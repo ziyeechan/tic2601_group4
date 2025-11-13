@@ -5,6 +5,12 @@ module.exports = (router) => {
   // Endpoint to create promotion for restaurant
   router.post("/promotion/:restaurantID", promotionController.createPromotions);
 
+  // Endpoint to retrieve all promotions
+  router.get(
+    "/promotion/all",
+    promotionController.findAllPromotions
+  );
+
   // Endpoint to get promotion by promotionID for restaurant_id
   router.get("/promotion/:promotionID", promotionController.findPromotionByID);
 

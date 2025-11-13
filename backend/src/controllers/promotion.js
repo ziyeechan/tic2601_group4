@@ -5,6 +5,7 @@ const {
   updatePromotions,
   expiredPromotions,
   deletePromotions,
+  findAllPromotions,
 } = require("../models/promotion");
 
 module.exports.createPromotions = async (req, res) => {
@@ -39,6 +40,16 @@ module.exports.createPromotions = async (req, res) => {
     console.log(err);
   }
 };
+
+module.exports.findAllPromotions = async (req, res) => {
+  try {
+    const promotions = await findAllPromotions();
+    return res.status(200).json(promotions);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 
 module.exports.findPromotionsByRestaurantID = async (req, res) => {
   try {

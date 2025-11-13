@@ -1,5 +1,11 @@
 const { Promotions } = require("../schemas/promotions");
 
+module.exports.findAllPromotions = async (name) => {
+  const results = await Promotions.findAll();
+
+  return results;
+};
+
 module.exports.findPromotionsByRestaurantID = async (restaurantID) => {
   const results = await Promotions.findAll({
     where: { fkRestaurantId: restaurantID },
