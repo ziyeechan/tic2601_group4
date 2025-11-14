@@ -14,6 +14,8 @@ const port = 3000;
 const app = express();
 const router = express.Router();
 
+// set to true to seed the database with dummy data, once seeded,
+// set back to false, else it will reset the data on every load
 const onFirstLoad = false;
 
 app.use(express.json());
