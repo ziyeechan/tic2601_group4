@@ -2,6 +2,7 @@ const { Addresses } = require("../src/schemas/addresses.js");
 const { Restaurants } = require("../src/schemas/restaurants.js");
 const { SeatingPlans } = require("../src/schemas/seatingPlans.js");
 const { Bookings } = require("../src/schemas/bookings.js");
+const { Promotions } = require("../src/schemas/promotions.js");
 
 module.exports.LoadData = async () => {
   try {
@@ -168,6 +169,54 @@ module.exports.LoadData = async () => {
         status: "confirmed",
         fkRestaurantId: 4,
         fkSeatingId: 5,
+      },
+    ]);
+
+    await Promotions.bulkCreate([
+      {
+        description: "20% off on all main courses",
+        discount: "LPRDINE20",
+        startAt: "2024-11-01",
+        endAt: "2024-11-30",
+        termsNCond: "Valid for dine-in only. Not applicable to beverages.",
+        discount: "20%",
+        fkRestaurantId: 1,
+      },
+      {
+        description: "Buy 1 sushi roll, get 1 free",
+        discount: "SUSHI2FOR1",
+        startAt: "2024-11-05",
+        endAt: "2024-11-20",
+        termsNCond: "Valid on selected menu items only. One per customer.",
+        discount: "BOGO",
+        fkRestaurantId: 3,
+      },
+      {
+        description: "Happy Hour: 50% off appetizers 5-7 PM",
+        discount: "HAPPYHOUR50",
+        startAt: "2024-11-01",
+        endAt: "2024-12-31",
+        termsNCond: "Valid Monday to Friday, 5-7 PM. Dine-in only.",
+        discount: "50%",
+        fkRestaurantId: 2,
+      },
+      {
+        description: "Birthday special: Complimentary dessert",
+        discount: "BDAY2024",
+        startAt: "2024-11-01",
+        endAt: "2024-12-31",
+        termsNCond: "Valid on your birthday month. Must show valid ID.",
+        discount: "Free Dessert",
+        fkRestaurantId: 5,
+      },
+      {
+        description: "Family Combo Package: 30% discount",
+        discount: "FAMILY30",
+        startAt: "2024-11-10",
+        endAt: "2024-11-25",
+        termsNCond: "Valid for 4+ people. Not combinable with other offers.",
+        discount: "30%",
+        fkRestaurantId: 4,
       },
     ]);
 

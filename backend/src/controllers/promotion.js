@@ -1,4 +1,5 @@
 const {
+  findAllPromotions,
   findPromotionsByPK,
   findPromotionsByRestaurantID,
   createPromotions,
@@ -6,6 +7,18 @@ const {
   expiredPromotions,
   deletePromotions,
 } = require("../models/promotion");
+
+module.exports.findAllPromotions = async (req, res) => {
+  try {
+    const results = await findAllPromotions();
+
+    return res.status(200).json({
+      promotion: results,
+    });
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 module.exports.createPromotions = async (req, res) => {
   try {
@@ -123,25 +136,6 @@ module.exports.updatePromotions = async (req, res) => {
 
     return res.status(200).json({
       message: "Promotion has been updated",
-    });
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-module.exports.expiredPromotions = async (req, res) => {
-  try {
-    const promotionID = req.params.promotionID;
-
-    if (isNaN(promotionID))
-      return res.status(400).json({
-        message: "Invalid Parameter",
-      });
-
-    await expiredPromotions(promotionID);
-
-    return res.status(200).json({
-      message: "Promotions has been updated",
     });
   } catch (err) {
     console.log(err);

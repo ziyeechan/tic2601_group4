@@ -5,19 +5,16 @@ module.exports = (router) => {
   // Endpoint to create promotion for restaurant
   router.post("/promotion/:restaurantID", promotionController.createPromotions);
 
-  // Endpoint to get promotion by promotionID for restaurant_id
+  // Endpoint to get promotion by promotionID
   router.get("/promotion/:promotionID", promotionController.findPromotionByID);
 
-  // Endpoint to get all promotions for restaurant_id
+  // Endpoint to get all promotions
+  router.get("/promotion", promotionController.findAllPromotions);
+
+  // Endpoint to get all promotions for restaurantID
   router.get(
     "/promotion/restaurant/:restaurantID",
     promotionController.findPromotionsByRestaurantID
-  );
-
-  // Endpoint to update promotion status to expired
-  router.put(
-    "/promotion/expired/:promotionID",
-    promotionController.expiredPromotions
   );
 
   // Endpoint to update promotion by promotionID

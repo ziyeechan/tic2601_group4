@@ -11,6 +11,7 @@ import { SeatingPlan } from "./components/SeatingPlan2";
 import { Analytics } from "./components/Analytics";
 import { RestaurantManagement } from "./components/RestaurantManagement2";
 import { mockRestaurants } from "./mockData";
+import { Promotions } from "./components/Promotions";
 
 export default function App() {
   const [currentView, setCurrentView] = useState("home");
@@ -150,6 +151,22 @@ export default function App() {
             />
           </div>
         );
+
+      case "promotions":
+        return (
+          <div
+            className="container"
+            style={{
+              paddingTop: "var(--spacing-lg)",
+              paddingBottom: "var(--spacing-lg)",
+            }}
+          >
+            <Promotions
+              onBack={() => setCurrentView("home")}
+            />
+          </div>
+        );
+
       // return selectedRestaurant ? (
       //   <div
       //     className="container"
