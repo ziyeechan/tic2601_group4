@@ -46,15 +46,17 @@ const Bookings = db.define(
       type: DataTypes.STRING(50),
       default: "confirmed",
       validate: {
-        isIn: [[
-          "pending",
-          "confirmed",
-          "seated",
-          "completed",
-          "cancelled",
-          "no_show",
-          "cancelled",
-        ]],
+        isIn: [
+          [
+            "pending",
+            "confirmed",
+            "seated",
+            "completed",
+            "cancelled",
+            "no_show",
+            "cancelled",
+          ],
+        ],
       },
     },
     fkSeatingId: {
@@ -79,5 +81,8 @@ const Bookings = db.define(
 
 Restaurants.hasMany(Bookings, { foreignKey: "fkRestaurantId" });
 Bookings.belongsTo(Restaurants, { foreignKey: "fkRestaurantId" });
+
+SeatingPlans.hasMany(Bookings, { foreignKey: "fkSeatingId" });
+Bookings.belongsTo(SeatingPlans, { foreignKey: "fkSeatingId" });
 
 module.exports = { Bookings };

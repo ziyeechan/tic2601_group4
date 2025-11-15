@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { promotionAPI } from "../api";
 export function Promotions({ onBack }) {
   const [promotions, setPromotions] = useState(null);
   const [refresh, setRefresh] = useState(false);
@@ -10,10 +10,11 @@ export function Promotions({ onBack }) {
   const [expiredPromos, setExpiredPromos] = useState([]);
 
   useEffect(() => {
-    axios
-      .get(`/api/promotion`)
+    // Get all promotions for restaurant with ID 1
+    promotionAPI
+      .getPromotionsByRestaurant(1)
       .then((res) => {
-        setPromotions(res.data.promotion);
+        setPromotions(res.data || []);
         setRefresh(true);
       })
       .catch((err) => {

@@ -1,7 +1,20 @@
 import { mockMenuItems } from '../mockData';
 
 export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
-  const menuItems = mockMenuItems.filter(item => item.restaurantId === restaurant.id);
+  const menuItems = mockMenuItems.filter(item => item.restaurantId === restaurant.restaurantId);
+
+  // Default mock data for missing fields
+  const defaultAmenities = ['Wifi', 'Parking', 'Wheelchair Accessible', 'Reservations'];
+  const defaultOpeningHours = {
+    Monday: '10:00 AM - 10:00 PM',
+    Tuesday: '10:00 AM - 10:00 PM',
+    Wednesday: '10:00 AM - 10:00 PM',
+    Thursday: '10:00 AM - 10:00 PM',
+    Friday: '10:00 AM - 11:00 PM',
+    Saturday: '11:00 AM - 11:00 PM',
+    Sunday: '11:00 AM - 10:00 PM',
+  };
+  const defaultTimeSlots = ['12:00 PM', '12:30 PM', '1:00 PM', '1:30 PM', '6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM'];
 
   const getAllergenBadge = (allergen) => {
     const colors = {
@@ -40,22 +53,22 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
             <div className="card-content">
               <div className="flex-between mb-md" style={{ alignItems: 'flex-start' }}>
                 <div>
-                  <h2 style={{ margin: 0, marginBottom: 'var(--spacing-sm)' }}>{restaurant.name}</h2>
-                  <p className="text-muted" style={{ margin: 0 }}>{restaurant.cuisine} • {restaurant.priceRange}</p>
+                  <h2 style={{ margin: 0, marginBottom: 'var(--spacing-sm)' }}>{restaurant.restaurantName}</h2>
+                  <p className="text-muted" style={{ margin: 0 }}>{restaurant.cuisine || 'Cuisine Not Specified'}</p>
                 </div>
               </div>
 
               {/* Rating */}
               <div className="flex gap-md mb-md" style={{ alignItems: 'center' }}>
-                <div style={{ fontSize: '20px' }}>⭐ {restaurant.rating}</div>
-                <div className="text-muted">({restaurant.reviewCount} reviews)</div>
+                <div style={{ fontSize: '20px' }}>⭐ N/A</div>
+                <div className="text-muted">(Check reviews for ratings)</div>
               </div>
 
               {/* Amenities */}
               <div style={{ marginBottom: 'var(--spacing-md)' }}>
                 <h5 style={{ marginBottom: 'var(--spacing-sm)' }}>Amenities:</h5>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--spacing-sm)' }}>
-                  {restaurant.amenities.map((amenity) => (
+                  {(restaurant.amenities || defaultAmenities).map((amenity) => (
                     <span key={amenity} className="badge badge-primary">
                       {amenity}
                     </span>
@@ -95,7 +108,7 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
               <h4 className="card-title">Opening Hours</h4>
             </div>
             <div className="card-content">
-              {Object.entries(restaurant.openingHours).map(([day, hours]) => (
+              {Object.entries(restaurant.openingHours || defaultOpeningHours).map(([day, hours]) => (
                 <div key={day} className="flex-between mb-md" style={{ paddingBottom: 'var(--spacing-md)', borderBottom: '1px solid var(--border-color)' }}>
                   <span style={{ fontWeight: '500' }}>{day}</span>
                   <span className="text-muted">{hours}</span>
@@ -114,7 +127,7 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
             </div>
             <div className="card-content">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--spacing-sm)' }}>
-                {restaurant.availableTimeSlots.map((time) => (
+                {(restaurant.availableTimeSlots || defaultTimeSlots).map((time) => (
                   <button
                     key={time}
                     className="btn btn-secondary"

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import { restaurantAPI } from "../api";
 
 export function RestaurantManagement({ onBack, onViewChange }) {
   const [restaurant, setRestaurant] = useState(null);
@@ -10,8 +10,8 @@ export function RestaurantManagement({ onBack, onViewChange }) {
   const [editedAddress, setEditedAddress] = useState({ ...address });
 
   useEffect(() => {
-    axios
-      .get(`/api/restaurant/id/${1}`)
+    restaurantAPI
+      .getRestaurantById(1)
       .then((res) => {
         const { address, restaurant } = res.data;
         setAddress({
@@ -80,13 +80,13 @@ export function RestaurantManagement({ onBack, onViewChange }) {
         city: editedAddress.city,
         postalCode: editedAddress.postalCode,
       };
-      axios
-        .put(`/api/restaurant/${restaurant.restaurant_id}`, data)
+      restaurantAPI
+        .updateRestaurant(restaurant.restaurantId || restaurant.restaurant_id, data)
         .then((res) => {
           console.log(res);
           Toast.fire({
             icon: "success",
-            title: res.data,
+            title: res.data.message || "Restaurant updated successfully",
           });
         });
       setRestaurant({ ...editedRestaurant });
