@@ -35,6 +35,14 @@ const Promotions = db.define(
     discount: {
       type: DataTypes.STRING(100),
     },
+    fkRestaurantId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Restaurants,
+        key: "restaurantId",
+      },
+    },
   },
   {
     freezeTableName: true,
