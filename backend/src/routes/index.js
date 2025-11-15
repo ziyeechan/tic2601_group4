@@ -2,6 +2,7 @@ const restaurantRoutes = require("./restaurantRoutes");
 const seatingRoutes = require("./seatingRoutes");
 const bookingRoutes = require("./bookingRoutes");
 const promotionRoutes = require("./promotionRoutes");
+const analyticsRoutes = require("./analyticsRoutes");
 const reviewRoutes = require("./reviewRoutes");
 
 module.exports = (router) => {
@@ -18,4 +19,5 @@ module.exports = (router) => {
   bookingRoutes(router);
   promotionRoutes(router);
   reviewRoutes(router);
+  analyticsRoutes(router);
 };
