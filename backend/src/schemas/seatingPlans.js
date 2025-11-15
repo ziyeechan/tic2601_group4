@@ -29,6 +29,14 @@ const SeatingPlans = db.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    fkRestaurantId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Restaurants,
+        key: "restaurantId",
+      },
+    },
   },
   {
     freezeTableName: true,
