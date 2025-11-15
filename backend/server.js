@@ -14,7 +14,7 @@ const port = 3000;
 const app = express();
 const router = express.Router();
 
-const onFirstLoad = false;
+const onFirstLoad = true;
 
 app.use(express.json());
 app.use(router);
