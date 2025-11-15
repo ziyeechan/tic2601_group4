@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { seatingAPI } from "../api";
 import { mockTables, mockBookings } from "../mockData";
 
 export function SeatingPlan() {
@@ -55,8 +55,8 @@ export function SeatingPlan() {
 
   // Endpoint to grab seating plan data
   useEffect(() => {
-    axios.get(`/api/seating/${1}`).then((res) => {
-      setTables(formatTableData(res.data.results));
+    seatingAPI.getSeatingPlansByRestaurant(1).then((res) => {
+      setTables(formatTableData(res.data.results || res.data));
       setRefresh(true);
     });
   }, [refresh]);
@@ -100,8 +100,8 @@ export function SeatingPlan() {
   // Handle delete table
   const handleDeleteTable = async (tableId) => {
     if (window.confirm("Are you sure you want to delete this table?")) {
-      await axios
-        .delete(`/api/seating/${tableId}`)
+      await seatingAPI
+        .deleteSeatingPlan(tableId)
         .then((results) => console.log("sucess"))
         .catch((error) => console.error(error));
       setRefresh(false);
@@ -134,8 +134,8 @@ export function SeatingPlan() {
 
   // Submit table data when add table form is submitted
   const submitAddTable = async () => {
-    await axios
-      .post(`/api/seating/${1}`, selectedTable)
+    await seatingAPI
+      .createSeatingPlan(1, selectedTable)
       .then((res) => {
         console.log("success");
       })
@@ -150,8 +150,8 @@ export function SeatingPlan() {
   // Submit table data when edit table form is submitted
   const submitEditTable = async (tableId) => {
     console.log(selectedTable);
-    await axios
-      .put(`/api/seating/${tableId}`, selectedTable)
+    await seatingAPI
+      .updateSeatingPlan(tableId, selectedTable)
       .then((res) => {
         console.log(res);
       })

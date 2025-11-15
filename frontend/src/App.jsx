@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./styles.css";
-import axios from "axios";
+import { restaurantAPI, promotionAPI, reviewAPI } from "./api";
 import { Header } from "./components/Header";
 import { RestaurantCard } from "./components/RestaurantCard";
 import { SearchFilters } from "./components/SearchFilters";
@@ -11,7 +11,6 @@ import { AdminBookings } from "./components/AdminBookings";
 import { SeatingPlan } from "./components/SeatingPlan2";
 import { Analytics } from "./components/Analytics";
 import { RestaurantManagement } from "./components/RestaurantManagement2";
-import { mockRestaurants } from "./mockData";
 import { Promotions } from "./components/Promotions";
 
 export default function App() {
@@ -37,8 +36,8 @@ export default function App() {
 
   useEffect(() => {
     //Fetch restaurants
-    axios
-      .get(`/api/restaurant/all`)
+    restaurantAPI
+      .getAllRestaurants()
       .then((res) => {
         console.log(res.data);
         setRestaurants(res.data);
@@ -50,8 +49,8 @@ export default function App() {
       });
 
     // Fetch promotions
-    axios
-      .get(`/api/promotion/all`)
+    promotionAPI
+      .getAllPromotions()
       .then((res) => {
         console.log("promotion", res.data);
         setPromotions(res.data);
@@ -61,8 +60,8 @@ export default function App() {
       });
 
     // Fetch reviews
-    axios
-      .get(`/api/review/all`)
+    reviewAPI
+      .getAllReviews()
       .then((res) => {
         console.log("review", res.data);
         setReviews(res.data);

@@ -14,7 +14,6 @@
  * - Location (addresses table not linked, no endpoints)
  * - Date, Time, Party Size (these are booking filters, not restaurant filters)
  *
- * These have been removed to align with actual backend capabilities.
  */
 
 import React, { useState } from "react";
@@ -144,10 +143,6 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClea
         >
           Clear Filters
         </button>
-
-        <div style={{ marginTop: 'var(--spacing-md)', padding: 'var(--spacing-sm)', backgroundColor: 'var(--primary-light)', borderRadius: 'var(--radius-md)', fontSize: '12px', color: 'var(--text-dark)' }}>
-          <p><strong>ℹ️ Note:</strong> Only cuisine filtering is available. Other filters (location, price, rating) require additional backend endpoints that aren't implemented yet.</p>
-        </div>
       </div>
     </div>
   );
