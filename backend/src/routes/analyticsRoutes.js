@@ -1,4 +1,4 @@
-const {getBookingsByRestaurant, getBookingMetrics, getBookingRates, getDailyBookingCount, getDailyAverageRating, getHourlyHeatmapWeekday} = require('../controllers/analytics');
+const {getBookingsByRestaurant, getBookingMetrics, getBookingRates, getDailyBookingCount, getDailyAverageRating, getHourlyHeatmapWeekday, getRestaurants} = require('../controllers/analytics');
 
 module.exports = (router) => {
   // =================================== Analytics Endpoints =====================================================================
@@ -7,11 +7,21 @@ module.exports = (router) => {
       return res.status(200).json({ message: "Analytics Endpoint is working" });
   });
 
+  // Get list of existing restaurants for dropdown
+  router.get("/analytics/restaurants", async (req, res) => {
+    try {
+      const restaurants = await getRestaurants();
+      return res.status(200).json({ restaurants });
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
   // Endpoint to get bookings for a specific restaurant (restaurant, year and month are REQUIRED)
   router.get("/analytics/bookings", async (req, res) => {
-    const restaurantId = req.body.restaurantId;
-    const year = req.body.year;
-    const month = req.body.month;
+    const restaurantId = req.query.restaurantId;
+    const year = req.query.year;
+    const month = req.query.month;
 
     // ensure single values (not repeated query params)
     if (Array.isArray(restaurantId) || Array.isArray(year) || Array.isArray(month)) {
@@ -39,9 +49,9 @@ module.exports = (router) => {
 
   // Endpoint to get booking metrics for a specific restaurant (restaurant, year and month are REQUIRED)
   router.get("/analytics/bookings/metrics", async (req, res) => {
-    const restaurantId = req.body.restaurantId;
-    const year = req.body.year;
-    const month = req.body.month;
+    const restaurantId = req.query.restaurantId;
+    const year = req.query.year;
+    const month = req.query.month;
 
     // ensure single values (not repeated query params)
     if (Array.isArray(restaurantId) || Array.isArray(year) || Array.isArray(month)) {
@@ -69,9 +79,9 @@ module.exports = (router) => {
 
   // Endpoint to get booking rates for a specific restaurant (restaurant, year and month are REQUIRED)
   router.get("/analytics/bookings/rates", async (req, res) => {
-    const restaurantId = req.body.restaurantId;
-    const year = req.body.year;
-    const month = req.body.month;
+    const restaurantId = req.query.restaurantId;
+    const year = req.query.year;
+    const month = req.query.month;
 
     // ensure single values (not repeated query params)
     if (Array.isArray(restaurantId) || Array.isArray(year) || Array.isArray(month)) {
@@ -99,9 +109,9 @@ module.exports = (router) => {
 
   // Daily booking count for a month
   router.get("/analytics/bookings/daily-count", async (req, res) => {
-    const restaurantId = req.body.restaurantId;
-    const year = req.body.year;
-    const month = req.body.month;
+    const restaurantId = req.query.restaurantId;
+    const year = req.query.year;
+    const month = req.query.month;
 
     if (Array.isArray(restaurantId) || Array.isArray(year) || Array.isArray(month)) {
       return res.status(400).json({ error: "Provide a single restaurantId, year and month/date" });
@@ -120,9 +130,9 @@ module.exports = (router) => {
 
   // Daily average rating for a month
   router.get("/analytics/reviews/daily-avg", async (req, res) => {
-    const restaurantId = req.body.restaurantId;
-    const year = req.body.year;
-    const month = req.body.month;
+    const restaurantId = req.query.restaurantId;
+    const year = req.query.year;
+    const month = req.query.month;
 
     if (Array.isArray(restaurantId) || Array.isArray(year) || Array.isArray(month)) {
       return res.status(400).json({ error: "Provide a single restaurantId, year and month/date" });
@@ -139,12 +149,12 @@ module.exports = (router) => {
     }
   });
 
-  // Hourly heatmap (weekday x hour) for a month
+  // Hourly heatmap (Monday..Sunday x 24 hours) for a month
   router.get("/analytics/bookings/heatmap", async (req, res) => {
-    const restaurantId = req.body.restaurantId;
-    const year = req.body.year;
-    const month = req.body.month;
-    const statusesParam = req.body.statuses; // e.g. "confirmed,completed"
+    const restaurantId = req.query.restaurantId;
+    const year = req.query.year;
+    const month = req.query.month;
+    const statusesParam = req.query.statuses; // e.g. "confirmed,completed"
 
     if (Array.isArray(restaurantId) || Array.isArray(year) || Array.isArray(month)) {
       return res.status(400).json({ error: "Provide a single restaurantId, year and month/date" });
