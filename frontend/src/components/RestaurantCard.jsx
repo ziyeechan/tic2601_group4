@@ -24,21 +24,28 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow }) {
 
       {/* Content */}
       <div className="card-content">
-        {/* Title and Price */}
+        {/* Title */}
         <div className="flex-between mb-md" style={{ alignItems: 'flex-start' }}>
-          <h3 style={{ margin: '0', flex: 1 }}>{restaurant.name}</h3>
-          <span className="badge badge-primary" style={{ marginLeft: 'var(--spacing-sm)' }}>
-            {restaurant.priceRange}
-          </span>
+          <h3 style={{ margin: '0', flex: 1 }}>{restaurant.restaurantName}</h3>
         </div>
 
         {/* Rating */}
         <div className="flex gap-sm mb-md" style={{ alignItems: 'center' }}>
-          <span>⭐</span>
-          <span style={{ fontWeight: '600' }}>{restaurant.rating}</span>
-          <span className="text-muted" style={{ fontSize: '14px' }}>
-            ({restaurant.reviewCount} reviews)
-          </span>
+          {restaurant.reviewCount > 0 ? (
+            <>
+              <span>⭐</span>
+              <span style={{ fontWeight: "600" }}>
+                {restaurant.averageRating.toFixed(1)}
+              </span>
+              <span className="text-muted" style={{ fontSize: "14px" }}>
+                ({restaurant.reviewCount} {restaurant.reviewCount === 1 ? "review" : "reviews"})
+              </span>
+            </>
+          ) : (
+            <span className="text-muted" style={{ fontSize: "14px" }}>
+              ⭐ No ratings yet
+            </span>
+          )}
         </div>
 
         {/* Cuisine Badge */}

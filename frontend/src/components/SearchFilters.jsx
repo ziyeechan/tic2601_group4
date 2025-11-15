@@ -17,7 +17,10 @@
  * These have been removed to align with actual backend capabilities.
  */
 
-export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
+import React, { useState } from "react";
+import axios from "axios";
+
+export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClearFilters }) {
   const cuisineOptions = [
     'All Cuisines',
     'French',
@@ -29,6 +32,23 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
     'Thai',
     'American',
     'Mediterranean'
+  ];
+
+  const menuTypeOptions = [
+    'Halal',
+    'Vegan',
+    'Vegetarian'
+  ];
+
+  const reviewsOptions = [
+    { label: '5 stars', value: 5 },
+    { label: '4 stars', value: 4 },
+    { label: '3 stars', value: 3 },
+  ];
+
+  const promotionOptions = [
+    { label: 'All', value: '' },
+    { label: 'Show promotion only', value: 'Yes' },
   ];
 
   const handleFilterChange = (key, value) => {
@@ -44,9 +64,25 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
         <h4 className="card-title">🔍 Search Filters</h4>
       </div>
       <div className="card-content">
+        {/* 🔍 Search Bar */}
+        <div className="form-group">
+          <label htmlFor="search">Search bar</label>
+          <input
+            type="text"
+            id="search"
+            placeholder="Enter restaurant name or country"
+            value={filters.search || ""}
+            onChange={(e) => handleFilterChange("search", e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                onApplyFilters();
+              }
+            }}
+          />
+        </div>
         {/* Cuisine Filter - Only filter supported by backend */}
         <div className="form-group">
-          <label htmlFor="cuisine">🍽️ Cuisine Type</label>
+          <label htmlFor="cuisine">🍽️ Cuisine</label>
           <select
             id="cuisine"
             value={filters.cuisine}
@@ -60,12 +96,53 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters }) {
           </select>
         </div>
 
+        {/* Reviews Filter */}
+        <div className="form-group">
+          <label htmlFor="reviews">⭐ Reviews</label>
+            <select
+              id="reviews"
+              value={filters.reviews || ""}
+              onChange={(e) => handleFilterChange('reviews', e.target.value ? Number(e.target.value) : '')}
+            >
+              <option value="">All Ratings</option>
+              {reviewsOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+        </div>
+        
+        {/* Promotion Filter */}
+        <div className="form-group">
+          <label htmlFor="promtion">🏷️ Promotion</label>
+          <select
+            id="promotion"
+            value={filters.promotion}
+            onChange={(e) => handleFilterChange('promotion', e.target.value)}
+          >
+            {promotionOptions.map((opt) => (
+              <option key={opt.label} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Apply Button */}
         <button
           className="btn btn-primary btn-full"
           onClick={onApplyFilters}
         >
           Apply Filters
+        </button>
+
+        {/* Clear Filters */}
+        <button
+          className="btn btn-primary btn-full"
+          onClick={onClearFilters}
+        >
+          Clear Filters
         </button>
 
         <div style={{ marginTop: 'var(--spacing-md)', padding: 'var(--spacing-sm)', backgroundColor: 'var(--primary-light)', borderRadius: 'var(--radius-md)', fontSize: '12px', color: 'var(--text-dark)' }}>

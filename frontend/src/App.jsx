@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./styles.css";
+import axios from "axios";
 import { Header } from "./components/Header";
 import { RestaurantCard } from "./components/RestaurantCard";
 import { SearchFilters } from "./components/SearchFilters";
@@ -16,14 +17,60 @@ import { Promotions } from "./components/Promotions";
 export default function App() {
   const [currentView, setCurrentView] = useState("home");
   const [userRole, setUserRole] = useState("customer");
-  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
-  const [restaurants, setRestaurants] = useState(mockRestaurants);
-  const [filteredRestaurants, setFilteredRestaurants] =
-    useState(mockRestaurants);
 
+  //Restaurants table
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [restaurants, setRestaurants] = useState(false);
+  const [filteredRestaurants, setFilteredRestaurants] = useState(false);
   const [filters, setFilters] = useState({
     cuisine: "All Cuisines",
+    search: "",
+    reviews: "",
+    promotion: "",
   });
+
+  //Promotion table
+  const [promotions, setPromotions] = useState(false);
+
+  //Review table
+  const [reviews, setReviews] = useState(false);
+
+  useEffect(() => {
+    //Fetch restaurants
+    axios
+      .get(`/api/restaurant/all`)
+      .then((res) => {
+        console.log(res.data);
+        setRestaurants(res.data);
+        setSelectedRestaurant(res.data);
+        setFilteredRestaurants(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+    // Fetch promotions
+    axios
+      .get(`/api/promotion/all`)
+      .then((res) => {
+        console.log("promotion", res.data);
+        setPromotions(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
+    // Fetch reviews
+    axios
+      .get(`/api/review/all`)
+      .then((res) => {
+        console.log("review", res.data);
+        setReviews(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, []);
 
   const handleViewChange = (view) => {
     setCurrentView(view);
@@ -51,13 +98,73 @@ export default function App() {
   const handleApplyFilters = () => {
     let filtered = [...restaurants];
 
+    //Search bar filter - yet to add location
+    if (filters.search && filters.search.trim() !== "") {
+      const term = filters.search.trim().toLowerCase();
+
+      filtered = filtered.filter((restaurant) => {
+        const name = (restaurant.restaurantName || "").toLowerCase();
+        return name.includes(term);
+      });
+    }
+
+    //Cuisine filter
     if (filters.cuisine !== "All Cuisines") {
       filtered = filtered.filter(
         (restaurant) => restaurant.cuisine === filters.cuisine
       );
     }
 
+    //Rating filter
+    if (filters.reviews) {
+      const selected = Number(filters.reviews);
+      filtered = filtered.filter((restaurant) => {
+        // Get reviews for this restaurant
+        const restaurantReviews = reviews.filter(
+          (review) => review.fkRestaurantId === restaurant.restaurantId
+        );
+
+        if (restaurantReviews.length === 0) return false;
+
+        // Extract valid ratings
+        const ratings = restaurantReviews
+          .map((r) => Number(r.rating))
+          .filter((r) => !Number.isNaN(r));
+
+        if (ratings.length === 0) return false;
+
+        // Compute average
+        const averageRating =
+          ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
+
+        // Filter by selected rating range
+        return averageRating >= selected && averageRating < selected + 1;
+      });
+    }
+
+    //Promotion filter
+    if (filters.promotion == "Yes") {
+      const promoRestaurantIds = new Set(
+        promotions
+          .filter((promo) => promo.isActive) // only active promotions
+          .map((promo) => promo.fkRestaurantId)
+      );
+      filtered = filtered.filter((restaurant) => {
+        return promoRestaurantIds.has(restaurant.restaurantId);
+      });
+    }
+
     setFilteredRestaurants(filtered);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      cuisine: "All Cuisines",
+      search: "",
+      reviews: "",
+      promotion: "",
+    });
+    setFilteredRestaurants(restaurants);
   };
 
   const renderCurrentView = () => {
@@ -86,6 +193,7 @@ export default function App() {
                   filters={filters}
                   onFiltersChange={handleFiltersChange}
                   onApplyFilters={handleApplyFilters}
+                  onClearFilters={handleClearFilters}
                 />
               </div>
 
@@ -118,7 +226,7 @@ export default function App() {
                   >
                     {filteredRestaurants.map((restaurant) => (
                       <RestaurantCard
-                        key={restaurant.restaurant_id}
+                        key={restaurant.restaurantId}
                         restaurant={restaurant}
                         onViewDetails={handleRestaurantSelect}
                         onBookNow={handleBookNow}
@@ -161,9 +269,7 @@ export default function App() {
               paddingBottom: "var(--spacing-lg)",
             }}
           >
-            <Promotions
-              onBack={() => setCurrentView("home")}
-            />
+            <Promotions onBack={() => setCurrentView("home")} />
           </div>
         );
 

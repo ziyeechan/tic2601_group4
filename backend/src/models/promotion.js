@@ -1,6 +1,6 @@
 const { Promotions } = require("../schemas/promotions");
 
-module.exports.findAllPromotions = async () => {
+module.exports.findAllPromotions = async (name) => {
   const results = await Promotions.findAll();
 
   return results;

@@ -1,5 +1,6 @@
 const { createAddress, findAddressByFK } = require("../models/address");
 const {
+  findAllRestaurants,
   findRestaurantByID,
   findRestaurantByName,
   createRestaurant,
@@ -55,6 +56,15 @@ module.exports.createRestaurant = async (req, res) => {
     return res
       .status(500)
       .send("Something went wrong! Contact your local administrator");
+  }
+};
+
+module.exports.findAllRestaurants = async (req, res) => {
+  try {
+    const restaurants = await findAllRestaurants();
+    return res.status(200).json(restaurants);
+  } catch (err) {
+    console.log(err);
   }
 };
 

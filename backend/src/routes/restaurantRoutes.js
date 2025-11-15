@@ -6,6 +6,12 @@ module.exports = (router) => {
   // Endpoint to create new restaurants
   router.post("/restaurant", restaurantController.createRestaurant);
 
+  // Endpoint to retrieve all restaurants
+  router.get(
+    "/restaurant/all",
+    restaurantController.findAllRestaurants
+  );
+
   // Endpoint to find restaurant by restaurantId
   router.get(
     "/restaurant/id/:restaurantID",
