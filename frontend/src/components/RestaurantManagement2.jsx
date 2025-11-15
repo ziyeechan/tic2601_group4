@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { restaurantAPI } from "../api";
+import { restaurantAPI } from "../utils/api";
 
 export function RestaurantManagement({ onBack, onViewChange }) {
   const [restaurant, setRestaurant] = useState(null);
@@ -81,7 +81,10 @@ export function RestaurantManagement({ onBack, onViewChange }) {
         postalCode: editedAddress.postalCode,
       };
       restaurantAPI
-        .updateRestaurant(restaurant.restaurantId || restaurant.restaurant_id, data)
+        .updateRestaurant(
+          restaurant.restaurantId || restaurant.restaurant_id,
+          data
+        )
         .then((res) => {
           console.log(res);
           Toast.fire({

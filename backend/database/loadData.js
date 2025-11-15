@@ -53,6 +53,10 @@ module.exports.LoadData = async () => {
         fkAddressId: 1,
         phone: "(555) 876-5544",
         email: "contact@pasta.com",
+        imageUrl:
+          "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=1200&h=800&fit=crop",
+        openingTime: "11:00:00",
+        closingTime: "22:00:00",
       },
       {
         restaurantName: "The Garden Bistro",
@@ -62,6 +66,10 @@ module.exports.LoadData = async () => {
         fkAddressId: 2,
         phone: "+1-555-0123",
         email: "reservations@gardenbistro.com",
+        imageUrl:
+          "https://images.unsplash.com/photo-1744313983217-e24a659bf7c1?w=1200&h=800&fit=crop",
+        openingTime: "11:00:00",
+        closingTime: "22:00:00",
       },
       {
         restaurantName: "Sakura Sushi & Grill",
@@ -71,6 +79,10 @@ module.exports.LoadData = async () => {
         fkAddressId: 3,
         phone: "+1-555-0456",
         email: "info@sakurasushi.com",
+        imageUrl:
+          "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200&h=800&fit=crop",
+        openingTime: "12:00:00",
+        closingTime: "23:00:00",
       },
       {
         restaurantName: "Mama Rosa's Trattoria",
@@ -80,6 +92,10 @@ module.exports.LoadData = async () => {
         fkAddressId: 3,
         phone: "+1-555-0789",
         email: "ciao@mamarosas.com",
+        imageUrl:
+          "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=1200&h=800&fit=crop",
+        openingTime: "17:00:00",
+        closingTime: "23:00:00",
       },
       {
         restaurantName: "Spice Route",
@@ -89,6 +105,10 @@ module.exports.LoadData = async () => {
         fkAddressId: 4,
         phone: "+1-555-0321",
         email: "hello@spiceroute.com",
+        imageUrl:
+          "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&h=800&fit=crop",
+        openingTime: "11:30:00",
+        closingTime: "23:00:00",
       },
     ]);
 

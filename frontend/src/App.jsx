@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./styles.css";
-import { restaurantAPI, promotionAPI, reviewAPI } from "./api";
+import { restaurantAPI, promotionAPI, reviewAPI } from "./utils/api";
 import { Header } from "./components/Header";
 import { RestaurantCard } from "./components/RestaurantCard";
 import { SearchFilters } from "./components/SearchFilters";
@@ -40,9 +40,14 @@ export default function App() {
       .getAllRestaurants()
       .then((res) => {
         console.log(res.data);
-        setRestaurants(res.data);
-        setSelectedRestaurant(res.data);
-        setFilteredRestaurants(res.data);
+        // Map imageUrl to image for component compatibility
+        const restaurantsWithImages = res.data.map((r) => ({
+          ...r,
+          image: r.imageUrl,
+        }));
+        setRestaurants(restaurantsWithImages);
+        setSelectedRestaurant(restaurantsWithImages);
+        setFilteredRestaurants(restaurantsWithImages);
       })
       .catch((err) => {
         console.error(err);
@@ -76,14 +81,58 @@ export default function App() {
     setSelectedRestaurant(null);
   };
 
-  const handleRestaurantSelect = (restaurant) => {
-    setSelectedRestaurant(restaurant);
-    setCurrentView("restaurant-detail");
+  const handleRestaurantSelect = async (restaurant) => {
+    try {
+      // Fetch detailed restaurant info with address
+      const response = await restaurantAPI.getRestaurantById(
+        restaurant.restaurantId
+      );
+      const { restaurant: restaurantData, address } = response.data;
+
+      // Combine restaurant data with address information
+      const enrichedRestaurant = {
+        ...restaurantData,
+        address: `${address?.addressLine1}${
+          address?.addressLine2 ? ", " + address.addressLine2 : ""
+        }, ${address?.city}, ${address?.state} ${address?.postalCode}`,
+        image: restaurantData.imageUrl, // Map imageUrl to image for components
+      };
+
+      setSelectedRestaurant(enrichedRestaurant);
+      setCurrentView("restaurant-detail");
+    } catch (err) {
+      console.error("Error fetching restaurant details:", err);
+      // Fallback to using the restaurant data passed from card
+      setSelectedRestaurant(restaurant);
+      setCurrentView("restaurant-detail");
+    }
   };
 
-  const handleBookNow = (restaurant) => {
-    setSelectedRestaurant(restaurant);
-    setCurrentView("booking-form");
+  const handleBookNow = async (restaurant) => {
+    try {
+      // Fetch detailed restaurant info with address
+      const response = await restaurantAPI.getRestaurantById(
+        restaurant.restaurantId
+      );
+      const { restaurant: restaurantData, address } = response.data;
+
+      // Combine restaurant data with address information
+      const enrichedRestaurant = {
+        ...restaurantData,
+        address: `${address?.addressLine1}${
+          address?.addressLine2 ? ", " + address.addressLine2 : ""
+        }, ${address?.city}, ${address?.state} ${address?.postalCode}`,
+        image: restaurantData.imageUrl, // Map imageUrl to image for components
+      };
+
+      setSelectedRestaurant(enrichedRestaurant);
+      setCurrentView("booking-form");
+    } catch (err) {
+      console.error("Error fetching restaurant details:", err);
+      // Fallback to using the restaurant data passed from card
+      setSelectedRestaurant(restaurant);
+      setCurrentView("booking-form");
+    }
   };
 
   const handleBookingComplete = () => {
