@@ -11,7 +11,6 @@ export function SeatingPlan() {
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [refresh, setRefresh] = useState(false); // refresh helps prevent website from rendering before data are being fetched
   const today = new Date().toISOString().split("T")[0];
-
   const GAP = 10;
 
   // For canvas, randomizes the nodes being placed
@@ -47,7 +46,7 @@ export function SeatingPlan() {
         x = table.tableType == "outdoor" ? rand(10, 430) : rand(440, 440);
         y = rand(10, 330);
       } while (overlaps(x, y, placed));
-      placed.push({ x: x, y: y, id: table.seatingId });
+      placed.push({ x: x, y: y, id: table.seatingId, isAdding: false });
       return { ...table, x, y };
     });
     return formattedData;
@@ -114,12 +113,19 @@ export function SeatingPlan() {
   // Create node on canvas for add table button
   const handleAddTable = () => {
     setIsAddingTable(true);
+    let x, y;
+    do {
+      x = rand(10, 880);
+      y = rand(10, 330);
+    } while (overlaps(x, y, tables));
     const newTable = {
       restaurantId: "1",
-      x: 150,
-      y: 150,
+      x: x,
+      y: y,
+      isAdding: true,
       isAvailable: true,
     };
+    setSelectedTable(newTable);
     setTables([...tables, newTable]);
   };
 
@@ -130,6 +136,13 @@ export function SeatingPlan() {
       ...prev,
       [name]: name === "pax" ? parseInt(value) : value,
     }));
+  };
+
+  const handleTableClick = (table) => {
+    if (isAddingTable) alert("Please fill in the new table before changing");
+    else {
+      setSelectedTable(table);
+    }
   };
 
   // Submit table data when add table form is submitted
@@ -149,7 +162,6 @@ export function SeatingPlan() {
 
   // Submit table data when edit table form is submitted
   const submitEditTable = async (tableId) => {
-    console.log(selectedTable);
     await seatingAPI
       .updateSeatingPlan(tableId, selectedTable)
       .then((res) => {
@@ -173,6 +185,13 @@ export function SeatingPlan() {
       setShowAssignModal(false);
       setSelectedBooking(null);
     }
+  };
+
+  const cancelAddTable = () => {
+    let temp = tables.filter((table) => !table.isAdding);
+    setTables(temp);
+    setIsAddingTable(false);
+    setSelectedTable(null);
   };
 
   return (
@@ -285,6 +304,7 @@ export function SeatingPlan() {
                   backgroundColor: "#fafafa",
                   overflow: "hidden",
                 }}
+                onClick={() => console.log("test")}
               >
                 {tables.map((table) => {
                   const status = getTableStatus(table);
@@ -297,7 +317,7 @@ export function SeatingPlan() {
                   return (
                     <div
                       key={table.seatingId}
-                      onClick={() => setSelectedTable(table)}
+                      onClick={() => handleTableClick(table)}
                       style={{
                         position: "absolute",
                         left: `${table.x}px`,
@@ -485,12 +505,20 @@ export function SeatingPlan() {
                     }}
                   >
                     {isAddingTable ? (
-                      <button
-                        className="btn btn-success btn-full"
-                        onClick={() => submitAddTable}
-                      >
-                        🗑️ Add Table
-                      </button>
+                      <>
+                        <button
+                          className="btn btn-success btn-full"
+                          onClick={() => submitAddTable()}
+                        >
+                          🗑️ Add Table
+                        </button>
+                        <button
+                          className="btn btn-secondary btn-full"
+                          onClick={() => cancelAddTable()}
+                        >
+                          🗑️ Cancel
+                        </button>
+                      </>
                     ) : (
                       <>
                         <button
