@@ -524,6 +524,13 @@ export function SeatingPlan() {
                         <button
                           className="btn btn-secondary btn-full"
                           style={{ border: "1px solid var(--border-color)" }}
+                          onClick={() => setSelectedTable(null)}
+                        >
+                          ✏️ Cancel
+                        </button>
+                        <button
+                          className="btn btn-secondary btn-full"
+                          style={{ border: "1px solid var(--border-color)" }}
                           onClick={() =>
                             submitEditTable(selectedTable.seatingId)
                           }
