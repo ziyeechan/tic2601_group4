@@ -42,7 +42,7 @@ module.exports.findBookingsByCustomerEmail = async (email) => {
         attributes: ["seatingId", "tableNumber", "pax"],
       },
     ],
-    order: [["date", "DESC"]],
+    order: [["bookingDate", "DESC"]],
   });
 };
 
@@ -58,7 +58,7 @@ module.exports.findBookingsByRestaurantID = async (restaurantID) => {
         attributes: ["seatingId", "tableNumber", "pax", "tableType"],
       },
     ],
-    order: [["date", "DESC"]],
+    order: [["bookingDate", "DESC"]],
   });
 };
 
