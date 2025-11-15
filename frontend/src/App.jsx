@@ -34,6 +34,10 @@ export default function App() {
   //Review table
   const [reviews, setReviews] = useState(false);
 
+  // Track booking confirmation for auto-fill
+  const [lastBookingEmail, setLastBookingEmail] = useState("");
+  const [lastConfirmationCode, setLastConfirmationCode] = useState("");
+
   useEffect(() => {
     //Fetch restaurants
     restaurantAPI
@@ -133,6 +137,11 @@ export default function App() {
       setSelectedRestaurant(restaurant);
       setCurrentView("booking-form");
     }
+  };
+
+  const handleBookingSuccess = (email, confirmationCode) => {
+    setLastBookingEmail(email);
+    setLastConfirmationCode(confirmationCode);
   };
 
   const handleBookingComplete = () => {
@@ -363,6 +372,7 @@ export default function App() {
               restaurant={selectedRestaurant}
               onBack={() => setCurrentView("restaurant-detail")}
               onBookingComplete={handleBookingComplete}
+              onBookingSuccess={handleBookingSuccess}
             />
           </div>
         ) : null;
@@ -376,7 +386,10 @@ export default function App() {
               paddingBottom: "var(--spacing-lg)",
             }}
           >
-            <MyBookings />
+            <MyBookings
+              autoFillEmail={lastBookingEmail}
+              highlightConfirmationCode={lastConfirmationCode}
+            />
           </div>
         );
 
