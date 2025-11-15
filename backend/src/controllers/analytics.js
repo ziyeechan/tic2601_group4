@@ -222,6 +222,12 @@ function getHourlyHeatmapWeekday(restaurantId, month, year, statuses = ['confirm
     });
 }
 
+// Get list of existing restaurants for dropdown (restaurantId aliased as id)
+function getRestaurants() {
+    const sql = `SELECT restaurantId AS id, restaurantName FROM restaurants ORDER BY restaurantName`;
+    return dbAll(sql);
+}
+
 module.exports = {
     getBookingsByRestaurant,
     getBookingMetrics,
@@ -229,4 +235,5 @@ module.exports = {
     getDailyBookingCount,
     getDailyAverageRating,
     getHourlyHeatmapWeekday,
+    getRestaurants,
 };
