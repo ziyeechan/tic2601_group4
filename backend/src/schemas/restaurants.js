@@ -28,6 +28,21 @@ const Restaurants = db.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    imageUrl: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+      comment: "URL to restaurant image (e.g., from Unsplash)"
+    },
+    openingTime: {
+      type: DataTypes.TIME,
+      allowNull: true,
+      comment: "Restaurant opening time (HH:MM:SS format)"
+    },
+    closingTime: {
+      type: DataTypes.TIME,
+      allowNull: true,
+      comment: "Restaurant closing time (HH:MM:SS format)"
+    },
   },
   { freezeTableName: true }
 );

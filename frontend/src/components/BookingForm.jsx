@@ -1,14 +1,33 @@
-import { useState } from 'react';
+import { useState, useMemo } from "react";
+import { generateTimeSlots } from "../utils/timeSlotUtils";
 
 export function BookingForm({ restaurant, onBack, onBookingComplete }) {
+  // Generate time slots based on restaurant opening/closing hours
+  const availableTimeSlots = useMemo(() => {
+    if (restaurant?.openingTime && restaurant?.closingTime) {
+      return generateTimeSlots(restaurant.openingTime, restaurant.closingTime);
+    }
+    // Fallback to default slots if hours not available
+    return [
+      "12:00",
+      "12:30",
+      "13:00",
+      "13:30",
+      "18:00",
+      "18:30",
+      "19:00",
+      "19:30",
+    ];
+  }, [restaurant?.openingTime, restaurant?.closingTime]);
+
   const [formData, setFormData] = useState({
-    customerName: '',
-    customerEmail: '',
-    customerPhone: '',
+    customerName: "",
+    customerEmail: "",
+    customerPhone: "",
     partySize: 2,
-    date: '',
-    time: '',
-    specialRequests: ''
+    date: "",
+    time: "",
+    specialRequests: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,9 +35,9 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: name === 'partySize' ? parseInt(value) : value
+      [name]: name === "partySize" ? parseInt(value) : value,
     }));
   };
 
@@ -26,11 +45,16 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
     e.preventDefault();
 
     // Validate required fields
-    if (!formData.customerName.trim() || !formData.customerEmail.trim() ||
-        !formData.customerPhone.trim() || !formData.date || !formData.time) {
+    if (
+      !formData.customerName.trim() ||
+      !formData.customerEmail.trim() ||
+      !formData.customerPhone.trim() ||
+      !formData.date ||
+      !formData.time
+    ) {
       setMessage({
-        type: 'error',
-        text: 'Please fill in all required fields'
+        type: "error",
+        text: "Please fill in all required fields",
       });
       return;
     }
@@ -39,11 +63,13 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       setMessage({
-        type: 'success',
-        text: 'Booking confirmed! Confirmation code: BK' + Math.random().toString(36).substr(2, 9).toUpperCase()
+        type: "success",
+        text:
+          "Booking confirmed! Confirmation code: BK" +
+          Math.random().toString(36).substr(2, 9).toUpperCase(),
       });
 
       // Clear form after success
@@ -52,24 +78,35 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
       }, 2000);
     } catch (error) {
       setMessage({
-        type: 'error',
-        text: 'Failed to create booking. Please try again.'
+        type: "error",
+        text: "Failed to create booking. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split("T")[0];
 
   return (
     <div>
       {/* Back Button */}
-      <button className="btn btn-secondary mb-lg" onClick={onBack} style={{ border: 'none' }}>
+      <button
+        className="btn btn-secondary mb-lg"
+        onClick={onBack}
+        style={{ border: "none" }}
+      >
         ← Back
       </button>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 'var(--spacing-lg)' }} className="booking-form-container">
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr",
+          gap: "var(--spacing-lg)",
+        }}
+        className="booking-form-container"
+      >
         {/* Main Form */}
         <div>
           <div className="card">
@@ -85,7 +122,9 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
 
               <form onSubmit={handleSubmit}>
                 {/* Personal Information */}
-                <h4 style={{ marginBottom: 'var(--spacing-md)' }}>Your Information</h4>
+                <h4 style={{ marginBottom: "var(--spacing-md)" }}>
+                  Your Information
+                </h4>
 
                 <div className="form-group">
                   <label htmlFor="customerName">👤 Full Name *</label>
@@ -128,7 +167,14 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
                 </div>
 
                 {/* Reservation Details */}
-                <h4 style={{ marginTop: 'var(--spacing-lg)', marginBottom: 'var(--spacing-md)' }}>Reservation Details</h4>
+                <h4
+                  style={{
+                    marginTop: "var(--spacing-lg)",
+                    marginBottom: "var(--spacing-md)",
+                  }}
+                >
+                  Reservation Details
+                </h4>
 
                 <div className="form-row">
                   <div className="form-group">
@@ -153,7 +199,7 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
                       required
                     >
                       <option value="">Select a time</option>
-                      {restaurant.availableTimeSlots.map((time) => (
+                      {availableTimeSlots.map((time) => (
                         <option key={time} value={time}>
                           {time}
                         </option>
@@ -173,7 +219,7 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
                   >
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map((size) => (
                       <option key={size} value={size}>
-                        {size} {size === 1 ? 'person' : 'people'}
+                        {size} {size === 1 ? "person" : "people"}
                       </option>
                     ))}
                   </select>
@@ -181,14 +227,16 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
 
                 {/* Special Requests */}
                 <div className="form-group">
-                  <label htmlFor="specialRequests">💬 Special Requests (Optional)</label>
+                  <label htmlFor="specialRequests">
+                    💬 Special Requests (Optional)
+                  </label>
                   <textarea
                     id="specialRequests"
                     name="specialRequests"
                     value={formData.specialRequests}
                     onChange={handleChange}
                     placeholder="Dietary restrictions, special occasion, seating preferences, etc."
-                    style={{ minHeight: '100px' }}
+                    style={{ minHeight: "100px" }}
                   />
                 </div>
 
@@ -198,13 +246,13 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
                   className="btn btn-primary btn-full"
                   disabled={isSubmitting}
                   style={{
-                    padding: '12px 24px',
-                    fontSize: '16px',
+                    padding: "12px 24px",
+                    fontSize: "16px",
                     opacity: isSubmitting ? 0.6 : 1,
-                    cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                    cursor: isSubmitting ? "not-allowed" : "pointer",
                   }}
                 >
-                  {isSubmitting ? '⏳ Processing...' : '✓ Confirm Booking'}
+                  {isSubmitting ? "⏳ Processing..." : "✓ Confirm Booking"}
                 </button>
               </form>
             </div>
@@ -218,38 +266,96 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
               <h4 className="card-title">Booking Summary</h4>
             </div>
             <div className="card-content">
-              <div className="mb-md" style={{ paddingBottom: 'var(--spacing-md)', borderBottom: '1px solid var(--border-color)' }}>
-                <p className="text-muted" style={{ fontSize: '12px', margin: 0, marginBottom: '4px' }}>Restaurant</p>
-                <p style={{ fontWeight: '600', margin: 0 }}>{restaurant.name}</p>
+              <div
+                className="mb-md"
+                style={{
+                  paddingBottom: "var(--spacing-md)",
+                  borderBottom: "1px solid var(--border-color)",
+                }}
+              >
+                <p
+                  className="text-muted"
+                  style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
+                >
+                  Restaurant
+                </p>
+                <p style={{ fontWeight: "600", margin: 0 }}>
+                  {restaurant.restaurantName}
+                </p>
               </div>
 
-              <div className="mb-md" style={{ paddingBottom: 'var(--spacing-md)', borderBottom: '1px solid var(--border-color)' }}>
-                <p className="text-muted" style={{ fontSize: '12px', margin: 0, marginBottom: '4px' }}>Date & Time</p>
-                <p style={{ fontWeight: '600', margin: 0 }}>
-                  {formData.date ? new Date(formData.date).toLocaleDateString() : 'Not selected'}
+              <div
+                className="mb-md"
+                style={{
+                  paddingBottom: "var(--spacing-md)",
+                  borderBottom: "1px solid var(--border-color)",
+                }}
+              >
+                <p
+                  className="text-muted"
+                  style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
+                >
+                  Date & Time
                 </p>
-                <p style={{ fontWeight: '600', margin: 0 }}>
-                  {formData.time || 'Not selected'}
+                <p style={{ fontWeight: "600", margin: 0 }}>
+                  {formData.date
+                    ? new Date(formData.date).toLocaleDateString()
+                    : "Not selected"}
+                </p>
+                <p style={{ fontWeight: "600", margin: 0 }}>
+                  {formData.time || "Not selected"}
                 </p>
               </div>
 
-              <div className="mb-md" style={{ paddingBottom: 'var(--spacing-md)', borderBottom: '1px solid var(--border-color)' }}>
-                <p className="text-muted" style={{ fontSize: '12px', margin: 0, marginBottom: '4px' }}>Party Size</p>
-                <p style={{ fontWeight: '600', margin: 0 }}>
-                  {formData.partySize} {formData.partySize === 1 ? 'person' : 'people'}
+              <div
+                className="mb-md"
+                style={{
+                  paddingBottom: "var(--spacing-md)",
+                  borderBottom: "1px solid var(--border-color)",
+                }}
+              >
+                <p
+                  className="text-muted"
+                  style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
+                >
+                  Party Size
+                </p>
+                <p style={{ fontWeight: "600", margin: 0 }}>
+                  {formData.partySize}{" "}
+                  {formData.partySize === 1 ? "person" : "people"}
                 </p>
               </div>
 
               <div className="mb-lg">
-                <p className="text-muted" style={{ fontSize: '12px', margin: 0, marginBottom: '4px' }}>Location</p>
-                <p style={{ fontWeight: '600', margin: 0, fontSize: '14px' }}>
-                  {restaurant.address}
+                <p
+                  className="text-muted"
+                  style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
+                >
+                  Location
+                </p>
+                <p style={{ fontWeight: "600", margin: 0, fontSize: "14px" }}>
+                  {restaurant.address || "Address not available"}
+                </p>
+              </div>
+
+              <div className="mb-lg">
+                <p
+                  className="text-muted"
+                  style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
+                >
+                  Opening Hours
+                </p>
+                <p style={{ fontWeight: "600", margin: 0, fontSize: "14px" }}>
+                  {restaurant.openingTime && restaurant.closingTime
+                    ? `${restaurant.openingTime} - ${restaurant.closingTime}`
+                    : "Hours not available"}
                 </p>
               </div>
 
               <div className="alert alert-info">
-                <p style={{ margin: 0, fontSize: '14px' }}>
-                  ℹ️ You'll receive a confirmation email with your booking details and confirmation code.
+                <p style={{ margin: 0, fontSize: "14px" }}>
+                  ℹ️ You'll receive a confirmation email with your booking
+                  details and confirmation code.
                 </p>
               </div>
             </div>
