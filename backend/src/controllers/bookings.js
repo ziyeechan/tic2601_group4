@@ -5,10 +5,11 @@ const {
   findBookingsByRestaurantID,
   findBookingByID,
   findBookingsByStatus,
-  updateBookingStatus,
+  updateBookingStatus: updateBookingStatusInDB,
   updateBooking,
   deleteBooking,
   checkSeatingAvailability,
+  findAllBookings,
 } = require("../models/bookings");
 const { findSeatingPlanByPK } = require("../models/seatingPlan");
 const { findRestaurantByID } = require("../models/restaurant");
@@ -368,7 +369,7 @@ module.exports.updateBookingStatus = async (req, res) => {
       });
     }
 
-    await updateBookingStatus(bookingIDNum, status);
+    await updateBookingStatusInDB(bookingIDNum, status);
 
     return res.status(200).json({
       message: `Booking status updated to ${status}`,
@@ -444,6 +445,27 @@ module.exports.updateBooking = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({
+      message: "Something went wrong! Contact your local administrator",
+      error: err.message,
+    });
+  }
+};
+
+// Get all bookings (Admin view - all restaurants)
+module.exports.findAllBookings = async (req, res) => {
+  try {
+    const bookings = await findAllBookings();
+
+    // Convert Sequelize instances to plain JSON objects
+    const bookingsJSON = bookings.map(booking => booking.toJSON ? booking.toJSON() : booking);
+
+    return res.status(200).json({
+      totalBookings: bookingsJSON.length,
+      bookings: bookingsJSON,
+    });
+  } catch (err) {
+    console.error('Error in findAllBookings controller:', err);
     return res.status(500).json({
       message: "Something went wrong! Contact your local administrator",
       error: err.message,
