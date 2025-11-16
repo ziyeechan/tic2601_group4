@@ -304,7 +304,6 @@ export function SeatingPlan() {
                   backgroundColor: "#fafafa",
                   overflow: "hidden",
                 }}
-                onClick={() => console.log("test")}
               >
                 {tables.map((table) => {
                   const status = getTableStatus(table);

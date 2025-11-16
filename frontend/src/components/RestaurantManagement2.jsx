@@ -1,5 +1,36 @@
 import { useEffect, useState } from "react";
 import { restaurantAPI, promotionAPI } from "../api";
+import { Card, Container } from "./Common";
+
+const FormInput = ({
+  type,
+  name,
+  value,
+  onChange,
+  text,
+  placeholder,
+  children,
+  required = false,
+}) => {
+  return (
+    <div className="form-group">
+      <label htmlFor={name}>{text}</label>
+      {children ? (
+        children
+      ) : (
+        <input
+          id={name}
+          type={type ? type : "text"}
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+        />
+      )}
+    </div>
+  );
+};
 
 export function RestaurantManagement({ onBack, onViewChange }) {
   const [restaurant, setRestaurant] = useState(null);
@@ -54,6 +85,14 @@ export function RestaurantManagement({ onBack, onViewChange }) {
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
     setEditedAddress((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handlePromotionChange = (e) => {
+    const { name, value } = e.target;
+    setEditedPromotions((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -134,14 +173,6 @@ export function RestaurantManagement({ onBack, onViewChange }) {
       .catch((error) => console.error(error));
   };
 
-  const handlePromotionChange = (e) => {
-    const { name, value } = e.target;
-    setEditedPromotions((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
   const handleCreatePromotion = async (e) => {
     e.preventDefault();
 
@@ -200,8 +231,8 @@ export function RestaurantManagement({ onBack, onViewChange }) {
               // View Mode
               <div>
                 {/* Restaurant Info Card */}
-                <div className="card mb-lg">
-                  <div className="card-header">
+                <Card>
+                  <Card.Header>
                     <div className="flex-between">
                       <h3 className="card-title">Restaurant Information</h3>
                       <button
@@ -211,25 +242,9 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                         ✏️ Edit
                       </button>
                     </div>
-                  </div>
-                  <div className="card-content">
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <p
-                        className="text-muted"
-                        style={{
-                          fontSize: "12px",
-                          margin: 0,
-                          marginBottom: "4px",
-                        }}
-                      >
-                        Restaurant Name
-                      </p>
+                  </Card.Header>
+                  <Card.Content>
+                    <Container text="Restaurant Name">
                       <p
                         style={{
                           fontWeight: "600",
@@ -239,49 +254,12 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                       >
                         {restaurant.name}
                       </p>
-                    </div>
-
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <p
-                        className="text-muted"
-                        style={{
-                          fontSize: "12px",
-                          margin: 0,
-                          marginBottom: "4px",
-                        }}
-                      >
-                        Cuisine Type
-                      </p>
-                      <p style={{ fontWeight: "600", margin: 0 }}>
-                        {restaurant.cuisine}
-                      </p>
-                    </div>
-
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <p
-                        className="text-muted"
-                        style={{
-                          fontSize: "12px",
-                          margin: 0,
-                          marginBottom: "4px",
-                        }}
-                      >
-                        Description
-                      </p>
-                      <p style={{ margin: 0 }}>{restaurant.description}</p>
-                    </div>
+                    </Container>
+                    <Container text="Cuisine Type" data={restaurant.cuisine} />
+                    <Container
+                      text="Description"
+                      data={restaurant.description}
+                    />
 
                     <div>
                       <p
@@ -307,32 +285,14 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                         📧 {restaurant.email}
                       </p>
                     </div>
-                  </div>
-                </div>
+                  </Card.Content>
+                </Card>
 
                 {/* Address Card */}
-                <div className="card">
-                  <div className="card-header">
-                    <h4 className="card-title">Address Information</h4>
-                  </div>
-                  <div className="card-content">
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <p
-                        className="text-muted"
-                        style={{
-                          fontSize: "12px",
-                          margin: 0,
-                          marginBottom: "4px",
-                        }}
-                      >
-                        📍 Full Address
-                      </p>
+                <Card>
+                  <Card.Header title="Address Information" />
+                  <Card.Content>
+                    <Container text="📍 Full Address">
                       <p style={{ fontWeight: "600", margin: 0 }}>
                         {address.addressLine1}
                         {address.addressLine2 && `, ${address.addressLine2}`}
@@ -349,32 +309,24 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                       >
                         {address.country}
                       </p>
-                    </div>
-                  </div>
-                </div>
+                    </Container>
+                  </Card.Content>
+                </Card>
               </div>
             ) : (
               // Edit Mode
               <form onSubmit={handleSave}>
-                <div className="card mb-lg">
-                  <div className="card-header">
-                    <h4 className="card-title">Edit Restaurant Information</h4>
-                  </div>
-                  <div className="card-content">
-                    <div className="form-group">
-                      <label htmlFor="name">🍽️ Restaurant Name *</label>
-                      <input
-                        id="name"
-                        type="text"
-                        name="name"
-                        value={editedRestaurant.name}
-                        onChange={handleRestaurantChange}
-                        required
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label htmlFor="cuisine">🍴 Cuisine Type *</label>
+                <Card>
+                  <Card.Header title="Edit Restaurant Information" />
+                  <Card.Content>
+                    <FormInput
+                      name="name"
+                      value={editedRestaurant.name}
+                      text="🍽️ Restaurant Name *"
+                      onChange={handleRestaurantChange}
+                      required={true}
+                    />
+                    <FormInput name="cuisine" text="🍴 Cuisine Type *">
                       <select
                         id="cuisine"
                         name="cuisine"
@@ -388,10 +340,9 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                           </option>
                         ))}
                       </select>
-                    </div>
+                    </FormInput>
 
-                    <div className="form-group">
-                      <label htmlFor="description">📝 Description</label>
+                    <FormInput name="description" text="📝 Description">
                       <textarea
                         id="description"
                         name="description"
@@ -399,110 +350,79 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                         onChange={handleRestaurantChange}
                         style={{ minHeight: "100px" }}
                       />
-                    </div>
+                    </FormInput>
 
                     <div className="form-row">
-                      <div className="form-group">
-                        <label htmlFor="phone">📞 Phone</label>
-                        <input
-                          id="phone"
-                          type="tel"
-                          name="phone"
-                          value={editedRestaurant.phone}
-                          onChange={handleRestaurantChange}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="email">📧 Email</label>
-                        <input
-                          id="email"
-                          type="email"
-                          name="email"
-                          value={editedRestaurant.email}
-                          onChange={handleRestaurantChange}
-                        />
-                      </div>
+                      <FormInput
+                        name="phone"
+                        value={editedRestaurant.phone}
+                        text="📞 Phone"
+                        type="tel"
+                        onChange={handleRestaurantChange}
+                      />
+                      <FormInput
+                        name="email"
+                        value={editedRestaurant.email}
+                        text="📧 Email"
+                        type="email"
+                        onChange={handleRestaurantChange}
+                      />
                     </div>
-                  </div>
-                </div>
+                  </Card.Content>
+                </Card>
 
-                <div className="card mb-lg">
-                  <div className="card-header">
+                <Card>
+                  <Card.Header>
                     <h4 className="card-title">Edit Address Information</h4>
-                  </div>
-                  <div className="card-content">
-                    <div className="form-group">
-                      <label htmlFor="addressLine1">Address Line 1 *</label>
-                      <input
-                        id="addressLine1"
-                        type="text"
-                        name="addressLine1"
-                        value={editedAddress.addressLine1}
-                        onChange={handleAddressChange}
-                        required
-                      />
-                    </div>
+                  </Card.Header>
+                  <Card.Content>
+                    <FormInput
+                      name="addressLine1"
+                      value={editedAddress.addressLine1}
+                      text="Address Line 1 *"
+                      onChange={handleAddressChange}
+                      required={true}
+                    />
+                    <FormInput
+                      name="addressLine2"
+                      value={editedAddress.addressLine2}
+                      text="Address Line 2"
+                      onChange={handleAddressChange}
+                    />
 
-                    <div className="form-group">
-                      <label htmlFor="addressLine2">Address Line 2</label>
-                      <input
-                        id="addressLine2"
-                        type="text"
-                        name="addressLine2"
-                        value={editedAddress.addressLine2}
+                    <div className="form-row">
+                      <FormInput
+                        name="city"
+                        value={editedAddress.city}
+                        text="City *"
+                        onChange={handleAddressChange}
+                        required={true}
+                      />
+                      <FormInput
+                        name="state"
+                        value={editedAddress.state}
+                        text="State/Province"
                         onChange={handleAddressChange}
                       />
                     </div>
 
                     <div className="form-row">
-                      <div className="form-group">
-                        <label htmlFor="city">City *</label>
-                        <input
-                          id="city"
-                          type="text"
-                          name="city"
-                          value={editedAddress.city}
-                          onChange={handleAddressChange}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="state">State/Province</label>
-                        <input
-                          id="state"
-                          type="text"
-                          name="state"
-                          value={editedAddress.state}
-                          onChange={handleAddressChange}
-                        />
-                      </div>
+                      <FormInput
+                        name="postalCode"
+                        value={editedAddress.postalCode}
+                        text="Postal Code"
+                        onChange={handleAddressChange}
+                      />
+                      <FormInput
+                        name="country"
+                        value={editedAddress.country}
+                        text="Country *"
+                        onChange={handleAddressChange}
+                        required={true}
+                      />
                     </div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label htmlFor="postalCode">Postal Code</label>
-                        <input
-                          id="postalCode"
-                          type="text"
-                          name="postalCode"
-                          value={editedAddress.postalCode}
-                          onChange={handleAddressChange}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label htmlFor="country">Country *</label>
-                        <input
-                          id="country"
-                          type="text"
-                          name="country"
-                          value={editedAddress.country}
-                          onChange={handleAddressChange}
-                          required
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  </Card.Content>
+                </Card>
 
                 {/* Action Buttons */}
                 <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
@@ -547,8 +467,8 @@ export function RestaurantManagement({ onBack, onViewChange }) {
             </div>
             {isAddingPromotions && (
               <form onSubmit={handleCreatePromotion}>
-                <div className="card mt-lg">
-                  <div className="card-header">
+                <Card>
+                  <Card.Header>
                     <div className="flex-between">
                       <h4 className="card-title">Promotions Information</h4>
                       <div>
@@ -573,16 +493,9 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                         </button>
                       </div>
                     </div>
-                  </div>
-                  <div className="card-content">
-                    <div
-                      className="mb-md form-group"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <label htmlFor="description">Description</label>
+                  </Card.Header>
+                  <Card.Content>
+                    <FormInput name="description" text="Description">
                       <textarea
                         id="description"
                         name="description"
@@ -590,82 +503,50 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                         onChange={handlePromotionChange}
                         required
                       />
-                    </div>
-                    <div
-                      className="mb-md form-group"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <label htmlFor="discount">Discount</label>
-                      <input
-                        id="discount"
-                        type="text"
-                        name="discount"
-                        placeholder="Enter discount"
-                        onChange={handlePromotionChange}
-                        required
-                      />
-                    </div>
-                    <div
-                      className="mb-md form-group"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <label htmlFor="termsNCond">Terms and Condition</label>
+                    </FormInput>
+                    <FormInput
+                      name="discount"
+                      text="Discount"
+                      placeholder="Enter discount"
+                      onChange={handlePromotionChange}
+                      required={true}
+                    />
+                    <FormInput name="termsNCond" text="Terms and Condition">
                       <textarea
                         id="termsNCond"
                         name="termsNCond"
-                        placeholder="Enter termsNCond"
+                        placeholder="Enter terms and condition"
                         onChange={handlePromotionChange}
                         required
                       />
-                    </div>
-                    <div
-                      className="mb-md form-group"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <label htmlFor="startAt">Start Date</label>
-                      <input
-                        id="startAt"
-                        type="datetime-local"
+                    </FormInput>
+                    <div className="form-row">
+                      <FormInput
                         name="startAt"
-                        onChange={handlePromotionChange}
-                        required
-                      />
-                    </div>
-                    <div
-                      className="mb-md form-group"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                      }}
-                    >
-                      <label htmlFor="endAt">End Date</label>
-                      <input
-                        id="endAt"
+                        text="Start Date"
                         type="datetime-local"
-                        name="endAt"
                         onChange={handlePromotionChange}
-                        required
+                        required={true}
+                      />
+                      <FormInput
+                        name="endAt"
+                        text="End Date"
+                        type="datetime-local"
+                        onChange={handlePromotionChange}
+                        required={true}
                       />
                     </div>
-                  </div>
-                </div>
+                  </Card.Content>
+                </Card>
               </form>
             )}
-            {promotions ? (
+            {promotions.length != 0 ? (
               promotions.map((p) => {
                 return (
                   <>
                     {isEditingPromotions != p.promotionId ? (
-                      <div className="card mt-lg" key={p.promotionId}>
-                        <div className="card-header">
+                      <Card key={p.promotionId}>
+                        <Card.Header>
                           <div className="flex-between">
                             <h4 className="card-title">
                               Promotions Information
@@ -699,139 +580,29 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                               </button>
                             </div>
                           </div>
-                        </div>
-                        <div className="card-content">
-                          <div
-                            className="mb-md"
-                            style={{
-                              paddingBottom: "var(--spacing-md)",
-                              borderBottom: "1px solid var(--border-color)",
-                            }}
-                          >
-                            <p
-                              className="text-muted"
-                              style={{
-                                fontSize: "12px",
-                                margin: 0,
-                                marginBottom: "4px",
-                              }}
-                            >
-                              Promotion ID
-                            </p>
-                            <p style={{ fontWeight: "600", margin: 0 }}>
-                              {p.promotionId}
-                            </p>
-                          </div>
-                          <div
-                            className="mb-md"
-                            style={{
-                              paddingBottom: "var(--spacing-md)",
-                              borderBottom: "1px solid var(--border-color)",
-                            }}
-                          >
-                            <p
-                              className="text-muted"
-                              style={{
-                                fontSize: "12px",
-                                margin: 0,
-                                marginBottom: "4px",
-                              }}
-                            >
-                              Description
-                            </p>
-                            <p style={{ fontWeight: "600", margin: 0 }}>
-                              {p.description}
-                            </p>
-                          </div>
-                          <div
-                            className="mb-md"
-                            style={{
-                              paddingBottom: "var(--spacing-md)",
-                              borderBottom: "1px solid var(--border-color)",
-                            }}
-                          >
-                            <p
-                              className="text-muted"
-                              style={{
-                                fontSize: "12px",
-                                margin: 0,
-                                marginBottom: "4px",
-                              }}
-                            >
-                              Discount
-                            </p>
-                            <p style={{ fontWeight: "600", margin: 0 }}>
-                              {p.discount}
-                            </p>
-                          </div>
-                          <div
-                            className="mb-md"
-                            style={{
-                              paddingBottom: "var(--spacing-md)",
-                              borderBottom: "1px solid var(--border-color)",
-                            }}
-                          >
-                            <p
-                              className="text-muted"
-                              style={{
-                                fontSize: "12px",
-                                margin: 0,
-                                marginBottom: "4px",
-                              }}
-                            >
-                              Terms and Condition
-                            </p>
-                            <p style={{ fontWeight: "600", margin: 0 }}>
-                              {p.termsNCond}
-                            </p>
-                          </div>
-                          <div
-                            className="mb-md"
-                            style={{
-                              paddingBottom: "var(--spacing-md)",
-                              borderBottom: "1px solid var(--border-color)",
-                            }}
-                          >
-                            <p
-                              className="text-muted"
-                              style={{
-                                fontSize: "12px",
-                                margin: 0,
-                                marginBottom: "4px",
-                              }}
-                            >
-                              Start Date
-                            </p>
-                            <p style={{ fontWeight: "600", margin: 0 }}>
-                              {new Date(p.startAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div
-                            className="mb-md"
-                            style={{
-                              paddingBottom: "var(--spacing-md)",
-                            }}
-                          >
-                            <p
-                              className="text-muted"
-                              style={{
-                                fontSize: "12px",
-                                margin: 0,
-                                marginBottom: "4px",
-                              }}
-                            >
-                              End Date
-                            </p>
-                            <p style={{ fontWeight: "600", margin: 0 }}>
-                              {new Date(p.endAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                        </Card.Header>
+                        <Card.Content>
+                          <Container text="Promotion ID" data={p.promotionId} />
+                          <Container text="Description" data={p.description} />
+                          <Container text="Discount" data={p.discount} />
+                          <Container
+                            text="Terms and Condition"
+                            data={p.termsNCond}
+                          />
+                          <Container
+                            text="Start Date"
+                            data={new Date(p.startAt).toLocaleDateString()}
+                          />
+                          <Container
+                            text="End Date"
+                            data={new Date(p.endAt).toLocaleDateString()}
+                          />
+                        </Card.Content>
+                      </Card>
                     ) : (
                       <form onSubmit={handleSubmitPromotion}>
-                        <div className="card mt-lg" key={p.promotionId}>
-                          <div className="card-header">
+                        <Card key={p.promotionId}>
+                          <Card.Header>
                             <div className="flex-between">
                               <h4 className="card-title">
                                 Promotions Information
@@ -857,191 +628,90 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                                 </button>
                               </div>
                             </div>
-                          </div>
-                          <div className="card-content">
-                            <div
-                              className="mb-md"
-                              style={{
-                                paddingBottom: "var(--spacing-md)",
-                                borderBottom: "1px solid var(--border-color)",
-                              }}
-                            >
-                              <p
-                                className="text-muted"
-                                style={{
-                                  fontSize: "12px",
-                                  margin: 0,
-                                  marginBottom: "4px",
-                                }}
-                              >
-                                Promotion ID
-                              </p>
-                              <p style={{ fontWeight: "600", margin: 0 }}>
-                                {p.promotionId}
-                              </p>
-                            </div>
-                            <div
-                              className="mb-md form-group"
-                              style={{
-                                paddingBottom: "var(--spacing-md)",
-                                borderBottom: "1px solid var(--border-color)",
-                              }}
-                            >
-                              <label htmlFor="description">Description</label>
+                          </Card.Header>
+                          <Card.Content>
+                            <Container
+                              text="Promotion ID"
+                              data={p.promotionId}
+                            />
+                            <FormInput name="description" text="Description">
                               <textarea
                                 id="description"
                                 name="description"
-                                placeholder="Enter description"
                                 value={editedPromotions.description}
+                                placeholder="Enter description"
                                 onChange={handlePromotionChange}
                                 required
                               />
-                            </div>
-                            <div
-                              className="mb-md form-group"
-                              style={{
-                                paddingBottom: "var(--spacing-md)",
-                                borderBottom: "1px solid var(--border-color)",
-                              }}
+                            </FormInput>
+                            <FormInput
+                              name="discount"
+                              text="Discount"
+                              placeholder="Enter discount"
+                              onChange={handlePromotionChange}
+                              value={editedPromotions.discount}
+                              required={true}
+                            />
+                            <FormInput
+                              name="termsNCond"
+                              text="Terms and Condition"
                             >
-                              <label htmlFor="discount">Discount</label>
-                              <input
-                                id="discount"
-                                type="text"
-                                name="discount"
-                                value={editedPromotions.discount}
-                                placeholder="Enter discount"
-                                onChange={handlePromotionChange}
-                                required
-                              />
-                            </div>
-                            <div
-                              className="mb-md form-group"
-                              style={{
-                                paddingBottom: "var(--spacing-md)",
-                                borderBottom: "1px solid var(--border-color)",
-                              }}
-                            >
-                              <label htmlFor="termsNCond">
-                                Terms and Condition
-                              </label>
                               <textarea
                                 id="termsNCond"
                                 name="termsNCond"
-                                placeholder="Enter termsNCond"
                                 value={editedPromotions.termsNCond}
+                                placeholder="Enter terms and condition"
                                 onChange={handlePromotionChange}
                                 required
                               />
-                            </div>
-                            <div
-                              className="mb-md form-group"
-                              style={{
-                                paddingBottom: "var(--spacing-md)",
-                                borderBottom: "1px solid var(--border-color)",
-                              }}
-                            >
-                              <label htmlFor="startAt">Start Date</label>
-                              <input
-                                id="startAt"
-                                type="datetime-local"
+                            </FormInput>
+                            <div className="form-row">
+                              <FormInput
                                 name="startAt"
+                                text="Start Date"
+                                type="datetime-local"
                                 value={editedPromotions.startAt.slice(0, 16)}
                                 onChange={handlePromotionChange}
-                                required
+                                required={true}
                               />
-                            </div>
-                            <div
-                              className="mb-md form-group"
-                              style={{
-                                paddingBottom: "var(--spacing-md)",
-                              }}
-                            >
-                              <label htmlFor="endAt">End Date</label>
-                              <input
-                                id="endAt"
-                                type="datetime-local"
+                              <FormInput
                                 name="endAt"
+                                text="End Date"
                                 value={editedPromotions.endAt.slice(0, 16)}
+                                type="datetime-local"
                                 onChange={handlePromotionChange}
-                                required
+                                required={true}
                               />
                             </div>
-                          </div>
-                        </div>
+                          </Card.Content>
+                        </Card>
                       </form>
                     )}
                   </>
                 );
               })
             ) : (
-              <div className="card mt-lg">
-                <div className="card-header">
-                  <h4 className="card-title">Promotions Information</h4>
-                </div>
-                <div className="card-content">
-                  <div
-                    className="mb-md"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <p
-                      className="text-muted"
-                      style={{
-                        fontSize: "12px",
-                        margin: 0,
-                        marginBottom: "4px",
-                      }}
-                    >
-                      There are no promotions. Click the create promotions to
-                      create one now!
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <Card>
+                <Card.Content>
+                  <Container
+                    text="There are no promotions. Click create promotions to create
+                      one now!"
+                  />
+                </Card.Content>
+              </Card>
             )}
           </div>
 
           {/* Sidebar */}
           <div>
-            <div className="card">
-              <div className="card-header">
-                <h4 className="card-title">Quick Info</h4>
-              </div>
-              <div className="card-content">
-                <div
-                  className="mb-md"
-                  style={{
-                    paddingBottom: "var(--spacing-md)",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
-                >
-                  <p
-                    className="text-muted"
-                    style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
-                  >
-                    Restaurant ID
-                  </p>
-                  <p style={{ fontWeight: "600", margin: 0 }}>
-                    {restaurant.restaurantId}
-                  </p>
-                </div>
-
-                <div
-                  className="mb-md"
-                  style={{
-                    paddingBottom: "var(--spacing-md)",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
-                >
-                  <p
-                    className="text-muted"
-                    style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
-                  >
-                    Status
-                  </p>
+            <Card>
+              <Card.Header title="Quick Info" />
+              <Card.Content>
+                <Container
+                  text="Restaurant ID"
+                  data={restaurant.restaurantId}
+                />
+                <Container text="Status">
                   <p
                     style={{
                       fontWeight: "600",
@@ -1051,7 +721,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                   >
                     ✓ Active
                   </p>
-                </div>
+                </Container>
 
                 <div
                   className="mb-lg"
@@ -1102,8 +772,8 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                     across the platform within a few minutes.
                   </p>
                 </div>
-              </div>
-            </div>
+              </Card.Content>
+            </Card>
           </div>
         </div>
       </div>
