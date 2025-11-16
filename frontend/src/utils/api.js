@@ -15,6 +15,9 @@ export const bookingAPI = {
   // Create a new booking
   createBooking: (bookingData) => api.post("/booking", bookingData),
 
+  // Get all bookings (Admin view)
+  getAllBookings: () => api.get("/booking/all"),
+
   // Get booking by confirmation code
   getBookingByCode: (confirmationCode) =>
     api.get(`/booking/code/${confirmationCode}`),
