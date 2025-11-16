@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { seatingAPI } from "../api";
+import { seatingAPI } from "../utils/api";
 import { mockTables, mockBookings } from "../mockData";
 
 export function SeatingPlan() {

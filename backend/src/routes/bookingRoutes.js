@@ -6,6 +6,9 @@ module.exports = (router) => {
   // Endpoint to create a new booking (Use Case 2: Book Reservation)
   router.post("/booking", bookingsController.createBooking);
 
+  // Endpoint to get all bookings (Admin view - all restaurants)
+  router.get("/booking/all", bookingsController.findAllBookings);
+
   // Endpoint to find booking by confirmation code (Use Case 3: Manage Reservation)
   router.get(
     "/booking/code/:confirmationCode",

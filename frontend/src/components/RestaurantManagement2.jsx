@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { restaurantAPI, promotionAPI } from "../api";
 import { Card, Container } from "./Common";
+import { restaurantAPI, promotionAPI } from "../utils/api";
 
 const FormInput = ({
   type,

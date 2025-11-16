@@ -37,7 +37,7 @@ const Bookings = db.define(
       type: DataTypes.TEXT,
     },
     bookingDate: {
-      type: DataTypes.DATE,
+      type: DataTypes.DATEONLY,
     },
     bookingTime: {
       type: DataTypes.TIME,
@@ -74,15 +74,21 @@ const Bookings = db.define(
       {
         unique: true,
         fields: ["fkSeatingId", "bookingDate", "bookingTime"],
+        name: "unique_seating_date_time",
+      },
+      {
+        unique: true,
+        fields: ["customerEmail", "fkRestaurantId", "bookingDate"],
+        name: "unique_customer_restaurant_date",
       },
     ],
   }
 );
 
-Restaurants.hasMany(Bookings, { foreignKey: "fkRestaurantId" });
-Bookings.belongsTo(Restaurants, { foreignKey: "fkRestaurantId" });
+Restaurants.hasMany(Bookings, { foreignKey: "fkRestaurantId", as: "Bookings" });
+Bookings.belongsTo(Restaurants, { foreignKey: "fkRestaurantId", as: "Restaurant" });
 
-SeatingPlans.hasMany(Bookings, { foreignKey: "fkSeatingId" });
-Bookings.belongsTo(SeatingPlans, { foreignKey: "fkSeatingId" });
+SeatingPlans.hasMany(Bookings, { foreignKey: "fkSeatingId", as: "Bookings" });
+Bookings.belongsTo(SeatingPlans, { foreignKey: "fkSeatingId", as: "SeatingPlan" });
 
 module.exports = { Bookings };
