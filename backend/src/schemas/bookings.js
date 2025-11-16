@@ -79,10 +79,10 @@ const Bookings = db.define(
   }
 );
 
-Restaurants.hasMany(Bookings, { foreignKey: "fkRestaurantId" });
-Bookings.belongsTo(Restaurants, { foreignKey: "fkRestaurantId" });
+Restaurants.hasMany(Bookings, { foreignKey: "fkRestaurantId", as: "Bookings" });
+Bookings.belongsTo(Restaurants, { foreignKey: "fkRestaurantId", as: "Restaurant" });
 
-SeatingPlans.hasMany(Bookings, { foreignKey: "fkSeatingId" });
-Bookings.belongsTo(SeatingPlans, { foreignKey: "fkSeatingId" });
+SeatingPlans.hasMany(Bookings, { foreignKey: "fkSeatingId", as: "Bookings" });
+Bookings.belongsTo(SeatingPlans, { foreignKey: "fkSeatingId", as: "SeatingPlan" });
 
 module.exports = { Bookings };

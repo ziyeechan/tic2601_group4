@@ -1,11 +1,64 @@
-import { useState } from 'react';
-import { mockBookings } from '../mockData';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 
 export function AdminBookings() {
-  const [bookings, setBookings] = useState(mockBookings);
+  const [bookings, setBookings] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [updatingBookings, setUpdatingBookings] = useState(new Set());
+
+  // Fetch bookings from API
+  useEffect(() => {
+    fetchBookings();
+  }, []);
+
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/booking');
+      const bookingsData = response.data.bookings || [];
+      
+      // Transform backend data to frontend format
+      const transformedBookings = bookingsData.map((booking) => {
+        // Handle Sequelize dataValues if present
+        const bookingData = booking.dataValues || booking;
+        const restaurant = bookingData.Restaurant?.dataValues || bookingData.Restaurant;
+        const seatingPlan = bookingData.SeatingPlan?.dataValues || bookingData.SeatingPlan;
+        
+        return {
+          id: bookingData.bookingId,
+          booking_id: bookingData.bookingId,
+          confirmation_code: bookingData.confirmationCode,
+          customerName: bookingData.customerName,
+          customerEmail: bookingData.customerEmail,
+          customerPhone: bookingData.customerPhone,
+          partySize: bookingData.partySize,
+          party_size: bookingData.partySize,
+          specialRequests: bookingData.specialRequests,
+          date: bookingData.date || bookingData.bookingDate,
+          booking_date: bookingData.date || bookingData.bookingDate,
+          time: bookingData.time || bookingData.bookingTime,
+          booking_time: bookingData.time || bookingData.bookingTime,
+          status: bookingData.status,
+          restaurantName: restaurant?.restaurantName || 'Unknown Restaurant',
+          restaurant_id: bookingData.fkRestaurantId,
+          seating_id: bookingData.fkSeatingId,
+          tableNumber: seatingPlan?.tableNumber,
+          createdAt: bookingData.createdAt
+        };
+      });
+      
+      setBookings(transformedBookings);
+    } catch (error) {
+      console.error('Error fetching bookings:', error);
+      console.error('Error details:', error.response?.data || error.message);
+      setBookings([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusBadgeClass = (status) => {
     const statusClasses = {
@@ -39,28 +92,90 @@ export function AdminBookings() {
   }
 
   // Handle status updates
-  const updateBookingStatus = (bookingId, newStatus) => {
-    setBookings(bookings.map(b =>
-      b.id === bookingId ? { ...b, status: newStatus } : b
-    ));
+  const updateBookingStatus = async (bookingId, newStatus) => {
+    // Prevent duplicate updates
+    if (updatingBookings.has(bookingId)) {
+      console.log('Update already in progress for booking:', bookingId);
+      return;
+    }
+
+    try {
+      setUpdatingBookings(prev => new Set(prev).add(bookingId));
+      console.log('Updating booking:', bookingId, 'to status:', newStatus);
+      
+      const response = await axios.put(`/api/booking/${bookingId}/status`, { status: newStatus });
+      console.log('Update response:', response.data);
+      
+      // Optimistically update the local state for immediate UI feedback
+      setBookings(prevBookings => 
+        prevBookings.map(booking => {
+          const bookingIdToCheck = booking.id || booking.booking_id;
+          return bookingIdToCheck === bookingId 
+            ? { ...booking, status: newStatus }
+            : booking;
+        })
+      );
+      
+      // Refresh bookings from server to ensure consistency
+      await fetchBookings();
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      console.error('Error response:', error.response?.data);
+      
+      // Revert optimistic update on error by refreshing
+      await fetchBookings();
+      
+      const errorMessage = error.response?.data?.message || 'Failed to update booking status. Please try again.';
+      alert(errorMessage);
+    } finally {
+      setUpdatingBookings(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(bookingId);
+        return newSet;
+      });
+    }
   };
 
   const getActionButtons = (booking) => {
+    // Use booking_id as fallback if id is not available
+    const bookingId = booking.id || booking.booking_id;
+    
+    if (!bookingId) {
+      console.error('Booking ID not found for booking:', booking);
+      return <span className="text-muted" style={{ fontSize: '12px' }}>Invalid booking</span>;
+    }
+
+    const isUpdating = updatingBookings.has(bookingId);
+    const buttonProps = {
+      disabled: isUpdating,
+      style: isUpdating ? { opacity: 0.6, cursor: 'not-allowed' } : {}
+    };
+
     switch (booking.status) {
       case 'pending':
         return (
           <>
             <button
+              {...buttonProps}
               className="btn btn-success btn-sm"
-              onClick={() => updateBookingStatus(booking.id, 'confirmed')}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updateBookingStatus(bookingId, 'confirmed');
+              }}
             >
-              ✓ Confirm
+              {isUpdating ? '⏳' : '✓'} Confirm
             </button>
             <button
+              {...buttonProps}
               className="btn btn-danger btn-sm"
-              onClick={() => updateBookingStatus(booking.id, 'cancelled')}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updateBookingStatus(bookingId, 'cancelled');
+              }}
             >
-              ✕ Reject
+              {isUpdating ? '⏳' : '✕'} Reject
             </button>
           </>
         );
@@ -68,26 +183,41 @@ export function AdminBookings() {
         return (
           <>
             <button
+              {...buttonProps}
               className="btn btn-primary btn-sm"
-              onClick={() => updateBookingStatus(booking.id, 'seated')}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updateBookingStatus(bookingId, 'seated');
+              }}
             >
-              👤 Seat
+              {isUpdating ? '⏳' : '👤'} Seat
             </button>
             <button
+              {...buttonProps}
               className="btn btn-danger btn-sm"
-              onClick={() => updateBookingStatus(booking.id, 'no_show')}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updateBookingStatus(bookingId, 'no_show');
+              }}
             >
-              ✕ No Show
+              {isUpdating ? '⏳' : '✕'} No Show
             </button>
           </>
         );
       case 'seated':
         return (
           <button
+            {...buttonProps}
             className="btn btn-success btn-sm"
-            onClick={() => updateBookingStatus(booking.id, 'completed')}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              updateBookingStatus(bookingId, 'completed');
+            }}
           >
-            ✓ Complete
+            {isUpdating ? '⏳' : '✓'} Complete
           </button>
         );
       default:
@@ -153,7 +283,11 @@ export function AdminBookings() {
       </div>
 
       {/* Bookings Table */}
-      {filtered.length > 0 ? (
+      {loading ? (
+        <div className="empty-state">
+          <h3>Loading bookings...</h3>
+        </div>
+      ) : filtered.length > 0 ? (
         <div className="card">
           <div style={{ overflowX: 'auto' }}>
             <table>
@@ -179,8 +313,8 @@ export function AdminBookings() {
                     <td>{booking.restaurantName}</td>
                     <td>
                       <div>
-                        <p style={{ margin: 0 }}>📅 {new Date(booking.date).toLocaleDateString()}</p>
-                        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '12px' }}>⏰ {booking.time}</p>
+                        <p style={{ margin: 0 }}>📅 {booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A'}</p>
+                        <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: '12px' }}>⏰ {booking.time || booking.booking_time || 'N/A'}</p>
                       </div>
                     </td>
                     <td>👥 {booking.partySize}</td>
