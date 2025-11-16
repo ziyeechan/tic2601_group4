@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { restaurantAPI, promotionAPI } from "../api";
+import { restaurantAPI, promotionAPI } from "../utils/api";
 
 export function RestaurantManagement({ onBack, onViewChange }) {
   const [restaurant, setRestaurant] = useState(null);
