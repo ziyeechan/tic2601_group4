@@ -1,54 +1,47 @@
 const { Reviews } = require("../schemas/reviews");
 
-module.exports.findAllReviews = async (name) => {
-  const results = await Reviews.findAll();
-
-  return results;
+module.exports.findAllReviews = async () => {
+  return await Reviews.findAll();
 };
 
 module.exports.findReviewsByPK = async (reviewID) => {
-  const results = await Reviews.findByPk(reviewID);
-
-  return results;
+  return await Reviews.findByPk(reviewID);
 };
 
 module.exports.findReviewsByRestaurantID = async (restaurantID) => {
-  const results = await Reviews.findAll({
+  return await Reviews.findAll({
     where: { fkRestaurantId: restaurantID },
   });
-
-  return results;
 };
 
 module.exports.findReviewsByBookingID = async (bookingID) => {
-  const results = await Reviews.findAll({
+  return await Reviews.findAll({
     where: { fkBookingId: bookingID },
   });
-
-  return results;
 };
 
 module.exports.createReviews = async (reviewInfo, bookingID, restaurantID) => {
-  await Reviews.create({
+  return await Reviews.create({
     rating: reviewInfo.rating,
     comment: reviewInfo.comment,
-    createdAt: reviewInfo.createdAt,
     fkBookingId: bookingID,
     fkRestaurantId: restaurantID,
   });
 };
 
 module.exports.updateReviews = async (reviewID, meta) => {
-  await Reviews.update(
+  return await Reviews.update(
     {
-      ...meta,
+      rating: meta.rating,
+      comment: meta.comment,
+
     },
     { where: { reviewId: reviewID } }
   );
 };
 
 module.exports.deleteReviews = async (reviewID) => {
-  await Reviews.destroy({
+  return await Reviews.destroy({
     where: { reviewId: reviewID },
   });
 };
