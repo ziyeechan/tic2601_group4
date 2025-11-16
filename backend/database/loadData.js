@@ -340,14 +340,14 @@ module.exports.LoadData = async () => {
         rating: 4,
         comment: "Great service and ambiance. Food was very good.",
         fkBookingId: 2,
-        fkRestaurantId: 2,
+        fkRestaurantId: 1,
       },
       {
         rating: 5,
         comment:
           "Amazing experience! Vegetarian options were plentiful and tasty.",
         fkBookingId: 3,
-        fkRestaurantId: 4,
+        fkRestaurantId: 1,
       },
     ]);
 
