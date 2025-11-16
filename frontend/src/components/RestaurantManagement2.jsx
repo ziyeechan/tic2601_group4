@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
-import { restaurantAPI } from "../api";
+import { restaurantAPI, promotionAPI } from "../api";
 
 export function RestaurantManagement({ onBack, onViewChange }) {
   const [restaurant, setRestaurant] = useState(null);
   const [address, setAddress] = useState();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingRestaurant, setIsEditingRestaurant] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [editedRestaurant, setEditedRestaurant] = useState({ ...restaurant });
   const [editedAddress, setEditedAddress] = useState({ ...address });
-
+  const [promotions, setPromotions] = useState(null);
+  const [editedPromotions, setEditedPromotions] = useState(null);
+  const [isEditingPromotions, setIsEditingPromotions] = useState(-1);
+  const [isAddingPromotions, setIsAddingPromotions] = useState(false);
   useEffect(() => {
     restaurantAPI
       .getRestaurantById(1)
@@ -31,6 +34,13 @@ export function RestaurantManagement({ onBack, onViewChange }) {
         setRefresh(true);
       })
       .catch((e) => console.error(e));
+
+    promotionAPI
+      .getPromotionsByRestaurant(1)
+      .then((res) => {
+        setPromotions(res.data.promotionInfo);
+      })
+      .catch((e) => console.error(e));
   }, [refresh]);
 
   const handleRestaurantChange = (e) => {
@@ -49,6 +59,18 @@ export function RestaurantManagement({ onBack, onViewChange }) {
     }));
   };
 
+  const handleDeletePromotion = async (promotionId) => {
+    console.log(promotionId);
+    if (window.confirm("Are you sure you want to delete this promotion?")) {
+      await promotionAPI
+        .deletePromotion(promotionId)
+        .then(() => console.log("sucess"))
+        .catch((error) => console.error(error));
+      setRefresh(false);
+      setEditedPromotions(null);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
 
@@ -59,10 +81,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
       !editedAddress.addressLine1.trim() ||
       !editedAddress.city.trim()
     ) {
-      Toast.fire({
-        icon: "error",
-        title: "Please fill in all required fields",
-      });
+      console.error("Something went wrong. Please try again later");
       return;
     }
 
@@ -81,29 +100,60 @@ export function RestaurantManagement({ onBack, onViewChange }) {
         postalCode: editedAddress.postalCode,
       };
       restaurantAPI
-        .updateRestaurant(restaurant.restaurantId || restaurant.restaurant_id, data)
+        .updateRestaurant(
+          restaurant.restaurantId || restaurant.restaurant_id,
+          data
+        )
         .then((res) => {
-          console.log(res);
-          Toast.fire({
-            icon: "success",
-            title: res.data.message || "Restaurant updated successfully",
-          });
+          console.log("success");
         });
       setRestaurant({ ...editedRestaurant });
       setAddress({ ...editedAddress });
-      setIsEditing(false);
+      setIsEditingRestaurant(false);
     } catch (error) {
-      Toast.fire({
-        icon: "error",
-        title: "Failed to update restaurant information. Please try again.",
-      });
+      console.error(error);
     }
   };
 
   const handleCancel = () => {
     setEditedRestaurant({ ...restaurant });
     setEditedAddress({ ...address });
-    setIsEditing(false);
+    setIsEditingRestaurant(false);
+  };
+
+  const handleSubmitPromotion = async (e) => {
+    e.preventDefault();
+    await promotionAPI
+      .updatePromotion(isEditingPromotions, editedPromotions)
+      .then((res) => {
+        console.log("success");
+        setRefresh(false);
+        setIsEditingPromotions(-1);
+        setEditedPromotions(null);
+      })
+      .catch((error) => console.error(error));
+  };
+
+  const handlePromotionChange = (e) => {
+    const { name, value } = e.target;
+    setEditedPromotions((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCreatePromotion = async (e) => {
+    e.preventDefault();
+
+    await promotionAPI
+      .createPromotion(1, editedPromotions)
+      .then((res) => {
+        setRefresh(false);
+        setIsAddingPromotions(false);
+        setEditedPromotions(null);
+        console.log("success");
+      })
+      .catch((error) => console.error(error));
   };
 
   const cuisineOptions = [
@@ -146,7 +196,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
               🍽️ Restaurant Management
             </h2>
 
-            {!isEditing ? (
+            {!isEditingRestaurant ? (
               // View Mode
               <div>
                 {/* Restaurant Info Card */}
@@ -156,7 +206,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                       <h3 className="card-title">Restaurant Information</h3>
                       <button
                         className="btn btn-primary btn-sm"
-                        onClick={() => setIsEditing(true)}
+                        onClick={() => setIsEditingRestaurant(true)}
                       >
                         ✏️ Edit
                       </button>
@@ -469,10 +519,488 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                     onClick={handleCancel}
                     style={{ padding: "12px 24px", fontSize: "16px" }}
                   >
-                    Cancel
+                    ❌ Cancel
                   </button>
                 </div>
               </form>
+            )}
+
+            <div className="flex-between">
+              <h2
+                style={{
+                  marginBottom: "var(--spacing-lg)",
+                  marginTop: "var(--spacing-lg)",
+                }}
+              >
+                Promotions Management
+              </h2>
+              <button
+                className="btn btn-success btn-sm"
+                onClick={() => setIsAddingPromotions(true)}
+                disabled={isEditingPromotions != -1}
+                style={{
+                  opacity: isEditingPromotions != -1 ? 0.6 : 1,
+                }}
+              >
+                ➕ Create Promotion
+              </button>
+            </div>
+            {isAddingPromotions && (
+              <form onSubmit={handleCreatePromotion}>
+                <div className="card mt-lg">
+                  <div className="card-header">
+                    <div className="flex-between">
+                      <h4 className="card-title">Promotions Information</h4>
+                      <div>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          style={{
+                            marginRight: "var(--spacing-sm)",
+                          }}
+                          onClick={() => {
+                            setEditedPromotions(null);
+                            setIsEditingPromotions(-1);
+                            setIsAddingPromotions(false);
+                          }}
+                        >
+                          ❌ Cancel
+                        </button>
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => console.log("test")}
+                        >
+                          ✔️ Save
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card-content">
+                    <div
+                      className="mb-md form-group"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
+                      <label htmlFor="description">Description</label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        placeholder="Enter description"
+                        onChange={handlePromotionChange}
+                        required
+                      />
+                    </div>
+                    <div
+                      className="mb-md form-group"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
+                      <label htmlFor="discount">Discount</label>
+                      <input
+                        id="discount"
+                        type="text"
+                        name="discount"
+                        placeholder="Enter discount"
+                        onChange={handlePromotionChange}
+                        required
+                      />
+                    </div>
+                    <div
+                      className="mb-md form-group"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
+                      <label htmlFor="termsNCond">Terms and Condition</label>
+                      <textarea
+                        id="termsNCond"
+                        name="termsNCond"
+                        placeholder="Enter termsNCond"
+                        onChange={handlePromotionChange}
+                        required
+                      />
+                    </div>
+                    <div
+                      className="mb-md form-group"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
+                      <label htmlFor="startAt">Start Date</label>
+                      <input
+                        id="startAt"
+                        type="datetime-local"
+                        name="startAt"
+                        onChange={handlePromotionChange}
+                        required
+                      />
+                    </div>
+                    <div
+                      className="mb-md form-group"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                      }}
+                    >
+                      <label htmlFor="endAt">End Date</label>
+                      <input
+                        id="endAt"
+                        type="datetime-local"
+                        name="endAt"
+                        onChange={handlePromotionChange}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </form>
+            )}
+            {promotions ? (
+              promotions.map((p) => {
+                return (
+                  <>
+                    {isEditingPromotions != p.promotionId ? (
+                      <div className="card mt-lg" key={p.promotionId}>
+                        <div className="card-header">
+                          <div className="flex-between">
+                            <h4 className="card-title">
+                              Promotions Information
+                            </h4>
+                            <div>
+                              <button
+                                className="btn btn-danger btn-sm"
+                                onClick={() =>
+                                  handleDeletePromotion(p.promotionId)
+                                }
+                                disabled={isAddingPromotions}
+                                style={{
+                                  opacity: isAddingPromotions ? 0.6 : 1,
+                                }}
+                              >
+                                🗑️ Delete
+                              </button>
+                              <button
+                                className="btn btn-primary btn-sm"
+                                style={{
+                                  marginLeft: "var(--spacing-sm)",
+                                  opacity: isAddingPromotions ? 0.6 : 1,
+                                }}
+                                onClick={() => {
+                                  setEditedPromotions(p);
+                                  setIsEditingPromotions(p.promotionId);
+                                }}
+                                disabled={isAddingPromotions}
+                              >
+                                ✏️ Edit
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="card-content">
+                          <div
+                            className="mb-md"
+                            style={{
+                              paddingBottom: "var(--spacing-md)",
+                              borderBottom: "1px solid var(--border-color)",
+                            }}
+                          >
+                            <p
+                              className="text-muted"
+                              style={{
+                                fontSize: "12px",
+                                margin: 0,
+                                marginBottom: "4px",
+                              }}
+                            >
+                              Promotion ID
+                            </p>
+                            <p style={{ fontWeight: "600", margin: 0 }}>
+                              {p.promotionId}
+                            </p>
+                          </div>
+                          <div
+                            className="mb-md"
+                            style={{
+                              paddingBottom: "var(--spacing-md)",
+                              borderBottom: "1px solid var(--border-color)",
+                            }}
+                          >
+                            <p
+                              className="text-muted"
+                              style={{
+                                fontSize: "12px",
+                                margin: 0,
+                                marginBottom: "4px",
+                              }}
+                            >
+                              Description
+                            </p>
+                            <p style={{ fontWeight: "600", margin: 0 }}>
+                              {p.description}
+                            </p>
+                          </div>
+                          <div
+                            className="mb-md"
+                            style={{
+                              paddingBottom: "var(--spacing-md)",
+                              borderBottom: "1px solid var(--border-color)",
+                            }}
+                          >
+                            <p
+                              className="text-muted"
+                              style={{
+                                fontSize: "12px",
+                                margin: 0,
+                                marginBottom: "4px",
+                              }}
+                            >
+                              Discount
+                            </p>
+                            <p style={{ fontWeight: "600", margin: 0 }}>
+                              {p.discount}
+                            </p>
+                          </div>
+                          <div
+                            className="mb-md"
+                            style={{
+                              paddingBottom: "var(--spacing-md)",
+                              borderBottom: "1px solid var(--border-color)",
+                            }}
+                          >
+                            <p
+                              className="text-muted"
+                              style={{
+                                fontSize: "12px",
+                                margin: 0,
+                                marginBottom: "4px",
+                              }}
+                            >
+                              Terms and Condition
+                            </p>
+                            <p style={{ fontWeight: "600", margin: 0 }}>
+                              {p.termsNCond}
+                            </p>
+                          </div>
+                          <div
+                            className="mb-md"
+                            style={{
+                              paddingBottom: "var(--spacing-md)",
+                              borderBottom: "1px solid var(--border-color)",
+                            }}
+                          >
+                            <p
+                              className="text-muted"
+                              style={{
+                                fontSize: "12px",
+                                margin: 0,
+                                marginBottom: "4px",
+                              }}
+                            >
+                              Start Date
+                            </p>
+                            <p style={{ fontWeight: "600", margin: 0 }}>
+                              {new Date(p.startAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div
+                            className="mb-md"
+                            style={{
+                              paddingBottom: "var(--spacing-md)",
+                            }}
+                          >
+                            <p
+                              className="text-muted"
+                              style={{
+                                fontSize: "12px",
+                                margin: 0,
+                                marginBottom: "4px",
+                              }}
+                            >
+                              End Date
+                            </p>
+                            <p style={{ fontWeight: "600", margin: 0 }}>
+                              {new Date(p.endAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleSubmitPromotion}>
+                        <div className="card mt-lg" key={p.promotionId}>
+                          <div className="card-header">
+                            <div className="flex-between">
+                              <h4 className="card-title">
+                                Promotions Information
+                              </h4>
+                              <div>
+                                <button
+                                  className="btn btn-secondary btn-sm"
+                                  style={{
+                                    marginRight: "var(--spacing-sm)",
+                                  }}
+                                  onClick={() => {
+                                    setEditedPromotions(null);
+                                    setIsEditingPromotions(-1);
+                                  }}
+                                >
+                                  ❌ Cancel
+                                </button>
+                                <button
+                                  className="btn btn-success btn-sm"
+                                  type="submit"
+                                >
+                                  ✔️ Save
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="card-content">
+                            <div
+                              className="mb-md"
+                              style={{
+                                paddingBottom: "var(--spacing-md)",
+                                borderBottom: "1px solid var(--border-color)",
+                              }}
+                            >
+                              <p
+                                className="text-muted"
+                                style={{
+                                  fontSize: "12px",
+                                  margin: 0,
+                                  marginBottom: "4px",
+                                }}
+                              >
+                                Promotion ID
+                              </p>
+                              <p style={{ fontWeight: "600", margin: 0 }}>
+                                {p.promotionId}
+                              </p>
+                            </div>
+                            <div
+                              className="mb-md form-group"
+                              style={{
+                                paddingBottom: "var(--spacing-md)",
+                                borderBottom: "1px solid var(--border-color)",
+                              }}
+                            >
+                              <label htmlFor="description">Description</label>
+                              <textarea
+                                id="description"
+                                name="description"
+                                placeholder="Enter description"
+                                value={editedPromotions.description}
+                                onChange={handlePromotionChange}
+                                required
+                              />
+                            </div>
+                            <div
+                              className="mb-md form-group"
+                              style={{
+                                paddingBottom: "var(--spacing-md)",
+                                borderBottom: "1px solid var(--border-color)",
+                              }}
+                            >
+                              <label htmlFor="discount">Discount</label>
+                              <input
+                                id="discount"
+                                type="text"
+                                name="discount"
+                                value={editedPromotions.discount}
+                                placeholder="Enter discount"
+                                onChange={handlePromotionChange}
+                                required
+                              />
+                            </div>
+                            <div
+                              className="mb-md form-group"
+                              style={{
+                                paddingBottom: "var(--spacing-md)",
+                                borderBottom: "1px solid var(--border-color)",
+                              }}
+                            >
+                              <label htmlFor="termsNCond">
+                                Terms and Condition
+                              </label>
+                              <textarea
+                                id="termsNCond"
+                                name="termsNCond"
+                                placeholder="Enter termsNCond"
+                                value={editedPromotions.termsNCond}
+                                onChange={handlePromotionChange}
+                                required
+                              />
+                            </div>
+                            <div
+                              className="mb-md form-group"
+                              style={{
+                                paddingBottom: "var(--spacing-md)",
+                                borderBottom: "1px solid var(--border-color)",
+                              }}
+                            >
+                              <label htmlFor="startAt">Start Date</label>
+                              <input
+                                id="startAt"
+                                type="datetime-local"
+                                name="startAt"
+                                value={editedPromotions.startAt.slice(0, 16)}
+                                onChange={handlePromotionChange}
+                                required
+                              />
+                            </div>
+                            <div
+                              className="mb-md form-group"
+                              style={{
+                                paddingBottom: "var(--spacing-md)",
+                              }}
+                            >
+                              <label htmlFor="endAt">End Date</label>
+                              <input
+                                id="endAt"
+                                type="datetime-local"
+                                name="endAt"
+                                value={editedPromotions.endAt.slice(0, 16)}
+                                onChange={handlePromotionChange}
+                                required
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                    )}
+                  </>
+                );
+              })
+            ) : (
+              <div className="card mt-lg">
+                <div className="card-header">
+                  <h4 className="card-title">Promotions Information</h4>
+                </div>
+                <div className="card-content">
+                  <div
+                    className="mb-md"
+                    style={{
+                      paddingBottom: "var(--spacing-md)",
+                      borderBottom: "1px solid var(--border-color)",
+                    }}
+                  >
+                    <p
+                      className="text-muted"
+                      style={{
+                        fontSize: "12px",
+                        margin: 0,
+                        marginBottom: "4px",
+                      }}
+                    >
+                      There are no promotions. Click the create promotions to
+                      create one now!
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
@@ -497,7 +1025,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                     Restaurant ID
                   </p>
                   <p style={{ fontWeight: "600", margin: 0 }}>
-                    {restaurant.id}
+                    {restaurant.restaurantId}
                   </p>
                 </div>
 
