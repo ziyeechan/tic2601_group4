@@ -272,18 +272,6 @@ export default function App() {
           </div>
         );
 
-      // return selectedRestaurant ? (
-      //   <div
-      //     className="container"
-      //     style={{
-      //       paddingTop: "var(--spacing-lg)",
-      //       paddingBottom: "var(--spacing-lg)",
-      //     }}
-      //   >
-      //     <RestaurantManagement onBack={() => setCurrentView("home")} />
-      //   </div>
-      // ) : null;
-
       case "restaurant-detail":
         return selectedRestaurant ? (
           <div
