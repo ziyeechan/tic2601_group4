@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { bookingAPI } from '../utils/api';
 
 export function AdminBookings() {
   const [bookings, setBookings] = useState([]);
@@ -17,7 +17,7 @@ export function AdminBookings() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/booking');
+      const response = await bookingAPI.getAllBookings();
       const bookingsData = response.data.bookings || [];
       
       // Transform backend data to frontend format
@@ -102,8 +102,8 @@ export function AdminBookings() {
     try {
       setUpdatingBookings(prev => new Set(prev).add(bookingId));
       console.log('Updating booking:', bookingId, 'to status:', newStatus);
-      
-      const response = await axios.put(`/api/booking/${bookingId}/status`, { status: newStatus });
+
+      const response = await bookingAPI.updateBookingStatus(bookingId, newStatus);
       console.log('Update response:', response.data);
       
       // Optimistically update the local state for immediate UI feedback
