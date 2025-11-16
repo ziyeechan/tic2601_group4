@@ -434,15 +434,17 @@ export function SeatingPlan() {
                     >
                       Type *
                     </label>
-                    <input
+                    <select
                       id="tableType"
-                      type="text"
                       name="tableType"
                       value={selectedTable?.tableType}
                       onChange={handleTableForm}
-                      placeholder="Enter table type"
                       required
-                    />
+                    >
+                      <option value="outdoor">Outdoor</option>
+                      <option value="indoor">Indoor</option>
+                      <option value="vip">VIP</option>
+                    </select>
                   </div>
                   <div
                     className="mb-md"
@@ -510,13 +512,13 @@ export function SeatingPlan() {
                           className="btn btn-success btn-full"
                           onClick={() => submitAddTable()}
                         >
-                          🗑️ Add Table
+                          ➕ Add Table
                         </button>
                         <button
                           className="btn btn-secondary btn-full"
                           onClick={() => cancelAddTable()}
                         >
-                          🗑️ Cancel
+                          Cancel
                         </button>
                       </>
                     ) : (
@@ -526,7 +528,7 @@ export function SeatingPlan() {
                           style={{ border: "1px solid var(--border-color)" }}
                           onClick={() => setSelectedTable(null)}
                         >
-                          ✏️ Cancel
+                          Cancel
                         </button>
                         <button
                           className="btn btn-secondary btn-full"
