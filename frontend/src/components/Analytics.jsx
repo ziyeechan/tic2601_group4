@@ -229,7 +229,7 @@ export function Analytics({ onCheck }) {
 
   return (
     <div>
-      <h2 style={{ marginBottom: 'var(--spacing-lg)' }}>📊 Restaurant Business Insights</h2>
+      <h2 style={{ marginBottom: 'var(--spacing-lg)' }}>📊 Restaurant Booking Analytics Dashboard </h2>
 
       {/* Filters */}
       <div className="card" style={{ padding: 'var(--spacing-md)', marginBottom: 'var(--spacing-lg)' }}>
