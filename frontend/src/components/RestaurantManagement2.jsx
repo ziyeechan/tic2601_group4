@@ -519,7 +519,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                     onClick={handleCancel}
                     style={{ padding: "12px 24px", fontSize: "16px" }}
                   >
-                    Cancel
+                    ❌ Cancel
                   </button>
                 </div>
               </form>
@@ -542,7 +542,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                   opacity: isEditingPromotions != -1 ? 0.6 : 1,
                 }}
               >
-                Create Promotion
+                ➕ Create Promotion
               </button>
             </div>
             {isAddingPromotions && (
@@ -563,13 +563,13 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                             setIsAddingPromotions(false);
                           }}
                         >
-                          Cancel
+                          ❌ Cancel
                         </button>
                         <button
                           className="btn btn-success btn-sm"
                           onClick={() => console.log("test")}
                         >
-                          Save
+                          ✔️ Save
                         </button>
                       </div>
                     </div>
@@ -847,13 +847,13 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                                     setIsEditingPromotions(-1);
                                   }}
                                 >
-                                  Cancel
+                                  ❌ Cancel
                                 </button>
                                 <button
                                   className="btn btn-success btn-sm"
                                   type="submit"
                                 >
-                                  Save
+                                  ✔️ Save
                                 </button>
                               </div>
                             </div>
