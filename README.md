@@ -15,6 +15,8 @@ Zheng Shao Bin
 Cheng Wei Xian
 <br/>
 Chan Zi Yee
+<br/>
+Jerin Paul
 
 # Getting Started
 
