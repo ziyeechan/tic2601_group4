@@ -24,6 +24,24 @@ module.exports = (router) => {
     restaurantController.findRestaurantByName
   );
 
+  // Endpoint to find restaurant by country
+  router.get(
+    "/restaurant/country/:country",
+    restaurantController.findRestaurantsByCountry
+  );
+
+  // Endpoint to find restaurant by city
+  router.get(
+    "/restaurant/city/:city",
+    restaurantController.findRestaurantsByCity
+  );
+
+  // Endpoint to find restaurant by state
+  router.get(
+    "/restaurant/state/:state",
+    restaurantController.findRestaurantsByState
+  );
+
   // Endpoint to update restaurant by restaurantId
   router.put(
     "/restaurant/:restaurantID",

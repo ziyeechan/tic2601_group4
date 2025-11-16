@@ -84,6 +84,29 @@ export const seatingAPI = {
   deleteSeatingPlan: (seatingId) => api.delete(`/seating/${seatingId}`),
 };
 
+// Address API endpoints
+export const addressAPI = {
+  // Create a new address
+  createAddress: (addressData) =>
+    api.post("/address", addressData),
+
+  // Get all addresses
+  getAllAddresses: () =>
+    api.get("/address/all"),
+
+  // Get address by ID
+  getAddressById: (addressId) =>
+    api.get(`/address/${addressId}`),
+
+  // Update address by ID
+  updateAddress: (addressId, addressData) =>
+    api.put(`/address/${addressId}`, addressData),
+
+  // Delete address by ID
+  deleteAddress: (addressId) =>
+    api.delete(`/address/${addressId}`),
+};
+
 // Promotion API endpoints
 export const promotionAPI = {
   // Create promotion for a specific restaurant

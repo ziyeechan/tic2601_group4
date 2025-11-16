@@ -1,5 +1,13 @@
 const { Addresses } = require("../schemas/addresses.js");
 
+module.exports.findAllAddresses = async () => {
+  return await Addresses.findAll();
+};
+
+module.exports.findAddressesByID = async (addressID) => {
+  return await Addresses.findByPk(addressID);
+};
+
 module.exports.createAddress = async (addressInfo) => {
   const results = await Addresses.create({
     addressLine1: addressInfo.addressLine1,
@@ -13,12 +21,6 @@ module.exports.createAddress = async (addressInfo) => {
   return results.addressId;
 };
 
-module.exports.findAddressByFK = async (addressID) => {
-  const results = await Addresses.findByPk(addressID);
-
-  return results;
-};
-
 module.exports.updateAddress = async (addressID, meta) => {
   await Addresses.update(
     {
@@ -30,4 +32,10 @@ module.exports.updateAddress = async (addressID, meta) => {
       },
     }
   );
+};
+
+module.exports.deleteAddress = async (addressID) => {
+  return await Addresses.destroy({
+    where: { addressId: addressID },
+  });
 };

@@ -18,40 +18,16 @@ module.exports = (router) => {
     addressController.findAddressByID
   );
 
-  // Endpoint to find address by restaurantId
-  router.get(
-    "/address/restaurant/:restaurantID",
-    addressController.findAddressByRestaurantID
-  );
-
-  // Endpoint to find restaurant by country
-  router.get(
-    "/address/country/:addressCountry",
-    addressController.findAddressByCountry
-  );
-
-  // Endpoint to find restaurant by city
-  router.get(
-    "/address/city/:addressCity",
-    addressController.findAddressByCity
-  );
-
-  // Endpoint to find restaurant by state
-  router.get(
-    "/address/state/:addressState",
-    addressController.findAddressByState
-  );
-
   // Endpoint to update restaurant by restaurantId
   router.put(
     "/address/:addressID",
-    addressController.updateAddressID
+    addressController.updateAddress
   );
 
   // Endpoint to delete existing restaurant
   router.delete(
     "/address/:addressID",
-    addressController.deleteAddressByID
+    addressController.deleteAddress
   );
 
   // =================================== End of Restaurant Endpoints =================================================================

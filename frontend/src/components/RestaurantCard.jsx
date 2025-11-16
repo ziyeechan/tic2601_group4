@@ -35,7 +35,9 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow }) {
             <>
               <span>⭐</span>
               <span style={{ fontWeight: "600" }}>
-                {restaurant.averageRating.toFixed(1)}
+                {typeof restaurant.averageRating === "number"
+                  ? restaurant.averageRating.toFixed(1)
+                  : "0.0"}
               </span>
               <span className="text-muted" style={{ fontSize: "14px" }}>
                 ({restaurant.reviewCount} {restaurant.reviewCount === 1 ? "review" : "reviews"})
@@ -54,10 +56,22 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow }) {
         </div>
 
         {/* Address */}
-        <div className="flex gap-sm mb-sm" style={{ alignItems: 'center', color: 'var(--text-muted)' }}>
+        <div
+          className="flex gap-sm mb-sm"
+          style={{ alignItems: 'center', color: 'var(--text-muted)' }}
+        >
           <span>📍</span>
-          <span style={{ fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {restaurant.address}
+          <span
+            style={{
+              fontSize: '14px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {restaurant.address
+              ? `${restaurant.address.addressLine1}, ${restaurant.address.city}, ${restaurant.address.state || ''}, ${restaurant.address.country}`
+              : 'Address not available'}
           </span>
         </div>
 
