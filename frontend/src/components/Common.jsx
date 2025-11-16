@@ -1,5 +1,9 @@
-export function Card({ children, className = "" }) {
-  return <div className={`card mb-lg ${className}`}>{children}</div>;
+export function Card({ children, className = "", styles = "" }) {
+  return (
+    <div className={`card mb-lg ${className}`} style={{ styles }}>
+      {children}
+    </div>
+  );
 }
 
 Card.Header = function Header({ children, className, title }) {
@@ -13,6 +17,10 @@ Card.Header = function Header({ children, className, title }) {
 
 Card.Content = function Content({ children, className }) {
   return <div className={`card-content ${className}`}>{children}</div>;
+};
+
+Card.Footer = function Footer({ children, className }) {
+  return <div className={`card-footer ${className}`}>{children}</div>;
 };
 
 export function Container({ children, text, data }) {
@@ -39,13 +47,5 @@ export function Container({ children, text, data }) {
       {data && <p style={{ fontWeight: "600", margin: 0 }}>{data}</p>}
       {children}
     </div>
-  );
-}
-
-export function MutedText({ text, styles }) {
-  return (
-    <p className="text-muted" style={{ margin: 0, styles }}>
-      {text}
-    </p>
   );
 }

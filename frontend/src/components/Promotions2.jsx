@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { promotionAPI } from "../utils/api";
+
 export function Promotions({ onBack }) {
   const [promotions, setPromotions] = useState(null);
   const [refresh, setRefresh] = useState(false);

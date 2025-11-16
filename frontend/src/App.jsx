@@ -19,6 +19,7 @@ export default function App() {
 
   //Restaurants table
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState(-1);
   const [restaurants, setRestaurants] = useState(false);
   const [filteredRestaurants, setFilteredRestaurants] = useState(false);
   const [filters, setFilters] = useState({
@@ -83,6 +84,11 @@ export default function App() {
   const handleViewChange = (view) => {
     setCurrentView(view);
     setSelectedRestaurant(null);
+  };
+
+  const handleRestaurantView = (restaurant) => {
+    setSelectedRestaurantId(restaurant.restaurantId);
+    setCurrentView("restaurant-management");
   };
 
   const handleRestaurantSelect = async (restaurant) => {
@@ -287,6 +293,8 @@ export default function App() {
                         restaurant={restaurant}
                         onViewDetails={handleRestaurantSelect}
                         onBookNow={handleBookNow}
+                        isAdmin={userRole}
+                        onViewChange={handleRestaurantView}
                       />
                     ))}
                   </div>
@@ -313,6 +321,7 @@ export default function App() {
             <RestaurantManagement
               onBack={() => setCurrentView("home")}
               onViewChange={setCurrentView}
+              restaurantId={selectedRestaurantId}
             />
           </div>
         );

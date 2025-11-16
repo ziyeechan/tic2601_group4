@@ -32,7 +32,60 @@ const FormInput = ({
   );
 };
 
-export function RestaurantManagement({ onBack, onViewChange }) {
+const PromotionForm = ({ handlePromotionChange, editedPromotions }) => {
+  return (
+    <Card.Content>
+      <FormInput name="description" text="Description">
+        <textarea
+          id="description"
+          name="description"
+          placeholder="Enter description"
+          value={editedPromotions.description}
+          onChange={handlePromotionChange}
+          required
+        />
+      </FormInput>
+      <FormInput
+        name="discount"
+        text="Discount"
+        placeholder="Enter discount"
+        value={editedPromotions.discount}
+        onChange={handlePromotionChange}
+        required={true}
+      />
+      <FormInput name="termsNCond" text="Terms and Condition">
+        <textarea
+          id="termsNCond"
+          name="termsNCond"
+          value={editedPromotions.termsNCond}
+          placeholder="Enter terms and condition"
+          onChange={handlePromotionChange}
+          required
+        />
+      </FormInput>
+      <div className="form-row">
+        <FormInput
+          name="startAt"
+          text="Start Date"
+          type="datetime-local"
+          value={editedPromotions.startAt.slice(0, 16)}
+          onChange={handlePromotionChange}
+          required={true}
+        />
+        <FormInput
+          name="endAt"
+          text="End Date"
+          type="datetime-local"
+          value={editedPromotions.endAt.slice(0, 16)}
+          onChange={handlePromotionChange}
+          required={true}
+        />
+      </div>
+    </Card.Content>
+  );
+};
+
+export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
   const [restaurant, setRestaurant] = useState(null);
   const [address, setAddress] = useState();
   const [isEditingRestaurant, setIsEditingRestaurant] = useState(false);
@@ -43,9 +96,10 @@ export function RestaurantManagement({ onBack, onViewChange }) {
   const [editedPromotions, setEditedPromotions] = useState(null);
   const [isEditingPromotions, setIsEditingPromotions] = useState(-1);
   const [isAddingPromotions, setIsAddingPromotions] = useState(false);
+
   useEffect(() => {
     restaurantAPI
-      .getRestaurantById(1)
+      .getRestaurantById(restaurantId)
       .then((res) => {
         const { address, restaurant } = res.data;
         setAddress({
@@ -67,7 +121,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
       .catch((e) => console.error(e));
 
     promotionAPI
-      .getPromotionsByRestaurant(1)
+      .getPromotionsByRestaurant(restaurantId)
       .then((res) => {
         setPromotions(res.data.promotionInfo);
       })
@@ -177,7 +231,7 @@ export function RestaurantManagement({ onBack, onViewChange }) {
     e.preventDefault();
 
     await promotionAPI
-      .createPromotion(1, editedPromotions)
+      .createPromotion(restaurantId, editedPromotions)
       .then((res) => {
         setRefresh(false);
         setIsAddingPromotions(false);
@@ -456,7 +510,16 @@ export function RestaurantManagement({ onBack, onViewChange }) {
               </h2>
               <button
                 className="btn btn-success btn-sm"
-                onClick={() => setIsAddingPromotions(true)}
+                onClick={() => {
+                  setIsAddingPromotions(true);
+                  setEditedPromotions({
+                    description: "",
+                    discount: "",
+                    termsNCond: "",
+                    startAt: new Date().toISOString(),
+                    endAt: new Date().toISOString(),
+                  });
+                }}
                 disabled={isEditingPromotions != -1}
                 style={{
                   opacity: isEditingPromotions != -1 ? 0.6 : 1,
@@ -487,56 +550,17 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                         </button>
                         <button
                           className="btn btn-success btn-sm"
-                          onClick={() => console.log("test")}
+                          type="submit"
                         >
                           ✔️ Save
                         </button>
                       </div>
                     </div>
                   </Card.Header>
-                  <Card.Content>
-                    <FormInput name="description" text="Description">
-                      <textarea
-                        id="description"
-                        name="description"
-                        placeholder="Enter description"
-                        onChange={handlePromotionChange}
-                        required
-                      />
-                    </FormInput>
-                    <FormInput
-                      name="discount"
-                      text="Discount"
-                      placeholder="Enter discount"
-                      onChange={handlePromotionChange}
-                      required={true}
-                    />
-                    <FormInput name="termsNCond" text="Terms and Condition">
-                      <textarea
-                        id="termsNCond"
-                        name="termsNCond"
-                        placeholder="Enter terms and condition"
-                        onChange={handlePromotionChange}
-                        required
-                      />
-                    </FormInput>
-                    <div className="form-row">
-                      <FormInput
-                        name="startAt"
-                        text="Start Date"
-                        type="datetime-local"
-                        onChange={handlePromotionChange}
-                        required={true}
-                      />
-                      <FormInput
-                        name="endAt"
-                        text="End Date"
-                        type="datetime-local"
-                        onChange={handlePromotionChange}
-                        required={true}
-                      />
-                    </div>
-                  </Card.Content>
+                  <PromotionForm
+                    handlePromotionChange={handlePromotionChange}
+                    editedPromotions={editedPromotions}
+                  />
                 </Card>
               </form>
             )}
@@ -629,61 +653,10 @@ export function RestaurantManagement({ onBack, onViewChange }) {
                               </div>
                             </div>
                           </Card.Header>
-                          <Card.Content>
-                            <Container
-                              text="Promotion ID"
-                              data={p.promotionId}
-                            />
-                            <FormInput name="description" text="Description">
-                              <textarea
-                                id="description"
-                                name="description"
-                                value={editedPromotions.description}
-                                placeholder="Enter description"
-                                onChange={handlePromotionChange}
-                                required
-                              />
-                            </FormInput>
-                            <FormInput
-                              name="discount"
-                              text="Discount"
-                              placeholder="Enter discount"
-                              onChange={handlePromotionChange}
-                              value={editedPromotions.discount}
-                              required={true}
-                            />
-                            <FormInput
-                              name="termsNCond"
-                              text="Terms and Condition"
-                            >
-                              <textarea
-                                id="termsNCond"
-                                name="termsNCond"
-                                value={editedPromotions.termsNCond}
-                                placeholder="Enter terms and condition"
-                                onChange={handlePromotionChange}
-                                required
-                              />
-                            </FormInput>
-                            <div className="form-row">
-                              <FormInput
-                                name="startAt"
-                                text="Start Date"
-                                type="datetime-local"
-                                value={editedPromotions.startAt.slice(0, 16)}
-                                onChange={handlePromotionChange}
-                                required={true}
-                              />
-                              <FormInput
-                                name="endAt"
-                                text="End Date"
-                                value={editedPromotions.endAt.slice(0, 16)}
-                                type="datetime-local"
-                                onChange={handlePromotionChange}
-                                required={true}
-                              />
-                            </div>
-                          </Card.Content>
+                          <PromotionForm
+                            handlePromotionChange={handlePromotionChange}
+                            editedPromotions={editedPromotions}
+                          />
                         </Card>
                       </form>
                     )}

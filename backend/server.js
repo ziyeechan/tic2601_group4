@@ -27,7 +27,7 @@ app.use((req, res, next) => {
     "Origin, X-Requested-With, Content-Type, Accept"
   );
   if (req.method === "OPTIONS") {
-    return res.sendStaitus(200);
+    return res.sendStatus(200);
   }
   next();
 });
