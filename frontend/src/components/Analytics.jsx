@@ -1,18 +1,23 @@
+// ----- IMPORTS -----
+
 import React, { useEffect, useMemo, useState } from 'react';
 import { AnalyticsTrendChart } from './AnalyticsTrendChart';
 import { AnalyticsOutcomePie } from './AnalyticsOutcomePie';
 import { AnalyticsHourlyHeatmap } from './AnalyticsHourlyHeatmap';
 import { AnalyticsRatingChart } from './AnalyticsRatingChart';
 
+// ----- MAIN COMPONENT -----
+
 export function Analytics({ onCheck }) {
   const API_BASE = 'http://localhost:3000';
 
+  // --- Filter State ---
   const [restaurants, setRestaurants] = useState([]);
   const [restaurantId, setRestaurantId] = useState('');
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [month, setMonth] = useState(String(new Date().getMonth() + 1).padStart(2, '0'));
 
-  // Chart data
+  // --- Chart Data State ---
   const [dailyCount, setDailyCount] = useState([]);
   const [metrics, setMetrics] = useState(null);
   const [heatmap, setHeatmap] = useState(null);
@@ -20,10 +25,13 @@ export function Analytics({ onCheck }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // UX state
+  // --- UX State (track user interaction flow) ---
   const [hasChecked, setHasChecked] = useState(false);
   const [filtersChanged, setFiltersChanged] = useState(false);
 
+  // ----- DATA FETCHING -----
+
+  // Load available restaurants on mount
   useEffect(() => {
     const loadRestaurants = async () => {
       try {
@@ -32,11 +40,13 @@ export function Analytics({ onCheck }) {
         const json = await res.json();
         setRestaurants(Array.isArray(json.restaurants) ? json.restaurants : []);
       } catch {
-        // silent
+        // silent fail - dropdown will be empty
       }
     };
     loadRestaurants();
   }, [API_BASE]);
+
+  // ----- CONSTANTS -----
 
   const years = Array.from({ length: 3 }, (_, i) => String(new Date().getFullYear() - i));
   const months = [
@@ -46,6 +56,9 @@ export function Analytics({ onCheck }) {
     { v: '10', n: 'October' }, { v: '11', n: 'November' }, { v: '12', n: 'December' },
   ];
 
+  // ----- EVENT HANDLERS -----
+
+  // Fetch analytics data when user clicks "Check"
   const handleCheck = async () => {
     const payload = { restaurantId, year, month };
     if (onCheck) onCheck(payload);
@@ -57,6 +70,8 @@ export function Analytics({ onCheck }) {
     setError('');
     try {
       const qs = `?restaurantId=${restaurantId}&year=${year}&month=${month}`;
+      
+      // Fetch all analytics endpoints in parallel
       const [dcRes, mRes, hmRes, drRes] = await Promise.all([
         fetch(`${API_BASE}/analytics/bookings/daily-count${qs}`),
         fetch(`${API_BASE}/analytics/bookings/metrics${qs}`),
@@ -72,6 +87,7 @@ export function Analytics({ onCheck }) {
         dcRes.json(), mRes.json(), hmRes.json(), drRes.json()
       ]);
 
+      // Update state with fetched data
       setDailyCount(Array.isArray(dcJson.dailyBookingCount) ? dcJson.dailyBookingCount : []);
       setMetrics(mJson.metrics || null);
       setHeatmap(hmJson.heatmap || null);
@@ -83,24 +99,27 @@ export function Analytics({ onCheck }) {
     }
   };
 
+  // ----- DERIVED STATE -----
+
   const canCheck = restaurantId && year && month;
 
-  // Derived values for charts
+  // Extract booking metrics
   const totalBookings = Number(metrics?.['Total Bookings'] || 0);
   const completed = Number(metrics?.['Completed Bookings'] || 0);
   const noShow = Number(metrics?.['No Show Bookings'] || 0);
   const cancelled = Number(metrics?.['Cancelled Bookings'] || 0);
 
+  // Calculate percentages for pie chart
   const pct = (num, den) => den > 0 ? (num / den) * 100 : 0;
   const completedPct = useMemo(() => pct(completed, totalBookings), [completed, totalBookings]);
   const noShowPct = useMemo(() => pct(noShow, totalBookings), [noShow, totalBookings]);
   const cancelledPct = useMemo(() => pct(cancelled, totalBookings), [cancelled, totalBookings]);
 
-  // Selected labels
+  // Get selected filter labels for display
   const selectedRestaurant = restaurants.find(r => String(r.id) === restaurantId);
   const selectedMonthName = months.find(m => m.v === month)?.n || month;
 
-  // Has data?
+  // Determine if we have any meaningful data to show charts
   const hasData = (
     (dailyCount.length > 0 && dailyCount.some(d => d.count > 0)) ||
     totalBookings > 0 ||
@@ -108,11 +127,13 @@ export function Analytics({ onCheck }) {
     (dailyRatings.length > 0 && dailyRatings.some(d => d.reviewCount > 0))
   );
 
+  // ----- RENDER -----
+
   return (
     <div>
       <h2 style={{ marginBottom: 'var(--spacing-lg)' }}>📊 Restaurant Booking Analytics Dashboard </h2>
 
-      {/* Filters */}
+      {/* --- Filters Panel --- */}
       <div className="card" style={{ padding: 'var(--spacing-md)', marginBottom: 'var(--spacing-lg)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 'var(--spacing-md)', alignItems: 'end' }}>
           {/* Restaurant */}
@@ -167,7 +188,9 @@ export function Analytics({ onCheck }) {
         {error ? <div style={{ color: 'var(--danger)', marginTop: 8 }}>{error}</div> : null}
       </div>
 
-      {/* Message States */}
+      {/* --- Message States --- */}
+      
+      {/* Initial state: prompt user to select filters */}
       {!hasChecked && (
         <div className="card" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>
@@ -176,6 +199,7 @@ export function Analytics({ onCheck }) {
         </div>
       )}
 
+      {/* Filters changed: remind user to click Check again */}
       {hasChecked && filtersChanged && (
         <div className="card" style={{ padding: 'var(--spacing-lg)', textAlign: 'center', background: '#fffbeb', border: '1px solid #fbbf24' }}>
           <p style={{ color: '#92400e', margin: 0 }}>
@@ -184,6 +208,7 @@ export function Analytics({ onCheck }) {
         </div>
       )}
 
+      {/* No data found: show helpful message */}
       {hasChecked && !filtersChanged && !loading && !hasData && (
         <div className="card" style={{ padding: 'var(--spacing-lg)', textAlign: 'center' }}>
           <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>
@@ -195,10 +220,11 @@ export function Analytics({ onCheck }) {
         </div>
       )}
 
-      {/* Charts 2x2 */}
+      {/* --- Charts Grid (2x2) --- */}
       {hasChecked && !filtersChanged && hasData ? (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--spacing-md)' }}>
-          {/* 1) Daily booking trend */}
+          
+          {/* Daily booking trend line chart */}
           <div className="card">
             <div className="card-header"><h4 className="card-title">Daily Booking Trend</h4></div>
             <div className="card-content">
@@ -206,7 +232,7 @@ export function Analytics({ onCheck }) {
             </div>
           </div>
 
-          {/* 2) Booking outcomes pie */}
+          {/* Booking outcomes pie chart */}
           <div className="card">
             <div className="card-header"><h4 className="card-title">Booking Outcomes Breakdown</h4></div>
             <div className="card-content" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minHeight: 240 }}>
@@ -222,7 +248,7 @@ export function Analytics({ onCheck }) {
             </div>
           </div>
 
-          {/* 3) Hourly heatmap */}
+          {/* Hourly activity heatmap (weekday x hour) */}
           <div className="card">
             <div className="card-header"><h4 className="card-title">Hourly Booking Activity Heatmap</h4></div>
             <div className="card-content">
@@ -230,7 +256,7 @@ export function Analytics({ onCheck }) {
             </div>
           </div>
 
-          {/* 4) Daily average rating */}
+          {/* Daily average rating line chart */}
           <div className="card">
             <div className="card-header"><h4 className="card-title">Daily Average Rating</h4></div>
             <div className="card-content">
