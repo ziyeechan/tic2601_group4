@@ -4,7 +4,7 @@ module.exports.findAllReviews = async () => {
   return await Reviews.findAll();
 };
 
-module.exports.findReviewsByPK = async (reviewID) => {
+module.exports.findReviewsByID = async (reviewID) => {
   return await Reviews.findByPk(reviewID);
 };
 

@@ -8,7 +8,7 @@ const {
   findRestaurantsByState,
   createRestaurant,
   updateRestaurant,
-  deleteRestaurantByPK,
+  deleteRestaurantByID,
 } = require("../models/restaurant");
 const { Addresses } = require("../models/address");
 
@@ -218,7 +218,7 @@ module.exports.updateRestaurant = async (req, res) => {
   }
 };
 
-module.exports.deleteRestaurantByPK = async (req, res) => {
+module.exports.deleteRestaurantByID = async (req, res) => {
   try {
     const restaurantID = parseInt(req.params.restaurantID);
     if (isNaN(restaurantID))
@@ -226,7 +226,7 @@ module.exports.deleteRestaurantByPK = async (req, res) => {
         message: "Invalid Parameter",
       });
 
-    await deleteRestaurantByPK(restaurantID);
+    await deleteRestaurantByID(restaurantID);
     return res.status(200).send("Restaurant has been successfully deleted!");
   } catch (err) {
     console.log(err);

@@ -8,7 +8,7 @@ module.exports = (router) => {
 
   // Endpoint to retrieve all addresses
   router.get(
-    "/address/all",
+    "/address/",
     addressController.findAllAddresses
   );
 

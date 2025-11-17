@@ -92,7 +92,7 @@ export const addressAPI = {
 
   // Get all addresses
   getAllAddresses: () =>
-    api.get("/address/all"),
+    api.get(`/address/`),
 
   // Get address by ID
   getAddressById: (addressId) =>
@@ -114,7 +114,7 @@ export const promotionAPI = {
     api.post(`/promotion/${restaurantId}`, promotionData),
 
   // Get all promotions (no filter)
-  getAllPromotions: () => api.get("/promotion"),
+  getAllPromotions: () => api.get("/promotion/"),
 
   // Get promotion by ID
   getPromotionById: (promotionId) => api.get(`/promotion/${promotionId}`),

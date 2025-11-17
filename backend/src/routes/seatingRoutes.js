@@ -19,13 +19,13 @@ module.exports = (router) => {
   );
 
   // Endpoint to get seating plan by seatingId
-  router.get("/seating/id/:seatingID", seatingController.findSeatingPlanByPK);
+  router.get("/seating/id/:seatingID", seatingController.findSeatingPlanByID);
 
   // Endpoint to update seating plan by seatingId
-  router.put("/seating/:seatingID", seatingController.updateSeatingPlanByPK);
+  router.put("/seating/:seatingID", seatingController.updateSeatingPlanByID);
 
   // Endpoint to delete existing seating plan
-  router.delete("/seating/:seatingID", seatingController.deleteSeatingPlanByPK);
+  router.delete("/seating/:seatingID", seatingController.deleteSeatingPlanByID);
 
   // =================================== End of Seating Plans Endpoints =================================================================
 };

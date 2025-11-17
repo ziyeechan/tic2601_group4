@@ -2,8 +2,8 @@ const {
     findAllAddresses,
     findAddressByID,
     createAddress,
-    updateAddressID,
-    deleteAddressByID,
+    updateAddress,
+    deleteAddress,
 } = require("../models/address");
   
 module.exports.findAllAddresses = async (req, res) => {
@@ -12,24 +12,26 @@ module.exports.findAllAddresses = async (req, res) => {
     return res.status(200).json(address);
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
 module.exports.findAddressByID = async (req, res) => {
   try {
-    const addressID = parseInt(req.params.addressID);
-    if (isNaN(addressID))
-      return res.status(400).json({
-        message: "Invalid Parameter",
-      });
+    const addressID = parseInt(req.params.addressID, 10);
+    if (isNaN(addressID)) {
+      return res.status(400).json({ message: "Invalid Parameter" });
+    }
 
     const address = await findAddressByID(addressID);
+    if (!address) {
+      return res.status(404).json({ message: "Address not found" });
+    }
 
-    return res.status(200).json({
-      address,
-    });
+    return res.status(200).json({ address });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -52,14 +54,14 @@ module.exports.createAddress = async (req, res) => {
 
 module.exports.updateAddress = async (req, res) => {
   try {
-    const addressId = parseInt(req.params.addressId);
+    const addressID= parseInt(req.params.addressID);
     const { addressLine1, addressLine2, country, state, city, postalCode } = req.body;
 
-    if (isNaN(addressId)) {
+    if (isNaN(addressID)) {
       return res.status(400).json({ message: "Invalid address ID" });
     }
 
-    const updated = await updateAddress(addressId, { addressLine1, addressLine2, country, state, city, postalCode });
+    const updated = await updateAddress(addressID, { addressLine1, addressLine2, country, state, city, postalCode });
 
     if (!updated) {
       return res.status(404).json({ message: "Address not found" });
@@ -74,13 +76,13 @@ module.exports.updateAddress = async (req, res) => {
 
 module.exports.deleteAddress = async (req, res) => {
   try {
-    const addressId = parseInt(req.params.addressId);
+    const addressID= parseInt(req.params.addressID);
 
-    if (isNaN(addressId)) {
+    if (isNaN(addressID)) {
       return res.status(400).json({ message: "Invalid address ID" });
     }
 
-    const deleted = await deleteAddress(addressId);
+    const deleted = await deleteAddress(addressID);
 
     if (!deleted) {
       return res.status(404).json({ message: "Address not found" });

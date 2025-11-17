@@ -51,7 +51,7 @@ module.exports = (router) => {
   // Endpoint to delete existing restaurant
   router.delete(
     "/restaurant/:restaurantID",
-    restaurantController.deleteRestaurantByPK
+    restaurantController.deleteRestaurantByID
   );
 
   // =================================== End of Restaurant Endpoints =================================================================

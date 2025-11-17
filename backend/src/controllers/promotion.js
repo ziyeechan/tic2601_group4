@@ -1,10 +1,9 @@
 const {
   findAllPromotions,
-  findPromotionsByPK,
+  findPromotionByID,
   findPromotionsByRestaurantID,
   createPromotions,
   updatePromotions,
-  expiredPromotions,
   deletePromotions,
 } = require("../models/promotion");
 
@@ -38,6 +37,7 @@ module.exports.createPromotions = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -47,13 +47,14 @@ module.exports.findAllPromotions = async (req, res) => {
     return res.status(200).json(promotions);
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
 
 module.exports.findPromotionsByRestaurantID = async (req, res) => {
   try {
-    const restaurantID = req.params.restaurantID;
+    const restaurantID = parseInt(req.params.restaurantID);
 
     if (isNaN(restaurantID))
       return res.status(400).json({
@@ -66,6 +67,7 @@ module.exports.findPromotionsByRestaurantID = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -77,19 +79,20 @@ module.exports.findPromotionByID = async (req, res) => {
         message: "Invalid Parameter",
       });
 
-    const promotion = await findPromotionsByPK(promotionID);
+    const promotion = await findPromotionByID(promotionID);
 
     return res.status(200).json({
       promotion,
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
 module.exports.deletePromotion = async (req, res) => {
   try {
-    const promotionID = req.params.promotionID;
+    const promotionID = parseInt(req.params.promotionID);
 
     if (isNaN(promotionID))
       return res.status(400).json({
@@ -103,6 +106,7 @@ module.exports.deletePromotion = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -137,5 +141,6 @@ module.exports.updatePromotions = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };

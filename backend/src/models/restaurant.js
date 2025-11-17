@@ -73,7 +73,7 @@ module.exports.updateRestaurant = (restaurantID, meta) =>
     }
   );
 
-module.exports.deleteRestaurantByPK = async (restaurantID) => {
+module.exports.deleteRestaurantByID = async (restaurantID) => {
   await Restaurants.destroy({
     where: { restaurantId: restaurantID },
   });
