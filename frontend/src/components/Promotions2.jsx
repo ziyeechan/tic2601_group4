@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { promotionAPI } from "../utils/api";
+import { Card, FormInput } from "./Common";
 
-export function Promotions({ onBack }) {
+export function Promotions({ onBack, restaurantId }) {
   const [promotions, setPromotions] = useState(null);
   const [refresh, setRefresh] = useState(false);
   const [selectedPromo, setSelectedPromo] = useState(null);
@@ -9,13 +10,15 @@ export function Promotions({ onBack }) {
   const [activePromos, setActivePromos] = useState([]);
   const [upcomingPromos, setUpcomingPromos] = useState([]);
   const [expiredPromos, setExpiredPromos] = useState([]);
+  const [isEditingPromotions, setIsEditingPromotions] = useState(false);
+  const [isAddingPromotions, setIsAddingPromotions] = useState(false);
 
   useEffect(() => {
-    // Get all promotions for restaurant with ID 1
+    // Get all promotions for restaurant with ID restaurantID
     promotionAPI
-      .getPromotionsByRestaurant(1)
+      .getPromotionsByRestaurant(restaurantId)
       .then((res) => {
-        setPromotions(res.data || []);
+        setPromotions(res.data.promotionInfo || []);
         setRefresh(true);
       })
       .catch((err) => {
@@ -28,7 +31,7 @@ export function Promotions({ onBack }) {
       {
         setActivePromos(
           promotions.filter((p) => {
-            isActive(p.startAt, p.endAt);
+            return isActive(p.startAt, p.endAt);
           })
         );
 
@@ -47,6 +50,17 @@ export function Promotions({ onBack }) {
     }
   }, [promotions]);
 
+  const handleDeletePromotion = async (promotionId) => {
+    if (window.confirm("Are you sure you want to delete this promotion?")) {
+      await promotionAPI
+        .deletePromotion(promotionId)
+        .then(() => console.log("sucess"))
+        .catch((error) => console.error(error));
+      setRefresh(false);
+      setSelectedPromo(null);
+    }
+  };
+
   const isActive = (startDate, endDate) => {
     const today = new Date().toISOString().split("T")[0];
     return today >= startDate && today <= endDate;
@@ -56,6 +70,47 @@ export function Promotions({ onBack }) {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const handlePromotionChange = (e) => {
+    const { name, value } = e.target;
+    setSelectedPromo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmitPromotion = async (e) => {
+    e.preventDefault();
+    await promotionAPI
+      .updatePromotion(selectedPromo.promotionId, selectedPromo)
+      .then((res) => {
+        console.log("success");
+        setRefresh(false);
+        setIsEditingPromotions(false);
+        setSelectedPromo(null);
+      })
+      .catch((error) => console.error(error));
+  };
+
+  const handleCreatePromotion = async (e) => {
+    e.preventDefault();
+
+    await promotionAPI
+      .createPromotion(restaurantId, selectedPromo)
+      .then((res) => {
+        console.log("success");
+        setRefresh(false);
+        setIsAddingPromotions(false);
+        setSelectedPromo(null);
+        setIsEditingPromotions(false);
+      })
+      .catch((error) => console.error(error));
+  };
+
+  const handleCancel = () => {
+    setSelectedPromo(null);
+    setIsEditingPromotions(false);
   };
 
   return (
@@ -70,9 +125,30 @@ export function Promotions({ onBack }) {
           ← Back
         </button>
 
-        <h2 style={{ marginBottom: "var(--spacing-lg)" }}>
-          🎉 Current Promotions & Offers
-        </h2>
+        <div className="flex-between">
+          <h2 style={{ marginBottom: "var(--spacing-lg)" }}>
+            🎉 Current Promotions & Offers
+          </h2>
+          <button
+            className="btn btn-success btn-sm"
+            onClick={() => {
+              setIsEditingPromotions(true);
+              setSelectedPromo({
+                description: "",
+                discount: "",
+                termsNCond: "",
+                startAt: new Date().toISOString(),
+                endAt: new Date().toISOString(),
+              });
+              setIsAddingPromotions(true);
+            }}
+            style={{
+              alignSelf: "start",
+            }}
+          >
+            ➕ Create Promotion
+          </button>
+        </div>
 
         {/* Active Promotions */}
         <div style={{ marginBottom: "var(--spacing-xl)" }}>
@@ -155,15 +231,15 @@ export function Promotions({ onBack }) {
                             flex: 1,
                           }}
                         >
-                          {promo.discountCode}
+                          {promo.discount}
                         </code>
                         <button
                           className="btn btn-sm"
-                          onClick={() => handleCopyCode(promo.discountCode)}
+                          onClick={() => handleCopyCode(promo.discount)}
                           style={{
                             padding: "6px 12px",
                             backgroundColor:
-                              copiedCode === promo.discountCode
+                              copiedCode === promo.discount
                                 ? "var(--success)"
                                 : "var(--primary)",
                             color: "white",
@@ -173,7 +249,7 @@ export function Promotions({ onBack }) {
                             fontSize: "12px",
                           }}
                         >
-                          {copiedCode === promo.discountCode
+                          {copiedCode === promo.discount
                             ? "✓ Copied"
                             : "📋 Copy"}
                         </button>
@@ -198,7 +274,7 @@ export function Promotions({ onBack }) {
                         Valid Until
                       </p>
                       <p style={{ margin: 0, fontWeight: "600" }}>
-                        {new Date(promo.endDate).toLocaleDateString()}
+                        {new Date(promo.endAt).toLocaleDateString()}
                       </p>
                     </div>
 
@@ -210,7 +286,7 @@ export function Promotions({ onBack }) {
                         marginBottom: "var(--spacing-md)",
                       }}
                     >
-                      {promo.termsAndConditions}
+                      {promo.termsNCond}
                     </p>
 
                     <button
@@ -289,8 +365,7 @@ export function Promotions({ onBack }) {
                         className="text-muted"
                         style={{ margin: 0, fontSize: "12px" }}
                       >
-                        Starts on{" "}
-                        {new Date(promo.startDate).toLocaleDateString()}
+                        Starts on {new Date(promo.startAt).toLocaleDateString()}
                       </p>
                     </div>
 
@@ -360,7 +435,7 @@ export function Promotions({ onBack }) {
                       className="text-muted"
                       style={{ fontSize: "12px", margin: 0 }}
                     >
-                      Ended on {new Date(promo.endDate).toLocaleDateString()}
+                      Ended on {new Date(promo.endAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -385,130 +460,243 @@ export function Promotions({ onBack }) {
               zIndex: 1000,
             }}
           >
-            <div className="card" style={{ maxWidth: "500px", width: "90%" }}>
-              <div className="card-header">
-                <h4 className="card-title">{selectedPromo.description}</h4>
-              </div>
-              <div className="card-content">
-                <div
-                  className="mb-lg"
-                  style={{
-                    paddingBottom: "var(--spacing-md)",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
+            <Card styles={{ maxWidth: "550px", width: "90%" }}>
+              <Card.Header className="flex-between">
+                <h4>{selectedPromo.description}</h4>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => handleCancel()}
+                  style={{ padding: "10px 20px", marginLeft: "20px" }}
                 >
-                  <p
-                    className="text-muted"
-                    style={{ margin: 0, fontSize: "12px", marginBottom: "4px" }}
-                  >
-                    Restaurant
-                  </p>
-                  <p style={{ margin: 0, fontWeight: "600", fontSize: "16px" }}>
-                    {selectedPromo.restaurantName}
-                  </p>
-                </div>
-
-                <div
-                  className="mb-lg"
-                  style={{
-                    paddingBottom: "var(--spacing-md)",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
-                >
-                  <p
-                    className="text-muted"
-                    style={{ margin: 0, fontSize: "12px", marginBottom: "4px" }}
-                  >
-                    Discount Code
-                  </p>
+                  X
+                </button>
+              </Card.Header>
+              {!isEditingPromotions ? (
+                <Card.Content>
                   <div
+                    className="mb-lg"
                     style={{
-                      display: "flex",
-                      gap: "var(--spacing-sm)",
-                      alignItems: "center",
+                      paddingBottom: "var(--spacing-md)",
+                      borderBottom: "1px solid var(--border-color)",
                     }}
                   >
-                    <code
+                    <p
+                      className="text-muted"
                       style={{
-                        fontSize: "18px",
-                        fontWeight: "700",
-                        padding: "8px 12px",
-                        backgroundColor: "var(--bg-light)",
-                        borderRadius: "4px",
-                        flex: 1,
+                        margin: 0,
+                        fontSize: "12px",
+                        marginBottom: "4px",
                       }}
                     >
-                      {selectedPromo.discountCode}
-                    </code>
+                      Restaurant
+                    </p>
+                    <p
+                      style={{ margin: 0, fontWeight: "600", fontSize: "16px" }}
+                    >
+                      {selectedPromo.restaurantName}
+                    </p>
+                  </div>
+
+                  <div
+                    className="mb-lg"
+                    style={{
+                      paddingBottom: "var(--spacing-md)",
+                      borderBottom: "1px solid var(--border-color)",
+                    }}
+                  >
+                    <p
+                      className="text-muted"
+                      style={{
+                        margin: 0,
+                        fontSize: "12px",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      Discount Code
+                    </p>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "var(--spacing-sm)",
+                        alignItems: "center",
+                      }}
+                    >
+                      <code
+                        style={{
+                          fontSize: "18px",
+                          fontWeight: "700",
+                          padding: "8px 12px",
+                          backgroundColor: "var(--bg-light)",
+                          borderRadius: "4px",
+                          flex: 1,
+                        }}
+                      >
+                        {selectedPromo.discount}
+                      </code>
+                      <button
+                        onClick={() => handleCopyCode(selectedPromo.discount)}
+                        style={{
+                          padding: "8px 16px",
+                          backgroundColor:
+                            copiedCode === selectedPromo.discount
+                              ? "var(--success)"
+                              : "var(--primary)",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "var(--radius-md)",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {copiedCode === selectedPromo.discount
+                          ? "✓ Copied!"
+                          : "📋 Copy"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    className="mb-lg"
+                    style={{
+                      paddingBottom: "var(--spacing-md)",
+                      borderBottom: "1px solid var(--border-color)",
+                    }}
+                  >
+                    <p
+                      className="text-muted"
+                      style={{
+                        margin: 0,
+                        fontSize: "12px",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      Valid Period
+                    </p>
+                    <p style={{ margin: 0, fontWeight: "600" }}>
+                      {new Date(selectedPromo.startAt).toLocaleDateString()} to{" "}
+                      {new Date(selectedPromo.endAt).toLocaleDateString()}
+                    </p>
+                    <p
+                      className="text-muted"
+                      style={{ margin: 0, fontSize: "12px", marginTop: "4px" }}
+                    >
+                      {isActive(selectedPromo.startAt, selectedPromo.endAt)
+                        ? "✓ Currently Active"
+                        : "Not Active"}
+                    </p>
+                  </div>
+
+                  <div className="mb-lg">
+                    <p
+                      className="text-muted"
+                      style={{
+                        margin: 0,
+                        fontSize: "12px",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      Terms & Conditions
+                    </p>
+                    <p style={{ margin: 0 }}>{selectedPromo.termsNCond}</p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex-between">
                     <button
-                      onClick={() => handleCopyCode(selectedPromo.discountCode)}
-                      style={{
-                        padding: "8px 16px",
-                        backgroundColor:
-                          copiedCode === selectedPromo.discountCode
-                            ? "var(--success)"
-                            : "var(--primary)",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "var(--radius-md)",
-                        cursor: "pointer",
+                      className="btn btn-danger btn-full"
+                      style={{ marginRight: "20px" }}
+                      onClick={() =>
+                        handleDeletePromotion(selectedPromo.promotionId)
+                      }
+                    >
+                      🗑️ Delete
+                    </button>
+                    <button
+                      className="btn btn-primary btn-full"
+                      style={{ marginLeft: "20px" }}
+                      onClick={() => {
+                        setIsEditingPromotions(true);
                       }}
                     >
-                      {copiedCode === selectedPromo.discountCode
-                        ? "✓ Copied!"
-                        : "📋 Copy"}
+                      ✏️ Edit
                     </button>
                   </div>
-                </div>
-
-                <div
-                  className="mb-lg"
-                  style={{
-                    paddingBottom: "var(--spacing-md)",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
+                </Card.Content>
+              ) : (
+                <form
+                  onSubmit={
+                    isAddingPromotions
+                      ? handleCreatePromotion
+                      : handleSubmitPromotion
+                  }
                 >
-                  <p
-                    className="text-muted"
-                    style={{ margin: 0, fontSize: "12px", marginBottom: "4px" }}
-                  >
-                    Valid Period
-                  </p>
-                  <p style={{ margin: 0, fontWeight: "600" }}>
-                    {new Date(selectedPromo.startDate).toLocaleDateString()} to{" "}
-                    {new Date(selectedPromo.endDate).toLocaleDateString()}
-                  </p>
-                  <p
-                    className="text-muted"
-                    style={{ margin: 0, fontSize: "12px", marginTop: "4px" }}
-                  >
-                    {isActive(selectedPromo.startDate, selectedPromo.endDate)
-                      ? "✓ Currently Active"
-                      : "Not Active"}
-                  </p>
-                </div>
-
-                <div className="mb-lg">
-                  <p
-                    className="text-muted"
-                    style={{ margin: 0, fontSize: "12px", marginBottom: "4px" }}
-                  >
-                    Terms & Conditions
-                  </p>
-                  <p style={{ margin: 0 }}>
-                    {selectedPromo.termsAndConditions}
-                  </p>
-                </div>
-
-                <button
-                  className="btn btn-secondary btn-full"
-                  onClick={() => setSelectedPromo(null)}
-                  style={{ padding: "10px 20px" }}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
+                  <Card.Content>
+                    <FormInput name="description" text="Description">
+                      <textarea
+                        id="description"
+                        name="description"
+                        placeholder="Enter description"
+                        value={selectedPromo.description}
+                        onChange={handlePromotionChange}
+                        required
+                      />
+                    </FormInput>
+                    <FormInput
+                      name="discount"
+                      text="Discount"
+                      placeholder="Enter discount"
+                      value={selectedPromo.discount}
+                      onChange={handlePromotionChange}
+                      required={true}
+                    />
+                    <FormInput name="termsNCond" text="Terms and Condition">
+                      <textarea
+                        id="termsNCond"
+                        name="termsNCond"
+                        value={selectedPromo.termsNCond}
+                        placeholder="Enter terms and condition"
+                        onChange={handlePromotionChange}
+                        required
+                      />
+                    </FormInput>
+                    <div className="form-row">
+                      <FormInput
+                        name="startAt"
+                        text="Start Date"
+                        type="datetime-local"
+                        value={selectedPromo.startAt.slice(0, 16)}
+                        onChange={handlePromotionChange}
+                        required={true}
+                      />
+                      <FormInput
+                        name="endAt"
+                        text="End Date"
+                        type="datetime-local"
+                        value={selectedPromo.endAt.slice(0, 16)}
+                        onChange={handlePromotionChange}
+                        required={true}
+                      />
+                    </div>
+                    <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
+                      <button
+                        type="submit"
+                        className="btn btn-primary btn-full"
+                        style={{ padding: "12px 24px", fontSize: "16px" }}
+                      >
+                        ✓ Save Changes
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-full"
+                        onClick={handleCancel}
+                        style={{ padding: "12px 24px", fontSize: "16px" }}
+                      >
+                        ❌ Cancel
+                      </button>
+                    </div>
+                  </Card.Content>
+                </form>
+              )}
+            </Card>
           </div>
         )}
       </div>

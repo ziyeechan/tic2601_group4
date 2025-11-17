@@ -1,6 +1,6 @@
-export function Card({ children, className = "", styles = "" }) {
+export function Card({ children, className = "", styles }) {
   return (
-    <div className={`card mb-lg ${className}`} style={{ styles }}>
+    <div className={`card mb-lg ${className}`} style={styles}>
       {children}
     </div>
   );
@@ -23,7 +23,7 @@ Card.Footer = function Footer({ children, className }) {
   return <div className={`card-footer ${className}`}>{children}</div>;
 };
 
-export function Container({ children, text, data }) {
+export function TextContainer({ children, text, data }) {
   return (
     <div
       className="mb-md"
@@ -46,6 +46,36 @@ export function Container({ children, text, data }) {
       )}
       {data && <p style={{ fontWeight: "600", margin: 0 }}>{data}</p>}
       {children}
+    </div>
+  );
+}
+
+export function FormInput({
+  type,
+  name,
+  value,
+  onChange,
+  text,
+  placeholder,
+  children,
+  required = false,
+}) {
+  return (
+    <div className="form-group">
+      <label htmlFor={name}>{text}</label>
+      {children ? (
+        children
+      ) : (
+        <input
+          id={name}
+          type={type ? type : "text"}
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required={required}
+        />
+      )}
     </div>
   );
 }

@@ -11,7 +11,8 @@ import { AdminBookings } from "./components/AdminBookings";
 import { SeatingPlan } from "./components/SeatingPlan2";
 import { Analytics } from "./components/Analytics";
 import { RestaurantManagement } from "./components/RestaurantManagement2";
-import { Promotions } from "./components/Promotions";
+import { Promotions } from "./components/Promotions2";
+import { AllPromotions } from "./components/Promotions";
 
 export default function App() {
   const [currentView, setCurrentView] = useState("home");
@@ -335,7 +336,25 @@ export default function App() {
               paddingBottom: "var(--spacing-lg)",
             }}
           >
-            <Promotions onBack={() => setCurrentView("home")} />
+            <Promotions
+              onBack={() => setCurrentView("home")}
+              restaurantId={selectedRestaurantId}
+            />
+          </div>
+        );
+
+      case "all-promotions":
+        return (
+          <div
+            className="container"
+            style={{
+              paddingTop: "var(--spacing-lg)",
+              paddingBottom: "var(--spacing-lg)",
+            }}
+          >
+            <AllPromotions
+              onBack={() => setCurrentView("home")}
+            />
           </div>
         );
 

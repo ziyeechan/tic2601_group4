@@ -1,89 +1,6 @@
 import { useEffect, useState } from "react";
-import { Card, Container } from "./Common";
-import { restaurantAPI, promotionAPI } from "../utils/api";
-
-const FormInput = ({
-  type,
-  name,
-  value,
-  onChange,
-  text,
-  placeholder,
-  children,
-  required = false,
-}) => {
-  return (
-    <div className="form-group">
-      <label htmlFor={name}>{text}</label>
-      {children ? (
-        children
-      ) : (
-        <input
-          id={name}
-          type={type ? type : "text"}
-          name={name}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          required={required}
-        />
-      )}
-    </div>
-  );
-};
-
-const PromotionForm = ({ handlePromotionChange, editedPromotions }) => {
-  return (
-    <Card.Content>
-      <FormInput name="description" text="Description">
-        <textarea
-          id="description"
-          name="description"
-          placeholder="Enter description"
-          value={editedPromotions.description}
-          onChange={handlePromotionChange}
-          required
-        />
-      </FormInput>
-      <FormInput
-        name="discount"
-        text="Discount"
-        placeholder="Enter discount"
-        value={editedPromotions.discount}
-        onChange={handlePromotionChange}
-        required={true}
-      />
-      <FormInput name="termsNCond" text="Terms and Condition">
-        <textarea
-          id="termsNCond"
-          name="termsNCond"
-          value={editedPromotions.termsNCond}
-          placeholder="Enter terms and condition"
-          onChange={handlePromotionChange}
-          required
-        />
-      </FormInput>
-      <div className="form-row">
-        <FormInput
-          name="startAt"
-          text="Start Date"
-          type="datetime-local"
-          value={editedPromotions.startAt.slice(0, 16)}
-          onChange={handlePromotionChange}
-          required={true}
-        />
-        <FormInput
-          name="endAt"
-          text="End Date"
-          type="datetime-local"
-          value={editedPromotions.endAt.slice(0, 16)}
-          onChange={handlePromotionChange}
-          required={true}
-        />
-      </div>
-    </Card.Content>
-  );
-};
+import { Card, TextContainer, FormInput } from "./Common";
+import { restaurantAPI } from "../utils/api";
 
 export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
   const [restaurant, setRestaurant] = useState(null);
@@ -92,10 +9,6 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
   const [refresh, setRefresh] = useState(false);
   const [editedRestaurant, setEditedRestaurant] = useState({ ...restaurant });
   const [editedAddress, setEditedAddress] = useState({ ...address });
-  const [promotions, setPromotions] = useState(null);
-  const [editedPromotions, setEditedPromotions] = useState(null);
-  const [isEditingPromotions, setIsEditingPromotions] = useState(-1);
-  const [isAddingPromotions, setIsAddingPromotions] = useState(false);
 
   useEffect(() => {
     restaurantAPI
@@ -119,13 +32,6 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
         setRefresh(true);
       })
       .catch((e) => console.error(e));
-
-    promotionAPI
-      .getPromotionsByRestaurant(restaurantId)
-      .then((res) => {
-        setPromotions(res.data.promotionInfo);
-      })
-      .catch((e) => console.error(e));
   }, [refresh]);
 
   const handleRestaurantChange = (e) => {
@@ -142,26 +48,6 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handlePromotionChange = (e) => {
-    const { name, value } = e.target;
-    setEditedPromotions((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleDeletePromotion = async (promotionId) => {
-    console.log(promotionId);
-    if (window.confirm("Are you sure you want to delete this promotion?")) {
-      await promotionAPI
-        .deletePromotion(promotionId)
-        .then(() => console.log("sucess"))
-        .catch((error) => console.error(error));
-      setRefresh(false);
-      setEditedPromotions(null);
-    }
   };
 
   const handleSave = async (e) => {
@@ -212,33 +98,6 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
     setEditedRestaurant({ ...restaurant });
     setEditedAddress({ ...address });
     setIsEditingRestaurant(false);
-  };
-
-  const handleSubmitPromotion = async (e) => {
-    e.preventDefault();
-    await promotionAPI
-      .updatePromotion(isEditingPromotions, editedPromotions)
-      .then((res) => {
-        console.log("success");
-        setRefresh(false);
-        setIsEditingPromotions(-1);
-        setEditedPromotions(null);
-      })
-      .catch((error) => console.error(error));
-  };
-
-  const handleCreatePromotion = async (e) => {
-    e.preventDefault();
-
-    await promotionAPI
-      .createPromotion(restaurantId, editedPromotions)
-      .then((res) => {
-        setRefresh(false);
-        setIsAddingPromotions(false);
-        setEditedPromotions(null);
-        console.log("success");
-      })
-      .catch((error) => console.error(error));
   };
 
   const cuisineOptions = [
@@ -298,7 +157,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                     </div>
                   </Card.Header>
                   <Card.Content>
-                    <Container text="Restaurant Name">
+                    <TextContainer text="Restaurant Name">
                       <p
                         style={{
                           fontWeight: "600",
@@ -308,9 +167,9 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                       >
                         {restaurant.name}
                       </p>
-                    </Container>
-                    <Container text="Cuisine Type" data={restaurant.cuisine} />
-                    <Container
+                    </TextContainer>
+                    <TextContainer text="Cuisine Type" data={restaurant.cuisine} />
+                    <TextContainer
                       text="Description"
                       data={restaurant.description}
                     />
@@ -346,7 +205,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                 <Card>
                   <Card.Header title="Address Information" />
                   <Card.Content>
-                    <Container text="📍 Full Address">
+                    <TextContainer text="📍 Full Address">
                       <p style={{ fontWeight: "600", margin: 0 }}>
                         {address.addressLine1}
                         {address.addressLine2 && `, ${address.addressLine2}`}
@@ -363,7 +222,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                       >
                         {address.country}
                       </p>
-                    </Container>
+                    </TextContainer>
                   </Card.Content>
                 </Card>
               </div>
@@ -498,181 +357,6 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                 </div>
               </form>
             )}
-
-            <div className="flex-between">
-              <h2
-                style={{
-                  marginBottom: "var(--spacing-lg)",
-                  marginTop: "var(--spacing-lg)",
-                }}
-              >
-                Promotions Management
-              </h2>
-              <button
-                className="btn btn-success btn-sm"
-                onClick={() => {
-                  setIsAddingPromotions(true);
-                  setEditedPromotions({
-                    description: "",
-                    discount: "",
-                    termsNCond: "",
-                    startAt: new Date().toISOString(),
-                    endAt: new Date().toISOString(),
-                  });
-                }}
-                disabled={isEditingPromotions != -1}
-                style={{
-                  opacity: isEditingPromotions != -1 ? 0.6 : 1,
-                }}
-              >
-                ➕ Create Promotion
-              </button>
-            </div>
-            {isAddingPromotions && (
-              <form onSubmit={handleCreatePromotion}>
-                <Card>
-                  <Card.Header>
-                    <div className="flex-between">
-                      <h4 className="card-title">Promotions Information</h4>
-                      <div>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          style={{
-                            marginRight: "var(--spacing-sm)",
-                          }}
-                          onClick={() => {
-                            setEditedPromotions(null);
-                            setIsEditingPromotions(-1);
-                            setIsAddingPromotions(false);
-                          }}
-                        >
-                          ❌ Cancel
-                        </button>
-                        <button
-                          className="btn btn-success btn-sm"
-                          type="submit"
-                        >
-                          ✔️ Save
-                        </button>
-                      </div>
-                    </div>
-                  </Card.Header>
-                  <PromotionForm
-                    handlePromotionChange={handlePromotionChange}
-                    editedPromotions={editedPromotions}
-                  />
-                </Card>
-              </form>
-            )}
-            {promotions.length != 0 ? (
-              promotions.map((p) => {
-                return (
-                  <>
-                    {isEditingPromotions != p.promotionId ? (
-                      <Card key={p.promotionId}>
-                        <Card.Header>
-                          <div className="flex-between">
-                            <h4 className="card-title">
-                              Promotions Information
-                            </h4>
-                            <div>
-                              <button
-                                className="btn btn-danger btn-sm"
-                                onClick={() =>
-                                  handleDeletePromotion(p.promotionId)
-                                }
-                                disabled={isAddingPromotions}
-                                style={{
-                                  opacity: isAddingPromotions ? 0.6 : 1,
-                                }}
-                              >
-                                🗑️ Delete
-                              </button>
-                              <button
-                                className="btn btn-primary btn-sm"
-                                style={{
-                                  marginLeft: "var(--spacing-sm)",
-                                  opacity: isAddingPromotions ? 0.6 : 1,
-                                }}
-                                onClick={() => {
-                                  setEditedPromotions(p);
-                                  setIsEditingPromotions(p.promotionId);
-                                }}
-                                disabled={isAddingPromotions}
-                              >
-                                ✏️ Edit
-                              </button>
-                            </div>
-                          </div>
-                        </Card.Header>
-                        <Card.Content>
-                          <Container text="Promotion ID" data={p.promotionId} />
-                          <Container text="Description" data={p.description} />
-                          <Container text="Discount" data={p.discount} />
-                          <Container
-                            text="Terms and Condition"
-                            data={p.termsNCond}
-                          />
-                          <Container
-                            text="Start Date"
-                            data={new Date(p.startAt).toLocaleDateString()}
-                          />
-                          <Container
-                            text="End Date"
-                            data={new Date(p.endAt).toLocaleDateString()}
-                          />
-                        </Card.Content>
-                      </Card>
-                    ) : (
-                      <form onSubmit={handleSubmitPromotion}>
-                        <Card key={p.promotionId}>
-                          <Card.Header>
-                            <div className="flex-between">
-                              <h4 className="card-title">
-                                Promotions Information
-                              </h4>
-                              <div>
-                                <button
-                                  className="btn btn-secondary btn-sm"
-                                  style={{
-                                    marginRight: "var(--spacing-sm)",
-                                  }}
-                                  onClick={() => {
-                                    setEditedPromotions(null);
-                                    setIsEditingPromotions(-1);
-                                  }}
-                                >
-                                  ❌ Cancel
-                                </button>
-                                <button
-                                  className="btn btn-success btn-sm"
-                                  type="submit"
-                                >
-                                  ✔️ Save
-                                </button>
-                              </div>
-                            </div>
-                          </Card.Header>
-                          <PromotionForm
-                            handlePromotionChange={handlePromotionChange}
-                            editedPromotions={editedPromotions}
-                          />
-                        </Card>
-                      </form>
-                    )}
-                  </>
-                );
-              })
-            ) : (
-              <Card>
-                <Card.Content>
-                  <Container
-                    text="There are no promotions. Click create promotions to create
-                      one now!"
-                  />
-                </Card.Content>
-              </Card>
-            )}
           </div>
 
           {/* Sidebar */}
@@ -680,11 +364,11 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
             <Card>
               <Card.Header title="Quick Info" />
               <Card.Content>
-                <Container
+                <TextContainer
                   text="Restaurant ID"
                   data={restaurant.restaurantId}
                 />
-                <Container text="Status">
+                <TextContainer text="Status">
                   <p
                     style={{
                       fontWeight: "600",
@@ -694,7 +378,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                   >
                     ✓ Active
                   </p>
-                </Container>
+                </TextContainer>
 
                 <div
                   className="mb-lg"

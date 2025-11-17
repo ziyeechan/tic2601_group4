@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { seatingAPI } from "../utils/api";
 import { mockBookings } from "../mockData";
 import { SeatingPlanCanvas } from "./SeatingPlanCanvas.jsx";
-import { Card, Container } from "./Common.jsx";
+import { Card, TextContainer } from "./Common.jsx";
 
 export function SeatingPlan() {
   const [tables, setTables] = useState();
@@ -180,7 +180,7 @@ export function SeatingPlan() {
             gridTemplateColumns: "3fr 1fr",
             gap: "var(--spacing-lg)",
           }}
-          className="seating-container"
+          className="seating-TextContainer"
         >
           {/* Layout Section */}
           <Card>
@@ -288,7 +288,7 @@ export function SeatingPlan() {
               <Card>
                 <Card.Header title="Table Details" />
                 <Card.Content>
-                  <Container>
+                  <TextContainer>
                     <label
                       htmlFor="tableNumber"
                       className="text-muted"
@@ -305,8 +305,8 @@ export function SeatingPlan() {
                       placeholder="Enter table number"
                       required
                     />
-                  </Container>
-                  <Container>
+                  </TextContainer>
+                  <TextContainer>
                     <label
                       htmlFor="tableType"
                       className="text-muted"
@@ -325,8 +325,8 @@ export function SeatingPlan() {
                       <option value="indoor">Indoor</option>
                       <option value="vip">VIP</option>
                     </select>
-                  </Container>
-                  <Container>
+                  </TextContainer>
+                  <TextContainer>
                     <label
                       htmlFor="pax"
                       className="text-muted"
@@ -343,11 +343,11 @@ export function SeatingPlan() {
                       placeholder="Enter pax"
                       required
                     />
-                  </Container>
+                  </TextContainer>
                   {bookings.find(
                     (b) => b.tableId === selectedTable.id && b.date === today
                   ) && (
-                    <Container
+                    <TextContainer
                       text="Current Booking"
                       data={
                         bookings.find(

@@ -9,6 +9,18 @@ export function Header({ currentView, onViewChange, userRole }) {
       return (
         <>
           <button
+            className={`tab-button ${
+              currentView === "restaurant-management" ? "active" : ""
+            }`}
+            onClick={() => {
+              onViewChange("all-promotions");
+              setMobileMenuOpen(false);
+            }}
+            style={{ border: "none", background: "none" }}
+          >
+            🎉 Promotions
+          </button>
+          <button
             className={`tab-button ${currentView === "home" ? "active" : ""}`}
             onClick={() => {
               onViewChange("home");
@@ -35,18 +47,6 @@ export function Header({ currentView, onViewChange, userRole }) {
     } else {
       return (
         <>
-          <button
-            className={`tab-button ${
-              currentView === "restaurant-management" ? "active" : ""
-            }`}
-            onClick={() => {
-              onViewChange("restaurant-management");
-              setMobileMenuOpen(false);
-            }}
-            style={{ border: "none", background: "none" }}
-          >
-            🧑‍🍳 Restaurant
-          </button>
           <button
             className={`tab-button ${
               currentView === "admin-bookings" ? "active" : ""
