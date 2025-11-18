@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, TextContainer, FormInput } from "./Common";
-import { restaurantAPI } from "../utils/api";
+import { restaurantAPI, addressAPI } from "../utils/api";
 
 export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
   const [restaurant, setRestaurant] = useState(null);
@@ -60,17 +60,27 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
       !editedAddress.addressLine1.trim() ||
       !editedAddress.city.trim()
     ) {
-      console.error("Something went wrong. Please try again later");
+      alert("Please fill in all required fields");
       return;
     }
 
     try {
-      const data = {
+      // Step 1: Update restaurant information
+      const restaurantData = {
         name: editedRestaurant.name,
         description: editedRestaurant.description,
         cuisine: editedRestaurant.cuisine,
         phone: editedRestaurant.phone,
         email: editedRestaurant.email,
+      };
+
+      await restaurantAPI.updateRestaurant(
+        restaurant.restaurantId || restaurant.restaurant_id,
+        restaurantData
+      );
+
+      // Step 2: Update address information
+      const addressData = {
         addressLine1: editedAddress.addressLine1,
         addressLine2: editedAddress.addressLine2,
         country: editedAddress.country,
@@ -78,16 +88,24 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
         city: editedAddress.city,
         postalCode: editedAddress.postalCode,
       };
-      restaurantAPI
-        .updateRestaurant(restaurant.restaurantId || restaurant.restaurant_id, data)
-        .then((res) => {
-          console.log("success");
-        });
+
+      if (editedAddress.addressId || editedAddress.address_id) {
+        await addressAPI.updateAddress(
+          editedAddress.addressId || editedAddress.address_id,
+          addressData
+        );
+      }
+
+      // Step 3: Update local state to reflect changes
       setRestaurant({ ...editedRestaurant });
       setAddress({ ...editedAddress });
       setIsEditingRestaurant(false);
+
+      // Step 4: Show success feedback to user
+      alert("Restaurant information updated successfully!");
     } catch (error) {
-      console.error(error);
+      console.error("Error saving changes:", error);
+      alert(error.response?.data?.message || "Failed to save changes. Please try again.");
     }
   };
 

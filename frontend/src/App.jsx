@@ -407,22 +407,6 @@ export default function App() {
           </div>
         );
 
-      case "restaurant-management":
-        return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
-            <RestaurantManagement
-              onBack={() => setCurrentView("analytics")}
-              onViewChange={setCurrentView}
-            />
-          </div>
-        );
-
       case "admin-bookings":
         return (
           <div
