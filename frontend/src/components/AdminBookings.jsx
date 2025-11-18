@@ -80,10 +80,10 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
           restaurant_id: bookingData.fkRestaurantId,
           seating_id: bookingData.fkSeatingId,
           tableNumber: seatingPlan?.tableNumber,
-          createdAt: bookingData.createdAt,
+          createdAt: bookingData.createdAt
         };
       });
-
+      
       setBookings(transformedBookings);
     } catch (error) {
       console.error("Error fetching bookings:", error);
@@ -110,11 +110,10 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
   let filtered = bookings;
 
   if (searchTerm) {
-    filtered = filtered.filter(
-      (b) =>
-        b.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.restaurantName.toLowerCase().includes(searchTerm.toLowerCase())
+    filtered = filtered.filter(b =>
+      b.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      b.restaurantName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }
 
@@ -123,7 +122,7 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
   }
 
   if (dateFilter) {
-    filtered = filtered.filter((b) => b.date === dateFilter);
+    filtered = filtered.filter(b => b.date === dateFilter);
   }
 
   // Handle status updates
@@ -142,13 +141,13 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
       console.log("Update response:", response.data);
 
       // Optimistically update the local state for immediate UI feedback
-      setBookings((prevBookings) =>
-        prevBookings.map((booking) => {
+      setBookings(prevBookings => 
+        prevBookings.map(booking => {
           const bookingIdToCheck = booking.id || booking.booking_id;
           return bookingIdToCheck === bookingId ? { ...booking, status: newStatus } : booking;
         })
       );
-
+      
       // Refresh bookings from server to ensure consistency
       await fetchBookings();
     } catch (error) {
@@ -162,7 +161,7 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
         error.response?.data?.message || "Failed to update booking status. Please try again.";
       alert(errorMessage);
     } finally {
-      setUpdatingBookings((prev) => {
+      setUpdatingBookings(prev => {
         const newSet = new Set(prev);
         newSet.delete(bookingId);
         return newSet;
@@ -173,7 +172,7 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
   const getActionButtons = (booking) => {
     // Use booking_id as fallback if id is not available
     const bookingId = booking.id || booking.booking_id;
-
+    
     if (!bookingId) {
       console.error("Booking ID not found for booking:", booking);
       return (

@@ -49,7 +49,7 @@ export default function App() {
       restaurantAPI.getAllRestaurants(),
       addressAPI.getAllAddresses(),
       promotionAPI.getAllPromotions(),
-      reviewAPI.getAllReviews(),
+      reviewAPI.getAllReviews()
     ])
       .then(([resRestaurants, resAddresses, resPromotions, resReviews]) => {
         const restaurantList = resRestaurants.data;
@@ -187,7 +187,7 @@ export default function App() {
         const stateMatch = (address?.state || "").toLowerCase().includes(term);
         const countryMatch = (address?.country || "").toLowerCase().includes(term);
 
-        return nameMatch || cityMatch || stateMatch || countryMatch;
+        return (nameMatch || cityMatch || stateMatch || countryMatch);
       });
     }
 
@@ -203,6 +203,7 @@ export default function App() {
         (r) => r.reviewCount > 0 && r.averageRating >= selected && r.averageRating < selected + 1
       );
     }
+  
 
     //Promotion filter
     if (filters.promotion === "Yes") {
@@ -352,7 +353,9 @@ export default function App() {
               paddingBottom: "var(--spacing-lg)",
             }}
           >
-            <AllPromotions onBack={() => setCurrentView("home")} />
+            <AllPromotions
+              onBack={() => setCurrentView("home")}
+            />
           </div>
         );
 

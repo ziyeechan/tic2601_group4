@@ -78,7 +78,7 @@ export function Analytics({ onCheck }) {
     setError("");
     try {
       const qs = `?restaurantId=${restaurantId}&year=${year}&month=${month}`;
-
+      
       // Fetch all analytics endpoints in parallel
       const [dcRes, mRes, hmRes, drRes] = await Promise.all([
         fetch(`${API_BASE}/analytics/bookings/daily-count${qs}`),
@@ -92,10 +92,7 @@ export function Analytics({ onCheck }) {
       }
 
       const [dcJson, mJson, hmJson, drJson] = await Promise.all([
-        dcRes.json(),
-        mRes.json(),
-        hmRes.json(),
-        drRes.json(),
+        dcRes.json(), mRes.json(), hmRes.json(), drRes.json()
       ]);
 
       // Update state with fetched data
@@ -131,11 +128,12 @@ export function Analytics({ onCheck }) {
   const selectedMonthName = months.find((m) => m.v === month)?.n || month;
 
   // Determine if we have any meaningful data to show charts
-  const hasData =
-    (dailyCount.length > 0 && dailyCount.some((d) => d.count > 0)) ||
+  const hasData = (
+    (dailyCount.length > 0 && dailyCount.some(d => d.count > 0)) ||
     totalBookings > 0 ||
-    heatmap?.matrix?.some((row) => row.some((val) => val > 0)) ||
-    (dailyRatings.length > 0 && dailyRatings.some((d) => d.reviewCount > 0));
+    (heatmap?.matrix?.some(row => row.some(val => val > 0))) ||
+    (dailyRatings.length > 0 && dailyRatings.some(d => d.reviewCount > 0))
+  );
 
   // ----- RENDER -----
 
@@ -195,11 +193,7 @@ export function Analytics({ onCheck }) {
               }}
               style={{ width: "100%" }}
             >
-              {years.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
+              {years.map(y => (<option key={y} value={y}>{y}</option>))}
             </select>
           </div>
 
@@ -217,11 +211,7 @@ export function Analytics({ onCheck }) {
               }}
               style={{ width: "100%" }}
             >
-              {months.map((m) => (
-                <option key={m.v} value={m.v}>
-                  {m.n}
-                </option>
-              ))}
+              {months.map(m => (<option key={m.v} value={m.v}>{m.n}</option>))}
             </select>
           </div>
 
@@ -240,7 +230,7 @@ export function Analytics({ onCheck }) {
       </div>
 
       {/* --- Message States --- */}
-
+      
       {/* Initial state: prompt user to select filters */}
       {!hasChecked && (
         <div className="card" style={{ padding: "var(--spacing-lg)", textAlign: "center" }}>

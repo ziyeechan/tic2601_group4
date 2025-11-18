@@ -21,35 +21,39 @@ import axios from "axios";
 
 export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClearFilters }) {
   const cuisineOptions = [
-    "All Cuisines",
-    "French",
-    "Italian",
-    "Japanese",
-    "Indian",
-    "Chinese",
-    "Mexican",
-    "Thai",
-    "American",
-    "Mediterranean",
+    'All Cuisines',
+    'French',
+    'Italian',
+    'Japanese',
+    'Indian',
+    'Chinese',
+    'Mexican',
+    'Thai',
+    'American',
+    'Mediterranean'
   ];
 
-  const menuTypeOptions = ["Halal", "Vegan", "Vegetarian"];
+  const menuTypeOptions = [
+    'Halal',
+    'Vegan',
+    'Vegetarian'
+  ];
 
   const reviewsOptions = [
-    { label: "5 stars", value: 5 },
-    { label: "4 stars", value: 4 },
-    { label: "3 stars", value: 3 },
+    { label: '5 stars', value: 5 },
+    { label: '4 stars', value: 4 },
+    { label: '3 stars', value: 3 },
   ];
 
   const promotionOptions = [
-    { label: "All", value: "" },
-    { label: "Show promotion only", value: "Yes" },
+    { label: 'All', value: '' },
+    { label: 'Show promotion only', value: 'Yes' },
   ];
 
   const handleFilterChange = (key, value) => {
     onFiltersChange({
       ...filters,
-      [key]: value,
+      [key]: value
     });
   };
 

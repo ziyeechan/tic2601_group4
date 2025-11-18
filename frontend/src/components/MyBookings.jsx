@@ -193,7 +193,9 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     setMessage(null);
 
     try {
-      const response = await bookingAPI.getBookingByCode(searchCode.trim());
+      const response = await bookingAPI.getBookingByCode(
+        searchCode.trim()
+      );
       // Backend returns { booking } - extract booking object
       const booking = response.data.booking;
       setBookings([booking]); // Wrap in array for consistent display
