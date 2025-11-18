@@ -180,7 +180,17 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                 <div className="text-muted" style={{ fontSize: "14px" }}>
                   📍 Address
                 </div>
-                <p>{restaurant.address}</p>
+                <p>
+                  {restaurant.address
+                    ? `${restaurant.address.addressLine1}${
+                        restaurant.address.addressLine2
+                          ? ", " + restaurant.address.addressLine2
+                          : ""
+                      }, ${restaurant.address.city}, ${
+                        restaurant.address.state || ""
+                      }, ${restaurant.address.country}`
+                    : "Address not available"}
+                </p>
               </div>
               <div className="mb-md">
                 <div className="text-muted" style={{ fontSize: "14px" }}>

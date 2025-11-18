@@ -1,7 +1,13 @@
 import { useState, useMemo } from "react";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
+import { bookingAPI } from "../utils/api";
 
-export function BookingForm({ restaurant, onBack, onBookingComplete }) {
+export function BookingForm({
+  restaurant,
+  onBack,
+  onBookingComplete,
+  onBookingSuccess,
+}) {
   // Generate time slots based on restaurant opening/closing hours
   const availableTimeSlots = useMemo(() => {
     if (restaurant?.openingTime && restaurant?.closingTime) {
@@ -62,24 +68,38 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
     setIsSubmitting(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      setMessage({
-        type: "success",
-        text:
-          "Booking confirmed! Confirmation code: BK" +
-          Math.random().toString(36).substr(2, 9).toUpperCase(),
+      // Call the real booking API (without seatingID - backend will auto-assign)
+      const response = await bookingAPI.createBooking({
+        restaurantID: restaurant.restaurantId,
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        customerPhone: formData.customerPhone,
+        partySize: formData.partySize,
+        bookingDate: formData.date,
+        bookingTime: formData.time,
+        specialRequests: formData.specialRequests,
+        // seatingID omitted - backend will auto-find available table
       });
 
-      // Clear form after success
+      const confirmationCode = response.data.confirmationCode;
+      setMessage({
+        type: "success",
+        text: `Booking confirmed! Confirmation code: ${confirmationCode}`,
+      });
+
+      // Pass booking info back to parent and navigate
       setTimeout(() => {
+        onBookingSuccess?.(formData.customerEmail, confirmationCode);
         onBookingComplete();
       }, 2000);
     } catch (error) {
+      console.error("Booking error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to create booking. Please try again.";
       setMessage({
         type: "error",
-        text: "Failed to create booking. Please try again.",
+        text: errorMessage,
       });
     } finally {
       setIsSubmitting(false);
@@ -334,7 +354,15 @@ export function BookingForm({ restaurant, onBack, onBookingComplete }) {
                   Location
                 </p>
                 <p style={{ fontWeight: "600", margin: 0, fontSize: "14px" }}>
-                  {restaurant.address || "Address not available"}
+                  {restaurant.address
+                    ? `${restaurant.address.addressLine1}${
+                        restaurant.address.addressLine2
+                          ? ", " + restaurant.address.addressLine2
+                          : ""
+                      }, ${restaurant.address.city}, ${
+                        restaurant.address.state || ""
+                      }, ${restaurant.address.country}`
+                    : "Address not available"}
                 </p>
               </div>
 
