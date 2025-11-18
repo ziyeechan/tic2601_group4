@@ -5,6 +5,7 @@ import { AnalyticsTrendChart } from "./AnalyticsTrendChart";
 import { AnalyticsOutcomePie } from "./AnalyticsOutcomePie";
 import { AnalyticsHourlyHeatmap } from "./AnalyticsHourlyHeatmap";
 import { AnalyticsRatingChart } from "./AnalyticsRatingChart";
+import { Card } from "./Common";
 
 // ----- MAIN COMPONENT -----
 
@@ -78,7 +79,7 @@ export function Analytics({ onCheck }) {
     setError("");
     try {
       const qs = `?restaurantId=${restaurantId}&year=${year}&month=${month}`;
-      
+
       // Fetch all analytics endpoints in parallel
       const [dcRes, mRes, hmRes, drRes] = await Promise.all([
         fetch(`${API_BASE}/analytics/bookings/daily-count${qs}`),
@@ -92,7 +93,10 @@ export function Analytics({ onCheck }) {
       }
 
       const [dcJson, mJson, hmJson, drJson] = await Promise.all([
-        dcRes.json(), mRes.json(), hmRes.json(), drRes.json()
+        dcRes.json(),
+        mRes.json(),
+        hmRes.json(),
+        drRes.json(),
       ]);
 
       // Update state with fetched data
@@ -128,12 +132,11 @@ export function Analytics({ onCheck }) {
   const selectedMonthName = months.find((m) => m.v === month)?.n || month;
 
   // Determine if we have any meaningful data to show charts
-  const hasData = (
-    (dailyCount.length > 0 && dailyCount.some(d => d.count > 0)) ||
+  const hasData =
+    (dailyCount.length > 0 && dailyCount.some((d) => d.count > 0)) ||
     totalBookings > 0 ||
-    (heatmap?.matrix?.some(row => row.some(val => val > 0))) ||
-    (dailyRatings.length > 0 && dailyRatings.some(d => d.reviewCount > 0))
-  );
+    heatmap?.matrix?.some((row) => row.some((val) => val > 0)) ||
+    (dailyRatings.length > 0 && dailyRatings.some((d) => d.reviewCount > 0));
 
   // ----- RENDER -----
 
@@ -144,10 +147,7 @@ export function Analytics({ onCheck }) {
       </h2>
 
       {/* --- Filters Panel --- */}
-      <div
-        className="card"
-        style={{ padding: "var(--spacing-md)", marginBottom: "var(--spacing-lg)" }}
-      >
+      <Card styles={{ padding: "var(--spacing-md)", marginBottom: "var(--spacing-lg)" }}>
         <div
           style={{
             display: "grid",
@@ -193,7 +193,11 @@ export function Analytics({ onCheck }) {
               }}
               style={{ width: "100%" }}
             >
-              {years.map(y => (<option key={y} value={y}>{y}</option>))}
+              {years.map((y) => (
+                <option key={y} value={y}>
+                  {y}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -211,7 +215,11 @@ export function Analytics({ onCheck }) {
               }}
               style={{ width: "100%" }}
             >
-              {months.map(m => (<option key={m.v} value={m.v}>{m.n}</option>))}
+              {months.map((m) => (
+                <option key={m.v} value={m.v}>
+                  {m.n}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -227,25 +235,24 @@ export function Analytics({ onCheck }) {
           </div>
         </div>
         {error ? <div style={{ color: "var(--danger)", marginTop: 8 }}>{error}</div> : null}
-      </div>
+      </Card>
 
       {/* --- Message States --- */}
-      
+
       {/* Initial state: prompt user to select filters */}
       {!hasChecked && (
-        <div className="card" style={{ padding: "var(--spacing-lg)", textAlign: "center" }}>
+        <Card styles={{ padding: "var(--spacing-lg)", textAlign: "center" }}>
           <p style={{ color: "var(--text-muted)", margin: 0 }}>
             Select a restaurant, year, and month, then click <strong>"Check"</strong> to generate
             details.
           </p>
-        </div>
+        </Card>
       )}
 
       {/* Filters changed: remind user to click Check again */}
       {hasChecked && filtersChanged && (
-        <div
-          className="card"
-          style={{
+        <Card
+          styles={{
             padding: "var(--spacing-lg)",
             textAlign: "center",
             background: "#fffbeb",
@@ -255,12 +262,12 @@ export function Analytics({ onCheck }) {
           <p style={{ color: "#92400e", margin: 0 }}>
             Filters updated. Click <strong>"Check"</strong> to refresh charts.
           </p>
-        </div>
+        </Card>
       )}
 
       {/* No data found: show helpful message */}
       {hasChecked && !filtersChanged && !loading && !hasData && (
-        <div className="card" style={{ padding: "var(--spacing-lg)", textAlign: "center" }}>
+        <Card styles={{ padding: "var(--spacing-lg)", textAlign: "center" }}>
           <p style={{ color: "var(--text-muted)", marginBottom: 8 }}>
             No booking found for{" "}
             <strong>{selectedRestaurant?.restaurantName || "this restaurant"}</strong> in{" "}
@@ -272,30 +279,25 @@ export function Analytics({ onCheck }) {
           <p style={{ color: "var(--text-muted)", margin: 0, fontSize: 14 }}>
             Try selecting a different restaurant or period.
           </p>
-        </div>
+        </Card>
       )}
 
       {/* --- Charts Grid (2x2) --- */}
       {hasChecked && !filtersChanged && hasData ? (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--spacing-md)" }}>
           {/* Daily booking trend line chart */}
-          <div className="card">
-            <div className="card-header">
-              <h4 className="card-title">Daily Booking Trend</h4>
-            </div>
-            <div className="card-content">
+          <Card>
+            <Card.Header title="Daily Booking Trend" />
+            <Card.Content>
               <AnalyticsTrendChart data={dailyCount} />
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
 
           {/* Booking outcomes pie chart */}
-          <div className="card">
-            <div className="card-header">
-              <h4 className="card-title">Booking Outcomes Breakdown</h4>
-            </div>
-            <div
-              className="card-content"
-              style={{
+          <Card>
+            <Card.Header title="Booking Outcomes Breakdown" />
+            <Card.Content
+              styles={{
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
@@ -311,28 +313,24 @@ export function Analytics({ onCheck }) {
                 noShowPct={noShowPct}
                 cancelledPct={cancelledPct}
               />
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
 
           {/* Hourly activity heatmap (weekday x hour) */}
-          <div className="card">
-            <div className="card-header">
-              <h4 className="card-title">Hourly Booking Activity Heatmap</h4>
-            </div>
-            <div className="card-content">
+          <Card>
+            <Card.Header title="Hourly Booking Activity Heatmap" />
+            <Card.Content>
               <AnalyticsHourlyHeatmap heatmap={heatmap} />
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
 
           {/* Daily average rating line chart */}
-          <div className="card">
-            <div className="card-header">
-              <h4 className="card-title">Daily Average Rating</h4>
-            </div>
-            <div className="card-content">
+          <Card>
+            <Card.Header title="Daily Average Rating" />
+            <Card.Content>
               <AnalyticsRatingChart data={dailyRatings} />
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
         </div>
       ) : null}
     </div>

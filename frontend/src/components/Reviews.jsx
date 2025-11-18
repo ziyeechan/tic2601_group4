@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { reviewAPI } from "../utils/api";
+import { Card } from "./Common";
 
 export function Reviews({ restaurant, onBack, bookingId }) {
   const [reviews, setReviews] = useState([]);
@@ -138,8 +139,8 @@ export function Reviews({ restaurant, onBack, bookingId }) {
           {reviews.length > 0 ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-md)" }}>
               {reviews.map((review) => (
-                <div key={review.id || review.reviewId} className="card">
-                  <div className="card-content">
+                <Card key={review.id || review.reviewId}>
+                  <Card.Content>
                     <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
                       <div>
                         <h5 style={{ margin: 0, marginBottom: "var(--spacing-xs)" }}>
@@ -170,8 +171,8 @@ export function Reviews({ restaurant, onBack, bookingId }) {
                     </div>
 
                     <p style={{ margin: 0, color: "var(--text-dark)" }}>{review.comment}</p>
-                  </div>
-                </div>
+                  </Card.Content>
+                </Card>
               ))}
             </div>
           ) : (
@@ -185,11 +186,9 @@ export function Reviews({ restaurant, onBack, bookingId }) {
         {/* Rating Summary Sidebar */}
         <div>
           {/* Rating Summary Card */}
-          <div className="card mb-lg">
-            <div className="card-header">
-              <h4 className="card-title">Rating Summary</h4>
-            </div>
-            <div className="card-content" style={{ textAlign: "center" }}>
+          <Card className="mb-lg">
+            <Card.Header title="Rating Summary" />
+            <Card.Content styles={{ textAlign: "center" }}>
               <div
                 style={{
                   fontSize: "48px",
@@ -265,8 +264,8 @@ export function Reviews({ restaurant, onBack, bookingId }) {
                   );
                 })}
               </div>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
 
           {/* Write Review Button */}
           {!showForm && (
@@ -297,11 +296,10 @@ export function Reviews({ restaurant, onBack, bookingId }) {
             zIndex: 1000,
           }}
         >
-          <div className="card" style={{ maxWidth: "500px", width: "90%" }}>
-            <div className="card-header">
-              <h4 className="card-title">Write Your Review</h4>
-            </div>
-            <div className="card-content">
+          <Card styles={{ maxWidth: "500px", width: "90%" }}>
+            <Card.Header title="Write Your Review" />
+
+            <Card.Content>
               <form onSubmit={handleSubmitReview}>
                 <div className="form-group">
                   <label htmlFor="customerName">👤 Your Name *</label>
@@ -360,11 +358,7 @@ export function Reviews({ restaurant, onBack, bookingId }) {
                 </div>
 
                 <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-full"
-                    disabled={submitting}
-                  >
+                  <button type="submit" className="btn btn-primary btn-full" disabled={submitting}>
                     {submitting ? "⏳ Submitting..." : "✓ Submit Review"}
                   </button>
                   <button
@@ -377,8 +371,8 @@ export function Reviews({ restaurant, onBack, bookingId }) {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
         </div>
       )}
     </div>

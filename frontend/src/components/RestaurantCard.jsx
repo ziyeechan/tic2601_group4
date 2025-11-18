@@ -1,6 +1,8 @@
+import { Card } from "./Common";
+
 export function RestaurantCard({ restaurant, onViewDetails, onBookNow, isAdmin, onViewChange }) {
   return (
-    <div className="card" style={{ overflow: "hidden" }}>
+    <Card styles={{ overflow: "hidden" }}>
       {/* Image Container */}
       <div className="aspect-video image-container">
         <img
@@ -23,8 +25,7 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow, isAdmin, 
         />
       </div>
 
-      {/* Content */}
-      <div className="card-content">
+      <Card.Content>
         {/* Title */}
         <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
           <h3 style={{ margin: "0", flex: 1 }}>{restaurant.restaurantName}</h3>
@@ -99,10 +100,11 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow, isAdmin, 
         >
           {restaurant.description}
         </p>
-      </div>
+      </Card.Content>
+      {/* Content */}
 
       {/* Footer with Buttons */}
-      <div className="card-footer" style={{ display: "flex", gap: "var(--spacing-sm)" }}>
+      <Card.Footer style={{ display: "flex", gap: "var(--spacing-sm)" }}>
         <button
           className="btn btn-secondary btn-full"
           onClick={() =>
@@ -121,7 +123,7 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow, isAdmin, 
             Book Now
           </button>
         )}
-      </div>
-    </div>
+      </Card.Footer>
+    </Card>
   );
 }

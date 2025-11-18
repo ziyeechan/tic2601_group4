@@ -18,51 +18,46 @@
 
 import React, { useState } from "react";
 import axios from "axios";
+import { Card } from "./Common";
 
 export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClearFilters }) {
   const cuisineOptions = [
-    'All Cuisines',
-    'French',
-    'Italian',
-    'Japanese',
-    'Indian',
-    'Chinese',
-    'Mexican',
-    'Thai',
-    'American',
-    'Mediterranean'
+    "All Cuisines",
+    "French",
+    "Italian",
+    "Japanese",
+    "Indian",
+    "Chinese",
+    "Mexican",
+    "Thai",
+    "American",
+    "Mediterranean",
   ];
 
-  const menuTypeOptions = [
-    'Halal',
-    'Vegan',
-    'Vegetarian'
-  ];
+  const menuTypeOptions = ["Halal", "Vegan", "Vegetarian"];
 
   const reviewsOptions = [
-    { label: '5 stars', value: 5 },
-    { label: '4 stars', value: 4 },
-    { label: '3 stars', value: 3 },
+    { label: "5 stars", value: 5 },
+    { label: "4 stars", value: 4 },
+    { label: "3 stars", value: 3 },
   ];
 
   const promotionOptions = [
-    { label: 'All', value: '' },
-    { label: 'Show promotion only', value: 'Yes' },
+    { label: "All", value: "" },
+    { label: "Show promotion only", value: "Yes" },
   ];
 
   const handleFilterChange = (key, value) => {
     onFiltersChange({
       ...filters,
-      [key]: value
+      [key]: value,
     });
   };
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h4 className="card-title">🔍 Search Filters</h4>
-      </div>
-      <div className="card-content">
+    <Card>
+      <Card.Header title="🔍 Search Filters" />
+      <Card.Content>
         {/* 🔍 Search Bar */}
         <div className="form-group">
           <label htmlFor="search">Search bar</label>
@@ -139,7 +134,7 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClea
         <button className="btn btn-primary btn-full" onClick={onClearFilters}>
           Clear Filters
         </button>
-      </div>
-    </div>
+      </Card.Content>
+    </Card>
   );
 }

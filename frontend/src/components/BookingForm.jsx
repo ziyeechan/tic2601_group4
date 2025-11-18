@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
 import { bookingAPI } from "../utils/api";
+import { Card } from "./Common";
 
 export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSuccess }) {
   // Generate time slots based on restaurant opening/closing hours
@@ -110,11 +111,11 @@ export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSu
       >
         {/* Main Form */}
         <div>
-          <div className="card">
-            <div className="card-header">
+          <Card>
+            <Card.Header>
               <h3 className="card-title">Complete Your Booking</h3>
-            </div>
-            <div className="card-content">
+            </Card.Header>
+            <Card.Content>
               {message && <div className={`alert alert-${message.type} mb-lg`}>{message.text}</div>}
 
               <form onSubmit={handleSubmit}>
@@ -248,17 +249,15 @@ export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSu
                   {isSubmitting ? "⏳ Processing..." : "✓ Confirm Booking"}
                 </button>
               </form>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
         </div>
 
         {/* Booking Summary */}
         <div>
-          <div className="card">
-            <div className="card-header">
-              <h4 className="card-title">Booking Summary</h4>
-            </div>
-            <div className="card-content">
+          <Card>
+            <Card.Header title="Booking Summary" />
+            <Card.Content>
               <div
                 className="mb-md"
                 style={{
@@ -352,8 +351,8 @@ export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSu
                   code.
                 </p>
               </div>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
         </div>
       </div>
     </div>

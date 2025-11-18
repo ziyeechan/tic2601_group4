@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { bookingAPI } from "../utils/api";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
+import { Card } from "./Common";
 
 export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" }) {
   const [bookings, setBookings] = useState([]);
@@ -193,9 +194,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     setMessage(null);
 
     try {
-      const response = await bookingAPI.getBookingByCode(
-        searchCode.trim()
-      );
+      const response = await bookingAPI.getBookingByCode(searchCode.trim());
       // Backend returns { booking } - extract booking object
       const booking = response.data.booking;
       setBookings([booking]); // Wrap in array for consistent display
@@ -231,11 +230,9 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       <h2 style={{ marginBottom: "var(--spacing-lg)" }}>📅 My Bookings</h2>
 
       {/* Search Form */}
-      <div className="card mb-lg">
-        <div className="card-header">
-          <h4 className="card-title">Find Your Bookings</h4>
-        </div>
-        <div className="card-content">
+      <Card className="mb-lg">
+        <Card.Header title="Find Your Bookings" />
+        <Card.Content>
           {/* Search Mode Tabs */}
           <div
             style={{
@@ -346,8 +343,8 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
               </button>
             </form>
           )}
-        </div>
-      </div>
+        </Card.Content>
+      </Card>
 
       {/* Messages */}
       {message && <div className={`alert alert-${message.type} mb-lg`}>{message.text}</div>}
@@ -380,8 +377,8 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
           }}
         >
           {displayBookings.map((booking) => (
-            <div key={booking.bookingId} className="card">
-              <div className="card-content">
+            <Card key={booking.bookingId}>
+              <Card.Content>
                 <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
                   <div>
                     <h4 style={{ margin: 0, marginBottom: "var(--spacing-sm)" }}>
@@ -489,7 +486,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                     Booked on {new Date(booking.createdAt).toLocaleDateString()}
                   </div>
                 )}
-              </div>
+              </Card.Content>
 
               {/* Edit Form - Shows when editing */}
               {editingBookingId === booking.bookingId && (
@@ -599,7 +596,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
 
               {/* Action Buttons - Only for upcoming bookings */}
               {activeTab === "upcoming" && editingBookingId !== booking.bookingId && (
-                <div className="card-footer" style={{ display: "flex", gap: "var(--spacing-sm)" }}>
+                <Card.Footer styles={{ display: "flex", gap: "var(--spacing-sm)" }}>
                   <button className="btn btn-secondary" onClick={() => handleEdit(booking)}>
                     ✏️ Edit
                   </button>
@@ -609,9 +606,9 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                   >
                     ✕ Cancel
                   </button>
-                </div>
+                </Card.Footer>
               )}
-            </div>
+            </Card>
           ))}
         </div>
       ) : (
