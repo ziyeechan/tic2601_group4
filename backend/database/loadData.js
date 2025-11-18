@@ -485,8 +485,8 @@ module.exports.LoadData = async () => {
       {
         description: "Happy Hour: 50% off appetizers 5-7 PM",
         discount: "HAPPYHOUR50",
-        startAt: "2024-11-01",
-        endAt: "2024-12-31",
+        startAt: "2025-11-01",
+        endAt: "2025-12-31",
         termsNCond: "Valid Monday to Friday, 5-7 PM. Dine-in only.",
         discount: "50%",
         fkRestaurantId: 2,
@@ -494,8 +494,8 @@ module.exports.LoadData = async () => {
       {
         description: "Birthday special: Complimentary dessert",
         discount: "BDAY2024",
-        startAt: "2024-11-01",
-        endAt: "2024-12-31",
+        startAt: "2025-11-01",
+        endAt: "2025-12-31",
         termsNCond: "Valid on your birthday month. Must show valid ID.",
         discount: "Free Dessert",
         fkRestaurantId: 5,
@@ -503,8 +503,8 @@ module.exports.LoadData = async () => {
       {
         description: "Family Combo Package: 30% discount",
         discount: "FAMILY30",
-        startAt: "2024-11-10",
-        endAt: "2024-11-25",
+        startAt: "2025-11-10",
+        endAt: "2025-12-25",
         termsNCond: "Valid for 4+ people. Not combinable with other offers.",
         discount: "30%",
         fkRestaurantId: 4,
