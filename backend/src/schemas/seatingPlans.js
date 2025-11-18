@@ -25,11 +25,6 @@ const SeatingPlans = db.define(
       type: DataTypes.STRING(50),
       allowNull: false,
     },
-    isAvailable: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
-
     //seating layout
     x: {
       type: DataTypes.INTEGER,

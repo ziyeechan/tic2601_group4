@@ -351,6 +351,43 @@ export function SeatingPlan() {
     }
   };
 
+  const handleCanvasMouseDown = (e) => {
+    if (!canvasRef.current) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const xInCanvas = e.clientX - rect.left;
+    const yInCanvas = e.clientY - rect.top;
+
+    const radius = 60;
+    // cursor is roughly in the centre
+    const newX = Math.max(0, Math.min(rect.width - radius, xInCanvas - radius / 2));
+    const newY = Math.max(0, Math.min(rect.height - radius, yInCanvas - radius / 2));
+
+    // when adding a table, create it at this position
+    if (isAddingTable) {
+      const tempId = `temp-${Date.now()}`;
+
+      const newTable = {
+        restaurantId: selectedRestaurantId || "1",
+        seatingId: tempId, // tempid for dragging to work
+        x: newX,
+        y: newY,
+        isAdding: true,
+        tableNumber: "",
+        tableType: "outdoor",
+        pax: 2,
+      };
+
+      setTables((prev) => [...prev, newTable]);
+      setSelectedTable(newTable);
+      return;
+    }
+
+    // click on empty canvas clears selection
+    setSelectedTable(null);
+  };
+
+
   const handleSaveLayout = async () => {
     try {
       await Promise.all(
@@ -361,7 +398,6 @@ export function SeatingPlan() {
               tableNumber: t.tableNumber,
               tableType: t.tableType,
               pax: t.pax,
-              isAvailable: t.isAvailable,
               x: t.x,
               y: t.y,
             })
@@ -380,14 +416,6 @@ export function SeatingPlan() {
   b.date === today &&
   b.tableId != null &&
   Number(b.tableId) === Number(table.seatingId);
-  
-  const getTableStatus = (table) => {
-    const booking = bookings.find((b) => isSameTableToday(b, table));
-
-    if (booking && booking.status === "confirmed") return "occupied";
-    if (!table.isAvailable) return "unavailable";
-    return "available";
-  };
 
 
   // Get table icon
@@ -405,14 +433,16 @@ export function SeatingPlan() {
   };
 
   // Get table color
-  const getTableColor = (status) => {
-    switch (status) {
-      case "occupied":
-        return "#ef4444"; // red
-      case "unavailable":
-        return "#f59e0b"; // yellow
+  const getTableColor = (type) => {
+    switch (type) {
+      case "indoor":
+        return "#60a5fa"; // blue
+      case "outdoor":
+        return "#22c55e"; // green
+      case "vip":
+        return "#a855f7"; // purple
       default:
-        return "#10b981"; // green
+        return "#9ca3af"; // gray
     }
   };
 
@@ -431,29 +461,14 @@ export function SeatingPlan() {
 
   // Create node on canvas for add table button
   const handleAddTable = () => {
+    if (!selectedRestaurantId) {
+      alert("Please select a restaurant first");
+      return;
+    }
+
+    // wait for click on the canvas
     setIsAddingTable(true);
-    let x, y;
-    do {
-      x = rand(10, 880);
-      y = rand(10, 330);
-    } while (overlaps(x, y, tables));
-
-    const tempId = `temp-${Date.now()}`;
-
-    const newTable = {
-      restaurantId: selectedRestaurantId || "1",
-      seatingId: tempId,          // temporary id so dragging works
-      x: x,
-      y: y,
-      isAdding: true,
-      isAvailable: true,
-      tableNumber: "",
-      tableType: "outdoor",
-      pax: 2,
-    };
-
-    setSelectedTable(newTable);
-    setTables([...tables, newTable]);
+    setSelectedTable(null);
   };
 
   // Populate fields when form is being filled
@@ -509,7 +524,6 @@ export function SeatingPlan() {
       tableNumber: selectedTable.tableNumber,
       tableType: selectedTable.tableType,
       pax: selectedTable.pax,
-      isAvailable: selectedTable.isAvailable,
       x: selectedTable.x,
       y: selectedTable.y,
     };
@@ -716,7 +730,7 @@ export function SeatingPlan() {
                       marginBottom: "var(--spacing-sm)",
                     }}
                   >
-                    Legend:
+                    Time Slot Legend:
                   </p>
                   <div
                     style={{
@@ -783,12 +797,12 @@ export function SeatingPlan() {
                     backgroundColor: "#fafafa",
                     overflow: "hidden",
                   }}
+                    onMouseDown={handleCanvasMouseDown}
                     onMouseMove={handleCanvasMouseMove}
                     onMouseUp={handleCanvasMouseUp}
                     onMouseLeave={handleCanvasMouseUp}
                 >
                   {tables.map((table) => {
-                    const status = getTableStatus(table);
                     const booking = bookings.find(
                       (b) =>
                         b.tableId === table.seatingId &&
@@ -819,7 +833,7 @@ export function SeatingPlan() {
                             height: "60px",
                             borderRadius: "50%",
                             backgroundColor:
-                              getTableColor(status),
+                              getTableColor(table.tableType),
                             border: isSelected
                               ? "3px solid var(--text-dark)"
                               : "none",
@@ -1401,7 +1415,6 @@ export function SeatingPlan() {
                   {tables
                     .filter(
                       (t) =>
-                        t.isAvailable &&
                         t.pax >= selectedBooking.partySize &&
                         Number(t.seatingId) !== Number(selectedBooking.tableId) &&
                         !doesOverlapWithExistingBooking(selectedBooking, t)
