@@ -34,7 +34,6 @@ module.exports.updateReviews = async (reviewID, meta) => {
     {
       rating: meta.rating,
       comment: meta.comment,
-
     },
     { where: { reviewId: reviewID } }
   );

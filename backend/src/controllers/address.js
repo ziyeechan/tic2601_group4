@@ -1,11 +1,11 @@
 const {
-    findAllAddresses,
-    findAddressByID,
-    createAddress,
-    updateAddress,
-    deleteAddress,
+  findAllAddresses,
+  findAddressByID,
+  createAddress,
+  updateAddress,
+  deleteAddress,
 } = require("../models/address");
-  
+
 module.exports.findAllAddresses = async (req, res) => {
   try {
     const address = await findAllAddresses();
@@ -43,7 +43,14 @@ module.exports.createAddress = async (req, res) => {
       return res.status(400).json({ message: "Missing required address fields" });
     }
 
-    const newAddress = await createAddress({ addressLine1, addressLine2, country, state, city, postalCode });
+    const newAddress = await createAddress({
+      addressLine1,
+      addressLine2,
+      country,
+      state,
+      city,
+      postalCode,
+    });
 
     return res.status(200).json({ message: "Address has been created", address: newAddress });
   } catch (err) {
@@ -54,14 +61,21 @@ module.exports.createAddress = async (req, res) => {
 
 module.exports.updateAddress = async (req, res) => {
   try {
-    const addressID= parseInt(req.params.addressID);
+    const addressID = parseInt(req.params.addressID);
     const { addressLine1, addressLine2, country, state, city, postalCode } = req.body;
 
     if (isNaN(addressID)) {
       return res.status(400).json({ message: "Invalid address ID" });
     }
 
-    const updated = await updateAddress(addressID, { addressLine1, addressLine2, country, state, city, postalCode });
+    const updated = await updateAddress(addressID, {
+      addressLine1,
+      addressLine2,
+      country,
+      state,
+      city,
+      postalCode,
+    });
 
     if (!updated) {
       return res.status(404).json({ message: "Address not found" });
@@ -76,7 +90,7 @@ module.exports.updateAddress = async (req, res) => {
 
 module.exports.deleteAddress = async (req, res) => {
   try {
-    const addressID= parseInt(req.params.addressID);
+    const addressID = parseInt(req.params.addressID);
 
     if (isNaN(addressID)) {
       return res.status(400).json({ message: "Invalid address ID" });

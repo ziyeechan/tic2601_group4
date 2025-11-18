@@ -51,7 +51,6 @@ module.exports.findAllPromotions = async (req, res) => {
   }
 };
 
-
 module.exports.findPromotionsByRestaurantID = async (req, res) => {
   try {
     const restaurantID = parseInt(req.params.restaurantID);

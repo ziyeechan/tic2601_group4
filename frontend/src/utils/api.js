@@ -19,8 +19,7 @@ export const bookingAPI = {
   getAllBookings: () => api.get("/booking/all"),
 
   // Get booking by confirmation code
-  getBookingByCode: (confirmationCode) =>
-    api.get(`/booking/code/${confirmationCode}`),
+  getBookingByCode: (confirmationCode) => api.get(`/booking/code/${confirmationCode}`),
 
   // Get all bookings by customer email
   getBookingsByEmail: (email) => api.get(`/booking/email/${email}`),
@@ -29,20 +28,17 @@ export const bookingAPI = {
   getBookingById: (bookingId) => api.get(`/booking/${bookingId}`),
 
   // Get all bookings for a restaurant
-  getBookingsByRestaurantId: (restaurantId) =>
-    api.get(`/booking/restaurant/${restaurantId}`),
+  getBookingsByRestaurantId: (restaurantId) => api.get(`/booking/restaurant/${restaurantId}`),
 
   // Get bookings by restaurant and status
   getBookingsByStatus: (restaurantId, status) =>
     api.get(`/booking/restaurant/${restaurantId}/status/${status}`),
 
   // Update booking details
-  updateBooking: (bookingId, bookingData) =>
-    api.put(`/booking/${bookingId}`, bookingData),
+  updateBooking: (bookingId, bookingData) => api.put(`/booking/${bookingId}`, bookingData),
 
   // Update booking status
-  updateBookingStatus: (bookingId, status) =>
-    api.put(`/booking/${bookingId}/status`, { status }),
+  updateBookingStatus: (bookingId, status) => api.put(`/booking/${bookingId}/status`, { status }),
 
   // Delete/cancel a booking
   deleteBooking: (bookingId) => api.delete(`/booking/${bookingId}`),
@@ -54,8 +50,7 @@ export const restaurantAPI = {
 
   getAllRestaurants: () => api.get("/restaurant/all"),
 
-  getRestaurantById: (restaurantId) =>
-    api.get(`/restaurant/id/${restaurantId}`),
+  getRestaurantById: (restaurantId) => api.get(`/restaurant/id/${restaurantId}`),
 
   getRestaurantByName: (name) => api.get(`/restaurant/name/${name}`),
 
@@ -70,16 +65,14 @@ export const seatingAPI = {
   createSeatingPlan: (restaurantId, seatingData) =>
     api.post(`/seating/${restaurantId}`, seatingData),
 
-  getSeatingPlansByRestaurant: (restaurantId) =>
-    api.get(`/seating/${restaurantId}`),
+  getSeatingPlansByRestaurant: (restaurantId) => api.get(`/seating/${restaurantId}`),
 
   getSeatingPlanById: (seatingId) => api.get(`/seating/id/${seatingId}`),
 
   getSeatingPlanByTableNumber: (restaurantId, tableNumber) =>
     api.get(`/seating/${restaurantId}/tableNum/${tableNumber}`),
 
-  updateSeatingPlan: (seatingId, seatingData) =>
-    api.put(`/seating/${seatingId}`, seatingData),
+  updateSeatingPlan: (seatingId, seatingData) => api.put(`/seating/${seatingId}`, seatingData),
 
   deleteSeatingPlan: (seatingId) => api.delete(`/seating/${seatingId}`),
 };
@@ -87,24 +80,19 @@ export const seatingAPI = {
 // Address API endpoints
 export const addressAPI = {
   // Create a new address
-  createAddress: (addressData) =>
-    api.post("/address", addressData),
+  createAddress: (addressData) => api.post("/address", addressData),
 
   // Get all addresses
-  getAllAddresses: () =>
-    api.get(`/address/`),
+  getAllAddresses: () => api.get(`/address/`),
 
   // Get address by ID
-  getAddressById: (addressId) =>
-    api.get(`/address/${addressId}`),
+  getAddressById: (addressId) => api.get(`/address/${addressId}`),
 
   // Update address by ID
-  updateAddress: (addressId, addressData) =>
-    api.put(`/address/${addressId}`, addressData),
+  updateAddress: (addressId, addressData) => api.put(`/address/${addressId}`, addressData),
 
   // Delete address by ID
-  deleteAddress: (addressId) =>
-    api.delete(`/address/${addressId}`),
+  deleteAddress: (addressId) => api.delete(`/address/${addressId}`),
 };
 
 // Promotion API endpoints
@@ -120,8 +108,7 @@ export const promotionAPI = {
   getPromotionById: (promotionId) => api.get(`/promotion/${promotionId}`),
 
   // Get all promotions for a specific restaurant
-  getPromotionsByRestaurant: (restaurantId) =>
-    api.get(`/promotion/restaurant/${restaurantId}`),
+  getPromotionsByRestaurant: (restaurantId) => api.get(`/promotion/restaurant/${restaurantId}`),
 
   // Update promotion
   updatePromotion: (promotionId, promotionData) =>
@@ -144,16 +131,13 @@ export const reviewAPI = {
   getReviewById: (reviewId) => api.get(`/review/${reviewId}`),
 
   // Get all reviews for a specific restaurant
-  getReviewsByRestaurant: (restaurantId) =>
-    api.get(`/review/restaurant/${restaurantId}`),
+  getReviewsByRestaurant: (restaurantId) => api.get(`/review/restaurant/${restaurantId}`),
 
   // Get all reviews for a specific booking
-  getReviewsByBooking: (bookingId) =>
-    api.get(`/review/bookings/${bookingId}`),
+  getReviewsByBooking: (bookingId) => api.get(`/review/bookings/${bookingId}`),
 
   // Update a review
-  updateReview: (reviewId, reviewData) =>
-    api.put(`/review/${reviewId}`, reviewData),
+  updateReview: (reviewId, reviewData) => api.put(`/review/${reviewId}`, reviewData),
 
   // Delete a review
   deleteReview: (reviewId) => api.delete(`/review/${reviewId}`),

@@ -9,6 +9,16 @@ export function Header({ currentView, onViewChange, userRole }) {
       return (
         <>
           <button
+            className={`tab-button ${currentView === "restaurant-management" ? "active" : ""}`}
+            onClick={() => {
+              onViewChange("all-promotions");
+              setMobileMenuOpen(false);
+            }}
+            style={{ border: "none", background: "none" }}
+          >
+            🎉 Promotions
+          </button>
+          <button
             className={`tab-button ${currentView === "home" ? "active" : ""}`}
             onClick={() => {
               onViewChange("home");
@@ -19,9 +29,7 @@ export function Header({ currentView, onViewChange, userRole }) {
             🏠 Discover
           </button>
           <button
-            className={`tab-button ${
-              currentView === "my-bookings" ? "active" : ""
-            }`}
+            className={`tab-button ${currentView === "my-bookings" ? "active" : ""}`}
             onClick={() => {
               onViewChange("my-bookings");
               setMobileMenuOpen(false);
@@ -36,21 +44,7 @@ export function Header({ currentView, onViewChange, userRole }) {
       return (
         <>
           <button
-            className={`tab-button ${
-              currentView === "restaurant-management" ? "active" : ""
-            }`}
-            onClick={() => {
-              onViewChange("restaurant-management");
-              setMobileMenuOpen(false);
-            }}
-            style={{ border: "none", background: "none" }}
-          >
-            🧑‍🍳 Restaurant
-          </button>
-          <button
-            className={`tab-button ${
-              currentView === "admin-bookings" ? "active" : ""
-            }`}
+            className={`tab-button ${currentView === "admin-bookings" ? "active" : ""}`}
             onClick={() => {
               onViewChange("admin-bookings");
               setMobileMenuOpen(false);
@@ -60,9 +54,7 @@ export function Header({ currentView, onViewChange, userRole }) {
             📋 All Bookings
           </button>
           <button
-            className={`tab-button ${
-              currentView === "seating" ? "active" : ""
-            }`}
+            className={`tab-button ${currentView === "seating" ? "active" : ""}`}
             onClick={() => {
               onViewChange("seating");
               setMobileMenuOpen(false);
@@ -72,9 +64,7 @@ export function Header({ currentView, onViewChange, userRole }) {
             🪑 Table Layout
           </button>
           <button
-            className={`tab-button ${
-              currentView === "analytics" ? "active" : ""
-            }`}
+            className={`tab-button ${currentView === "analytics" ? "active" : ""}`}
             onClick={() => {
               onViewChange("analytics");
               setMobileMenuOpen(false);
@@ -98,10 +88,7 @@ export function Header({ currentView, onViewChange, userRole }) {
           alignItems: "center",
         }}
       >
-        <div
-          className="flex gap-md"
-          style={{ flex: 1, alignItems: "center", minWidth: 0 }}
-        >
+        <div className="flex gap-md" style={{ flex: 1, alignItems: "center", minWidth: 0 }}>
           <button
             onClick={() => onViewChange("home")}
             className="logo"
@@ -167,10 +154,7 @@ export function Header({ currentView, onViewChange, userRole }) {
         </button>
 
         {/* Desktop Navigation */}
-        <nav
-          style={{ display: mobileMenuOpen ? "flex" : "none" }}
-          className="nav-menu"
-        >
+        <nav style={{ display: mobileMenuOpen ? "flex" : "none" }} className="nav-menu">
           {renderNavButtons()}
 
           <button

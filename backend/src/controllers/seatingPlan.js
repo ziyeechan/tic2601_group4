@@ -23,14 +23,10 @@ module.exports.createSeatingPlan = async (req, res) => {
 
     const seatingInfo = { pax, tableType, tableNumber, x, y, isAvailable };
     await createSeatingPlan(seatingInfo, restaurantID);
-    return res
-      .status(200)
-      .send("New Seating Plan has been successfully created");
+    return res.status(200).send("New Seating Plan has been successfully created");
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .send("Something went wrong! Contact your local administrator");
+    return res.status(500).send("Something went wrong! Contact your local administrator");
   }
 };
 
@@ -50,9 +46,7 @@ module.exports.findSeatingPlanByTableNum = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .send("Something went wrong! Contact your local administrator");
+    return res.status(500).send("Something went wrong! Contact your local administrator");
   }
 };
 
@@ -65,15 +59,13 @@ module.exports.findSeatingPlanByRestaurantID = async (req, res) => {
       });
 
     const results = await findSeatingPlanByRestaurantID(restaurantID);
-    
+
     return res.status(200).json({
       results,
     });
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .send("Something went wrong! Contact your local administrator");
+    return res.status(500).send("Something went wrong! Contact your local administrator");
   }
 };
 
@@ -87,7 +79,7 @@ module.exports.findSeatingPlanByID = async (req, res) => {
       });
 
     const results = await findSeatingPlanByID(seatingID);
-    
+
     if (!results) {
       return res.status(404).json({ message: "Seating Plan not found" });
     }
@@ -96,9 +88,7 @@ module.exports.findSeatingPlanByID = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .send("Something went wrong! Contact your local administrator");
+    return res.status(500).send("Something went wrong! Contact your local administrator");
   }
 };
 
@@ -126,14 +116,10 @@ module.exports.updateSeatingPlanByID = async (req, res) => {
     }
 
     await updateSeatingPlanByID(seatingID, formattedData);
-    return res
-      .status(200)
-      .send("New Seating Plan has been successfully updated");
+    return res.status(200).send("New Seating Plan has been successfully updated");
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .send("Something went wrong! Contact your local administrator");
+    return res.status(500).send("Something went wrong! Contact your local administrator");
   }
 };
 
@@ -149,8 +135,6 @@ module.exports.deleteSeatingPlanByID = async (req, res) => {
     return res.status(200).send(" Seating Plan has been successfully deleted");
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .send("Something went wrong! Contact your local administrator");
+    return res.status(500).send("Something went wrong! Contact your local administrator");
   }
 };

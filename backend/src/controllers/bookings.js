@@ -11,7 +11,7 @@ const {
   checkSeatingAvailability,
   findAllBookings,
 } = require("../models/bookings");
-const { findSeatingPlanByPK } = require("../models/seatingPlan");
+const { findSeatingPlanByID, findAvailableSeating } = require("../models/seatingPlan");
 const { findRestaurantByID } = require("../models/restaurant");
 
 // Generate a unique confirmation code
@@ -34,10 +34,9 @@ module.exports.createBooking = async (req, res) => {
       specialRequests,
     } = req.body;
 
-    // Validation
+    // Validation - seatingID is now optional (will be auto-assigned)
     if (
       !restaurantID ||
-      !seatingID ||
       !customerName ||
       !customerEmail ||
       !customerPhone ||
@@ -66,31 +65,55 @@ module.exports.createBooking = async (req, res) => {
       });
     }
 
-    // Check if seating plan exists
-    const seatingPlan = await findSeatingPlanByPK(seatingID);
-    if (!seatingPlan) {
-      return res.status(404).json({
-        message: "Seating plan not found",
-      });
+    // Validate booking date and time are within operating hours
+    if (restaurant.openingTime && restaurant.closingTime) {
+      const [bookingHour] = bookingTime.split(":").map(Number);
+      const [openHour] = restaurant.openingTime.split(":").map(Number);
+      const [closeHour] = restaurant.closingTime.split(":").map(Number);
+
+      if (bookingHour < openHour || bookingHour >= closeHour) {
+        return res.status(400).json({
+          message: `Booking time must be between ${openHour}:00 and ${
+            closeHour - 1
+          }:00. Restaurant hours: ${restaurant.openingTime} - ${restaurant.closingTime}`,
+        });
+      }
     }
 
-    // Validate party size matches seating capacity
-    if (partySize > seatingPlan.pax) {
-      return res.status(400).json({
-        message: `Party size exceeds table capacity (${seatingPlan.pax} people max)`,
-      });
-    }
+    let seatingPlan;
 
-    // Check if seating is available for the requested date and time
-    const isAvailable = await checkSeatingAvailability(
-      seatingID,
-      bookingDate,
-      bookingTime
-    );
-    if (!isAvailable) {
-      return res.status(409).json({
-        message: "Seating is not available for the requested date and time",
-      });
+    // If seatingID is provided, use it; otherwise auto-find available seating
+    if (seatingID) {
+      seatingPlan = await findSeatingPlanByID(seatingID);
+      if (!seatingPlan) {
+        return res.status(404).json({
+          message: "Seating plan not found",
+        });
+      }
+
+      // Validate party size matches seating capacity
+      if (partySize > seatingPlan.pax) {
+        return res.status(400).json({
+          message: `Party size exceeds table capacity (${seatingPlan.pax} people max)`,
+        });
+      }
+
+      // Check if seating is available for the requested date and time
+      const isAvailable = await checkSeatingAvailability(seatingID, bookingDate, bookingTime);
+      if (!isAvailable) {
+        return res.status(409).json({
+          message: "This table is not available for the requested date and time",
+        });
+      }
+    } else {
+      // Auto-find available seating
+      seatingPlan = await findAvailableSeating(restaurantID, partySize, bookingDate, bookingTime);
+
+      if (!seatingPlan) {
+        return res.status(409).json({
+          message: `No available tables for ${partySize} people on ${bookingDate} at ${bookingTime}`,
+        });
+      }
     }
 
     // Generate confirmation code
@@ -105,9 +128,9 @@ module.exports.createBooking = async (req, res) => {
       partySize: partySize,
       specialRequests: specialRequests || null,
       fkRestaurantId: restaurantID,
-      fkSeatingId: seatingID,
-      date: bookingDate,
-      time: bookingTime,
+      fkSeatingId: seatingPlan.seatingId,
+      bookingDate: bookingDate,
+      bookingTime: bookingTime,
       status: "confirmed",
     };
 
@@ -120,6 +143,14 @@ module.exports.createBooking = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+
+    // Handle unique constraint violation (duplicate booking by same customer)
+    if (err.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({
+        message: "You already have a booking at this restaurant on this date",
+      });
+    }
+
     return res.status(500).json({
       message: "Something went wrong! Contact your local administrator",
       error: err.message,
@@ -296,14 +327,7 @@ module.exports.findBookingsByStatus = async (req, res) => {
     }
 
     // Validate status
-    const validStatuses = [
-      "pending",
-      "confirmed",
-      "seated",
-      "completed",
-      "no_show",
-      "cancelled",
-    ];
+    const validStatuses = ["pending", "confirmed", "seated", "completed", "no_show", "cancelled"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         message: `Invalid status. Allowed values: ${validStatuses.join(", ")}`,
@@ -347,14 +371,7 @@ module.exports.updateBookingStatus = async (req, res) => {
     }
 
     // Validate status
-    const validStatuses = [
-      "pending",
-      "confirmed",
-      "seated",
-      "completed",
-      "no_show",
-      "cancelled",
-    ];
+    const validStatuses = ["pending", "confirmed", "seated", "completed", "no_show", "cancelled"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         message: `Invalid status. Allowed values: ${validStatuses.join(", ")}`,
@@ -421,7 +438,7 @@ module.exports.updateBooking = async (req, res) => {
       "specialRequests",
       "bookingDate",
       "bookingTime",
-      "fkSeatingId"
+      "fkSeatingId",
     ];
 
     const filteredData = {};
@@ -459,14 +476,14 @@ module.exports.findAllBookings = async (req, res) => {
     const bookings = await findAllBookings();
 
     // Convert Sequelize instances to plain JSON objects
-    const bookingsJSON = bookings.map(booking => booking.toJSON ? booking.toJSON() : booking);
+    const bookingsJSON = bookings.map((booking) => (booking.toJSON ? booking.toJSON() : booking));
 
     return res.status(200).json({
       totalBookings: bookingsJSON.length,
       bookings: bookingsJSON,
     });
   } catch (err) {
-    console.error('Error in findAllBookings controller:', err);
+    console.error("Error in findAllBookings controller:", err);
     return res.status(500).json({
       message: "Something went wrong! Contact your local administrator",
       error: err.message,

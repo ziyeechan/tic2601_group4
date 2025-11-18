@@ -10,25 +10,16 @@ module.exports = (router) => {
   router.get("/booking/all", bookingsController.findAllBookings);
 
   // Endpoint to find booking by confirmation code (Use Case 3: Manage Reservation)
-  router.get(
-    "/booking/code/:confirmationCode",
-    bookingsController.findBookingByConfirmationCode
-  );
+  router.get("/booking/code/:confirmationCode", bookingsController.findBookingByConfirmationCode);
 
   // Endpoint to find all bookings by customer email (Use Case 3: Manage Reservation)
-  router.get(
-    "/booking/email/:email",
-    bookingsController.findBookingsByCustomerEmail
-  );
+  router.get("/booking/email/:email", bookingsController.findBookingsByCustomerEmail);
 
   // Endpoint to find booking by ID (Admin use)
   router.get("/booking/:bookingID", bookingsController.findBookingByID);
 
   // Endpoint to get all bookings for a restaurant (Use Case 4: View All Bookings - Admin)
-  router.get(
-    "/booking/restaurant/:restaurantID",
-    bookingsController.findBookingsByRestaurantID
-  );
+  router.get("/booking/restaurant/:restaurantID", bookingsController.findBookingsByRestaurantID);
 
   // Endpoint to get bookings filtered by status (Admin use)
   router.get(
@@ -37,10 +28,7 @@ module.exports = (router) => {
   );
 
   // Endpoint to update booking status (Use Case 5: Update Booking Status - Admin)
-  router.put(
-    "/booking/:bookingID/status",
-    bookingsController.updateBookingStatus
-  );
+  router.put("/booking/:bookingID/status", bookingsController.updateBookingStatus);
 
   // Endpoint to update booking details (Use Case 3: Manage Reservation)
   router.put("/booking/:bookingID", bookingsController.updateBooking);
