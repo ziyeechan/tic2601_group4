@@ -1,25 +1,15 @@
-/**
- * SearchFilters Component
- *
- * BACKEND SUPPORT ANALYSIS:
- * The backend only supports GET /restaurant/id/:id and GET /restaurant/name/:name
- * NO filtering endpoints exist. However, frontend can filter from local restaurant list.
- *
- * Only useful filters that match backend schema:
- * - Cuisine (field exists in restaurants table)
- *
- * These are NOT in backend schema, so removed:
- * - Price Range (doesn't exist in restaurants table)
- * - Rating (comes from reviews table, no endpoints)
- * - Location (addresses table not linked, no endpoints)
- * - Date, Time, Party Size (these are booking filters, not restaurant filters)
- *
- */
-
 import React, { useState } from "react";
 import axios from "axios";
 
-export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClearFilters }) {
+export function SearchFilters({ restaurants, promotions, onFiltered }) {
+
+  const [filters, setFilters] = useState({
+		cuisine: "All Cuisines",
+		search: "",
+		reviews: "",
+		promotion: "",
+  });
+  
   const cuisineOptions = [
     "All Cuisines",
     "French",
@@ -47,10 +37,73 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClea
   ];
 
   const handleFilterChange = (key, value) => {
-    onFiltersChange({
-      ...filters,
-      [key]: value,
+    setFilters((prev) => ({
+			...prev,
+			[key]: value,
+		}));
+  };
+
+  const handleApplyFilters = () => {
+    let filtered = [...restaurants];
+
+    //Search bar filter
+    if (filters.search && filters.search.trim() !== "") {
+      const term = filters.search.trim().toLowerCase();
+
+      filtered = filtered.filter((restaurant) => {
+        const nameMatch = (restaurant.restaurantName || "").toLowerCase().includes(term);
+
+        const address = restaurant.address;
+
+        const cityMatch = (address?.city || "").toLowerCase().includes(term);
+        const stateMatch = (address?.state || "").toLowerCase().includes(term);
+        const countryMatch = (address?.country || "").toLowerCase().includes(term);
+
+        return nameMatch || cityMatch || stateMatch || countryMatch;
+      });
+    }
+
+    //Cuisine filter
+    if (filters.cuisine !== "All Cuisines") {
+      filtered = filtered.filter((restaurant) => restaurant.cuisine === filters.cuisine);
+    }
+
+    //Rating filter
+    if (filters.reviews) {
+      const selected = Number(filters.reviews);
+      filtered = filtered.filter(
+        (r) => r.reviewCount > 0 && r.averageRating >= selected && r.averageRating < selected + 1
+      );
+    }
+
+    //Promotion filter
+    if (filters.promotion === "Yes") {
+      const now = new Date();
+
+      const promoRestaurantIds = new Set(
+        promotions
+          .filter((promo) => {
+            const start = new Date(promo.startAt);
+            const end = new Date(promo.endAt);
+            return start <= now && now <= end;
+          })
+          .map((promo) => promo.fkRestaurantId)
+      );
+
+      filtered = filtered.filter((restaurant) => promoRestaurantIds.has(restaurant.restaurantId));
+    }
+
+    onFiltered(filtered);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      cuisine: "All Cuisines",
+      search: "",
+      reviews: "",
+      promotion: "",
     });
+    onFiltered(restaurants);
   };
 
   return (
@@ -70,12 +123,12 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClea
             onChange={(e) => handleFilterChange("search", e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                onApplyFilters();
+                handleApplyFilters();
               }
             }}
           />
         </div>
-        {/* Cuisine Filter - Only filter supported by backend */}
+        {/* Cuisine Filter*/}
         <div className="form-group">
           <label htmlFor="cuisine">🍽️ Cuisine</label>
           <select
@@ -127,12 +180,12 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClea
         </div>
 
         {/* Apply Button */}
-        <button className="btn btn-primary btn-full" onClick={onApplyFilters}>
+        <button className="btn btn-primary btn-full" onClick={handleApplyFilters}>
           Apply Filters
         </button>
 
         {/* Clear Filters */}
-        <button className="btn btn-primary btn-full" onClick={onClearFilters}>
+        <button className="btn btn-primary btn-full" onClick={handleClearFilters}>
           Clear Filters
         </button>
       </div>

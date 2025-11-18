@@ -23,12 +23,6 @@ export default function App() {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(-1);
   const [restaurants, setRestaurants] = useState(false);
   const [filteredRestaurants, setFilteredRestaurants] = useState(false);
-  const [filters, setFilters] = useState({
-    cuisine: "All Cuisines",
-    search: "",
-    reviews: "",
-    promotion: "",
-  });
 
   //Address table
   const [addresses, setAddresses] = useState([]);
@@ -167,73 +161,6 @@ export default function App() {
     setCurrentView("my-bookings");
   };
 
-  const handleFiltersChange = (newFilters) => {
-    setFilters(newFilters);
-  };
-
-  const handleApplyFilters = () => {
-    let filtered = [...restaurants];
-
-    //Search bar filter
-    if (filters.search && filters.search.trim() !== "") {
-      const term = filters.search.trim().toLowerCase();
-
-      filtered = filtered.filter((restaurant) => {
-        const nameMatch = (restaurant.restaurantName || "").toLowerCase().includes(term);
-
-        const address = restaurant.address;
-
-        const cityMatch = (address?.city || "").toLowerCase().includes(term);
-        const stateMatch = (address?.state || "").toLowerCase().includes(term);
-        const countryMatch = (address?.country || "").toLowerCase().includes(term);
-
-        return nameMatch || cityMatch || stateMatch || countryMatch;
-      });
-    }
-
-    //Cuisine filter
-    if (filters.cuisine !== "All Cuisines") {
-      filtered = filtered.filter((restaurant) => restaurant.cuisine === filters.cuisine);
-    }
-
-    //Rating filter
-    if (filters.reviews) {
-      const selected = Number(filters.reviews);
-      filtered = filtered.filter(
-        (r) => r.reviewCount > 0 && r.averageRating >= selected && r.averageRating < selected + 1
-      );
-    }
-
-    //Promotion filter
-    if (filters.promotion === "Yes") {
-      const now = new Date();
-
-      const promoRestaurantIds = new Set(
-        promotions
-          .filter((promo) => {
-            const start = new Date(promo.startAt);
-            const end = new Date(promo.endAt);
-            return start <= now && now <= end;
-          })
-          .map((promo) => promo.fkRestaurantId)
-      );
-
-      filtered = filtered.filter((restaurant) => promoRestaurantIds.has(restaurant.restaurantId));
-    }
-
-    setFilteredRestaurants(filtered);
-  };
-
-  const handleClearFilters = () => {
-    setFilters({
-      cuisine: "All Cuisines",
-      search: "",
-      reviews: "",
-      promotion: "",
-    });
-    setFilteredRestaurants(restaurants);
-  };
-
   const renderCurrentView = () => {
     switch (currentView) {
       case "home":
@@ -257,10 +184,9 @@ export default function App() {
               {/* Filters Sidebar - 1 column */}
               <div className="sidebar" style={{ gridColumn: "span 1" }}>
                 <SearchFilters
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  onApplyFilters={handleApplyFilters}
-                  onClearFilters={handleClearFilters}
+                  restaurants={restaurants || []}
+                  promotions={promotions || []}
+                  onFiltered={setFilteredRestaurants}
                 />
               </div>
 
