@@ -1,39 +1,46 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { reviewAPI } from "../utils/api";
 
-export function Reviews({ restaurant, onBack }) {
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      restaurantId: restaurant?.id,
-      customerName: "John Doe",
-      rating: 5,
-      comment: "Excellent food and service! Highly recommended.",
-      createdAt: "2024-11-01",
-    },
-    {
-      id: 2,
-      restaurantId: restaurant?.id,
-      customerName: "Jane Smith",
-      rating: 4,
-      comment: "Great ambiance but a bit pricey.",
-      createdAt: "2024-10-28",
-    },
-    {
-      id: 3,
-      restaurantId: restaurant?.id,
-      customerName: "Mike Johnson",
-      rating: 5,
-      comment: "Perfect place for special occasions!",
-      createdAt: "2024-10-20",
-    },
-  ]);
-
+export function Reviews({ restaurant, onBack, bookingId }) {
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     customerName: "",
     rating: 5,
     comment: "",
   });
+
+  // Fetch reviews on mount
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        if (restaurant?.restaurantId) {
+          const response = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId);
+          // Transform API response to match component state format
+          const transformedReviews = (response.data || []).map((review) => ({
+            id: review.reviewId,
+            reviewId: review.reviewId,
+            restaurantId: review.fkRestaurantId,
+            customerName: review.customerName || "Anonymous",
+            rating: review.rating,
+            comment: review.comment,
+            createdAt: review.createdAt,
+          }));
+          setReviews(transformedReviews);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+        // Fall back to empty array on error
+        setReviews([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [restaurant?.restaurantId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,7 +50,7 @@ export function Reviews({ restaurant, onBack }) {
     }));
   };
 
-  const handleSubmitReview = (e) => {
+  const handleSubmitReview = async (e) => {
     e.preventDefault();
 
     if (!formData.customerName.trim() || !formData.comment.trim()) {
@@ -51,22 +58,45 @@ export function Reviews({ restaurant, onBack }) {
       return;
     }
 
-    const newReview = {
-      id: reviews.length + 1,
-      restaurantId: restaurant?.id,
-      customerName: formData.customerName,
-      rating: formData.rating,
-      comment: formData.comment,
-      createdAt: new Date().toISOString().split("T")[0],
-    };
+    try {
+      setSubmitting(true);
 
-    setReviews([newReview, ...reviews]);
-    setFormData({
-      customerName: "",
-      rating: 5,
-      comment: "",
-    });
-    setShowForm(false);
+      // Call API to create review
+      const response = await reviewAPI.createReview(
+        restaurant.restaurantId,
+        bookingId || null, // bookingId may not always be provided
+        {
+          customerName: formData.customerName,
+          rating: formData.rating,
+          comment: formData.comment,
+        }
+      );
+
+      // Add new review to local state (from API response)
+      const newReview = {
+        id: response.data.reviewId,
+        reviewId: response.data.reviewId,
+        restaurantId: response.data.fkRestaurantId,
+        customerName: response.data.customerName,
+        rating: response.data.rating,
+        comment: response.data.comment,
+        createdAt: response.data.createdAt,
+      };
+
+      setReviews([newReview, ...reviews]);
+      setFormData({
+        customerName: "",
+        rating: 5,
+        comment: "",
+      });
+      setShowForm(false);
+      alert("Review submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      alert(error.response?.data?.message || "Failed to submit review. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const averageRating =
@@ -79,6 +109,19 @@ export function Reviews({ restaurant, onBack }) {
     if (rating >= 3) return "#f59e0b"; // yellow
     return "#ef4444"; // red
   };
+
+  if (loading) {
+    return (
+      <div>
+        <button className="btn btn-secondary mb-lg" onClick={onBack} style={{ border: "none" }}>
+          ← Back
+        </button>
+        <div style={{ textAlign: "center", padding: "var(--spacing-lg)" }}>
+          <p>Loading reviews...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -95,7 +138,7 @@ export function Reviews({ restaurant, onBack }) {
           {reviews.length > 0 ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-md)" }}>
               {reviews.map((review) => (
-                <div key={review.id} className="card">
+                <div key={review.id || review.reviewId} className="card">
                   <div className="card-content">
                     <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
                       <div>
@@ -270,6 +313,7 @@ export function Reviews({ restaurant, onBack }) {
                     onChange={handleChange}
                     placeholder="Enter your name"
                     required
+                    disabled={submitting}
                   />
                 </div>
 
@@ -283,6 +327,7 @@ export function Reviews({ restaurant, onBack }) {
                       onChange={handleChange}
                       style={{ flex: 1 }}
                       required
+                      disabled={submitting}
                     >
                       <option value="5">5 - Excellent</option>
                       <option value="4">4 - Good</option>
@@ -310,17 +355,23 @@ export function Reviews({ restaurant, onBack }) {
                     placeholder="Share your experience..."
                     style={{ minHeight: "120px" }}
                     required
+                    disabled={submitting}
                   />
                 </div>
 
                 <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
-                  <button type="submit" className="btn btn-primary btn-full">
-                    ✓ Submit Review
+                  <button
+                    type="submit"
+                    className="btn btn-primary btn-full"
+                    disabled={submitting}
+                  >
+                    {submitting ? "⏳ Submitting..." : "✓ Submit Review"}
                   </button>
                   <button
                     type="button"
                     className="btn btn-secondary btn-full"
                     onClick={() => setShowForm(false)}
+                    disabled={submitting}
                   >
                     Cancel
                   </button>
