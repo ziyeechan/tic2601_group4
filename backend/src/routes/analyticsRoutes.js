@@ -8,7 +8,7 @@ const {
   getBookingMetrics,
   getBookingRates,
   getDailyAverageRating,
-} = require('../controllers/analytics');
+} = require("../controllers/analytics");
 
 // Validate analytics query parameters (restaurantId, year, month)
 function validateAnalyticsQuery(req, res, next) {
@@ -44,7 +44,6 @@ function handleControllerError(res, err) {
 // ----- ROUTES -----
 
 module.exports = (router) => {
-
   // Health Check
   router.get("/analytics", async (req, res) => {
     return res.status(200).json({ message: "Analytics Endpoint is working" });
@@ -61,7 +60,7 @@ module.exports = (router) => {
   });
 
   // --- Booking Endpoints ---
-  
+
   // Get all bookings for a restaurant in a specific month
   router.get("/analytics/bookings", validateAnalyticsQuery, async (req, res) => {
     const { restaurantId, year, month } = req.query;
@@ -113,9 +112,12 @@ module.exports = (router) => {
     // Parse statuses parameter (optional)
     const statuses = Array.isArray(statusesParam)
       ? statusesParam
-      : (typeof statusesParam === 'string' 
-          ? statusesParam.split(',').map(s => s.trim()).filter(Boolean) 
-          : undefined);
+      : typeof statusesParam === "string"
+        ? statusesParam
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : undefined;
 
     try {
       const heatmap = await getHourlyHeatmapWeekday(restaurantId, month, year, statuses);
@@ -137,5 +139,4 @@ module.exports = (router) => {
       return handleControllerError(res, err);
     }
   });
-
 };

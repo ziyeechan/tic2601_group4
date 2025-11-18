@@ -79,10 +79,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
         postalCode: editedAddress.postalCode,
       };
       restaurantAPI
-        .updateRestaurant(
-          restaurant.restaurantId || restaurant.restaurant_id,
-          data
-        )
+        .updateRestaurant(restaurant.restaurantId || restaurant.restaurant_id, data)
         .then((res) => {
           console.log("success");
         });
@@ -119,11 +116,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
     refresh && (
       <div>
         {/* Back Button */}
-        <button
-          className="btn btn-secondary mb-lg"
-          onClick={onBack}
-          style={{ border: "none" }}
-        >
+        <button className="btn btn-secondary mb-lg" onClick={onBack} style={{ border: "none" }}>
           ← Back
         </button>
 
@@ -136,9 +129,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
         >
           {/* Main Content */}
           <div>
-            <h2 style={{ marginBottom: "var(--spacing-lg)" }}>
-              🍽️ Restaurant Management
-            </h2>
+            <h2 style={{ marginBottom: "var(--spacing-lg)" }}>🍽️ Restaurant Management</h2>
 
             {!isEditingRestaurant ? (
               // View Mode
@@ -169,10 +160,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                       </p>
                     </TextContainer>
                     <TextContainer text="Cuisine Type" data={restaurant.cuisine} />
-                    <TextContainer
-                      text="Description"
-                      data={restaurant.description}
-                    />
+                    <TextContainer text="Description" data={restaurant.description} />
 
                     <div>
                       <p
@@ -185,16 +173,10 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                       >
                         Contact Details
                       </p>
-                      <p
-                        className="text-muted"
-                        style={{ margin: 0, fontSize: "14px" }}
-                      >
+                      <p className="text-muted" style={{ margin: 0, fontSize: "14px" }}>
                         📞 {restaurant.phone}
                       </p>
-                      <p
-                        className="text-muted"
-                        style={{ margin: 0, fontSize: "14px" }}
-                      >
+                      <p className="text-muted" style={{ margin: 0, fontSize: "14px" }}>
                         📧 {restaurant.email}
                       </p>
                     </div>
@@ -210,16 +192,10 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                         {address.addressLine1}
                         {address.addressLine2 && `, ${address.addressLine2}`}
                       </p>
-                      <p
-                        className="text-muted"
-                        style={{ margin: 0, fontSize: "14px" }}
-                      >
+                      <p className="text-muted" style={{ margin: 0, fontSize: "14px" }}>
                         {address.city}, {address.state} {address.postalCode}
                       </p>
-                      <p
-                        className="text-muted"
-                        style={{ margin: 0, fontSize: "14px" }}
-                      >
+                      <p className="text-muted" style={{ margin: 0, fontSize: "14px" }}>
                         {address.country}
                       </p>
                     </TextContainer>
@@ -364,10 +340,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
             <Card>
               <Card.Header title="Quick Info" />
               <Card.Content>
-                <TextContainer
-                  text="Restaurant ID"
-                  data={restaurant.restaurantId}
-                />
+                <TextContainer text="Restaurant ID" data={restaurant.restaurantId} />
                 <TextContainer text="Status">
                   <p
                     style={{
@@ -425,8 +398,8 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
 
                 <div className="alert alert-info">
                   <p style={{ margin: 0, fontSize: "14px" }}>
-                    ℹ️ Changes to restaurant information will be reflected
-                    across the platform within a few minutes.
+                    ℹ️ Changes to restaurant information will be reflected across the platform
+                    within a few minutes.
                   </p>
                 </div>
               </Card.Content>

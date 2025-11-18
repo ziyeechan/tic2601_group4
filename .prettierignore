@@ -1,0 +1,14 @@
+node_modules
+build
+dist
+.next
+.git
+.vscode
+*.lock
+*.log
+.DS_Store
+.env
+.env.local
+.env.*.local
+database.db
+database.sqlite

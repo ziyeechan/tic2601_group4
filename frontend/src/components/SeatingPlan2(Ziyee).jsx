@@ -23,7 +23,7 @@ export function SeatingPlan() {
   const canvasRef = useRef(null);
 
   const [timeSlots, setTimeSlots] = useState([]);
-  const [slotOverrides, setSlotOverrides] = useState({}); 
+  const [slotOverrides, setSlotOverrides] = useState({});
   const DINING_DURATION_MIN = 90;
 
   // For canvas, randomizes the nodes being placed
@@ -43,146 +43,141 @@ export function SeatingPlan() {
     return false;
   };
 
-    // ---- Time helpers ----
-    const parseTimeToMinutes = (timeStr) => {
-      if (!timeStr) return null;
-      const parts = timeStr.split(":");
-      const hours = parseInt(parts[0], 10) || 0;
-      const minutes = parseInt(parts[1], 10) || 0;
-      return hours * 60 + minutes;
-    };
+  // ---- Time helpers ----
+  const parseTimeToMinutes = (timeStr) => {
+    if (!timeStr) return null;
+    const parts = timeStr.split(":");
+    const hours = parseInt(parts[0], 10) || 0;
+    const minutes = parseInt(parts[1], 10) || 0;
+    return hours * 60 + minutes;
+  };
 
-    const minutesToTimeString = (mins) => {
-      const h = Math.floor(mins / 60);
-      const m = mins % 60;
-      return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-    };
+  const minutesToTimeString = (mins) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  };
 
-    // Generate 30min slots from opening to closing
-    const generateTimeSlots = (openStr, closeStr, intervalMin = 30) => {
-      const open = parseTimeToMinutes(openStr);
-      const close = parseTimeToMinutes(closeStr);
-      if (open == null || close == null || open >= close) return [];
+  // Generate 30min slots from opening to closing
+  const generateTimeSlots = (openStr, closeStr, intervalMin = 30) => {
+    const open = parseTimeToMinutes(openStr);
+    const close = parseTimeToMinutes(closeStr);
+    if (open == null || close == null || open >= close) return [];
 
-      const slots = [];
-      for (let t = open; t < close; t += intervalMin) {
-        slots.push({
-          start: minutesToTimeString(t),
-          end: minutesToTimeString(Math.min(t + intervalMin, close)),
-          startMinutes: t,
-        });
-      }
-      return slots;
-    };
+    const slots = [];
+    for (let t = open; t < close; t += intervalMin) {
+      slots.push({
+        start: minutesToTimeString(t),
+        end: minutesToTimeString(Math.min(t + intervalMin, close)),
+        startMinutes: t,
+      });
+    }
+    return slots;
+  };
 
-    // Key to store overrides per restaurant, table and slot
-    const getSlotKey = (slot, table) =>
-      `${selectedRestaurantId}-${table?.seatingId || "restaurant"}-${
-        slot.start
-    }`;
-  
-   //Check if a given booking overlaps with any other booking on this table (same day)
-    const doesOverlapWithExistingBooking = (booking, table) => {
-      if (!table) return false;
+  // Key to store overrides per restaurant, table and slot
+  const getSlotKey = (slot, table) =>
+    `${selectedRestaurantId}-${table?.seatingId || "restaurant"}-${slot.start}`;
 
-      const bookingStart = parseTimeToMinutes(booking.time);
-      if (bookingStart == null) return false;
+  //Check if a given booking overlaps with any other booking on this table (same day)
+  const doesOverlapWithExistingBooking = (booking, table) => {
+    if (!table) return false;
 
-      const bookingEnd = bookingStart + DINING_DURATION_MIN; // 90 mins
+    const bookingStart = parseTimeToMinutes(booking.time);
+    if (bookingStart == null) return false;
 
-      return bookings.some((b) => {
-        // Ignore itself
-        if (b.id === booking.id) return false;
+    const bookingEnd = bookingStart + DINING_DURATION_MIN; // 90 mins
+
+    return bookings.some((b) => {
+      // Ignore itself
+      if (b.id === booking.id) return false;
+      if (b.status !== "confirmed") return false;
+      if (!isSameTableToday(b, table)) return false;
+
+      const otherStart = parseTimeToMinutes(b.time);
+      if (otherStart == null) return false;
+
+      const otherEnd = otherStart + DINING_DURATION_MIN;
+
+      // check time range overlap
+      return Math.max(bookingStart, otherStart) < Math.min(bookingEnd, otherEnd);
+    });
+  };
+
+  // Given a slot and table, find booking that overlaps this 30min window
+  const findBookingForSlotAndTable = (slot, table) => {
+    if (!table) return null;
+
+    const slotStart = slot.startMinutes;
+    const slotEnd = slotStart + 30;
+
+    return (
+      bookings.find((b) => {
         if (b.status !== "confirmed") return false;
         if (!isSameTableToday(b, table)) return false;
 
-        const otherStart = parseTimeToMinutes(b.time);
-        if (otherStart == null) return false;
+        const bookingStart = parseTimeToMinutes(b.time);
+        if (bookingStart == null) return false;
 
-        const otherEnd = otherStart + DINING_DURATION_MIN;
+        const bookingEnd = bookingStart + DINING_DURATION_MIN; // 90min
 
-        // check time range overlap
-        return Math.max(bookingStart, otherStart) < Math.min(bookingEnd, otherEnd);
-      });
-    };
+        // ranges overlap?
+        return Math.max(slotStart, bookingStart) < Math.min(slotEnd, bookingEnd);
+      }) || null
+    );
+  };
 
-    // Given a slot and table, find booking that overlaps this 30min window
-    const findBookingForSlotAndTable = (slot, table) => {
-      if (!table) return null;
+  // Base status for slot: occupied / unavailable (override) / available
+  const getSlotStatus = (slot, table) => {
+    const booking = findBookingForSlotAndTable(slot, table);
+    if (booking) return "occupied";
 
-      const slotStart = slot.startMinutes;
-      const slotEnd = slotStart + 30;
+    const key = getSlotKey(slot, table);
+    const override = slotOverrides[key];
+    if (override?.status === "unavailable") return "unavailable";
 
-      return (
-        bookings.find((b) => {
-          if (b.status !== "confirmed") return false;
-          if (!isSameTableToday(b, table)) return false;
+    return "available";
+  };
 
-          const bookingStart = parseTimeToMinutes(b.time);
-          if (bookingStart == null) return false;
+  const handleToggleSlot = (slot, table) => {
+    const status = getSlotStatus(slot, table);
+    if (status === "occupied") return; // cannot toggle occupied slots
 
-          const bookingEnd = bookingStart + DINING_DURATION_MIN; // 90min
+    const key = getSlotKey(slot, table);
 
-          // ranges overlap?
-          return (
-            Math.max(slotStart, bookingStart) < Math.min(slotEnd, bookingEnd)
-          );
-        }) || null
-      );
-    };
-
-    // Base status for slot: occupied / unavailable (override) / available
-    const getSlotStatus = (slot, table) => {
-      const booking = findBookingForSlotAndTable(slot, table);
-      if (booking) return "occupied";
-
-      const key = getSlotKey(slot, table);
-      const override = slotOverrides[key];
-      if (override?.status === "unavailable") return "unavailable";
-
-      return "available";
-    };
-
-    const handleToggleSlot = (slot, table) => {
-      const status = getSlotStatus(slot, table);
-      if (status === "occupied") return; // cannot toggle occupied slots
-
-      const key = getSlotKey(slot, table);
-
-      setSlotOverrides((prev) => {
-        const existing = prev[key];
-        // If currently unavailable, toggle back to available (remove override)
-        if (existing?.status === "unavailable") {
-          const { [key]: _, ...rest } = prev;
-          return rest;
-        }
-        // Otherwise mark as unavailable (comment can be added/edited separately)
-        return {
-          ...prev,
-          [key]: { status: "unavailable", comment: existing?.comment || "" },
-        };
-      });
-    };
-
-    const handleEditComment = (slot, table) => {
-      const key = getSlotKey(slot, table);
-      const existing = slotOverrides[key];
-
-      const nextComment = window.prompt(
-        "Reason this time slot is unavailable:",
-        existing?.comment || ""
-      );
-      if (nextComment === null) return; // cancelled
-
-      setSlotOverrides((prev) => ({
+    setSlotOverrides((prev) => {
+      const existing = prev[key];
+      // If currently unavailable, toggle back to available (remove override)
+      if (existing?.status === "unavailable") {
+        const { [key]: _, ...rest } = prev;
+        return rest;
+      }
+      // Otherwise mark as unavailable (comment can be added/edited separately)
+      return {
         ...prev,
-        [key]: {
-          status: "unavailable",
-          comment: nextComment.trim(),
-        },
-      }));
-    };
+        [key]: { status: "unavailable", comment: existing?.comment || "" },
+      };
+    });
+  };
 
+  const handleEditComment = (slot, table) => {
+    const key = getSlotKey(slot, table);
+    const existing = slotOverrides[key];
+
+    const nextComment = window.prompt(
+      "Reason this time slot is unavailable:",
+      existing?.comment || ""
+    );
+    if (nextComment === null) return; // cancelled
+
+    setSlotOverrides((prev) => ({
+      ...prev,
+      [key]: {
+        status: "unavailable",
+        comment: nextComment.trim(),
+      },
+    }));
+  };
 
   useEffect(() => {
     restaurantAPI
@@ -192,7 +187,7 @@ export function SeatingPlan() {
         setRestaurants(data || []);
       })
       .catch((err) => console.error("Failed to fetch restaurants", err));
-    
+
     bookingAPI
       .getAllBookings()
       .then((res) => {
@@ -227,31 +222,28 @@ export function SeatingPlan() {
       .catch((err) => {
         console.error("Failed to fetch bookings", err);
       });
-    
   }, []);
 
   //SEATING PLAN USE EFFECT
   useEffect(() => {
-  if (!selectedRestaurantId) return;
+    if (!selectedRestaurantId) return;
 
-  const fetchTables = async () => {
-    setIsLoadingTables(true);
-    try {
-      const res = await seatingAPI.getSeatingPlansByRestaurant(
-        selectedRestaurantId
-      );
-      const data = res.data.results || res.data || [];
-      setTables(data);
-    } catch (err) {
-      console.error("Failed to fetch seating plans", err);
-      setTables([]);
-    } finally {
-      setIsLoadingTables(false);
-    }
-  };
+    const fetchTables = async () => {
+      setIsLoadingTables(true);
+      try {
+        const res = await seatingAPI.getSeatingPlansByRestaurant(selectedRestaurantId);
+        const data = res.data.results || res.data || [];
+        setTables(data);
+      } catch (err) {
+        console.error("Failed to fetch seating plans", err);
+        setTables([]);
+      } finally {
+        setIsLoadingTables(false);
+      }
+    };
 
-  fetchTables();
-}, [selectedRestaurantId]);
+    fetchTables();
+  }, [selectedRestaurantId]);
 
   //TIME SLOTS USE EFFECT
   useEffect(() => {
@@ -261,8 +253,7 @@ export function SeatingPlan() {
     }
 
     const restaurant = restaurants.find(
-      (r) =>
-        String(r.restaurantId || r.id) === String(selectedRestaurantId)
+      (r) => String(r.restaurantId || r.id) === String(selectedRestaurantId)
     );
 
     if (!restaurant) {
@@ -271,10 +262,8 @@ export function SeatingPlan() {
     }
 
     // Adjust these field names to match your DB
-    const openingTime =
-      restaurant.openingTime || restaurant.openTime || "17:00";
-    const closingTime =
-      restaurant.closingTime || restaurant.closeTime || "22:00";
+    const openingTime = restaurant.openingTime || restaurant.openTime || "17:00";
+    const closingTime = restaurant.closingTime || restaurant.closeTime || "22:00";
 
     const slots = generateTimeSlots(openingTime, closingTime, 30);
     setTimeSlots(slots);
@@ -329,11 +318,7 @@ export function SeatingPlan() {
     const newY = Math.max(0, Math.min(rect.height - radius, yInCanvas - dragOffset.y));
 
     setTables((prev) =>
-      prev.map((t) =>
-        getTableUniqueId(t) === draggingId
-          ? { ...t, x: newX, y: newY }
-          : t
-      )
+      prev.map((t) => (getTableUniqueId(t) === draggingId ? { ...t, x: newX, y: newY } : t))
     );
 
     //also move selectedTable if it's the one we’re dragging
@@ -387,7 +372,6 @@ export function SeatingPlan() {
     setSelectedTable(null);
   };
 
-
   const handleSaveLayout = async () => {
     try {
       await Promise.all(
@@ -413,10 +397,7 @@ export function SeatingPlan() {
 
   // Modify table status
   const isSameTableToday = (b, table) =>
-  b.date === today &&
-  b.tableId != null &&
-  Number(b.tableId) === Number(table.seatingId);
-
+    b.date === today && b.tableId != null && Number(b.tableId) === Number(table.seatingId);
 
   // Get table icon
   const getTableIcon = (type) => {
@@ -504,9 +485,7 @@ export function SeatingPlan() {
       setSelectedTable(null);
 
       // re-fetch tables so you get the real seatingId from DB
-      const res = await seatingAPI.getSeatingPlansByRestaurant(
-        selectedRestaurantId
-      );
+      const res = await seatingAPI.getSeatingPlansByRestaurant(selectedRestaurantId);
       const data = res.data.results || res.data || [];
       setTables(data);
     } catch (error) {
@@ -534,11 +513,7 @@ export function SeatingPlan() {
 
       // Update local state so the UI reflects the edit
       setTables((prev) =>
-        prev.map((t) =>
-          Number(t.seatingId) === Number(tableId)
-            ? { ...t, ...payload }
-            : t
-        )
+        prev.map((t) => (Number(t.seatingId) === Number(tableId) ? { ...t, ...payload } : t))
       );
 
       setSelectedTable(null);
@@ -552,9 +527,7 @@ export function SeatingPlan() {
   const handleAssignBooking = async (tableId) => {
     if (!selectedBooking) return;
 
-    const table = tables.find(
-      (t) => Number(t.seatingId) === Number(tableId)
-    );
+    const table = tables.find((t) => Number(t.seatingId) === Number(tableId));
 
     if (!table) {
       alert("Table not found.");
@@ -576,11 +549,7 @@ export function SeatingPlan() {
       });
 
       // Update local state so UI reflects the change immediately
-      setBookings((prev) =>
-        prev.map((b) =>
-          b.id === selectedBooking.id ? { ...b, tableId } : b
-        )
-      );
+      setBookings((prev) => prev.map((b) => (b.id === selectedBooking.id ? { ...b, tableId } : b)));
 
       // Close modal and clear selection
       setShowAssignModal(false);
@@ -590,7 +559,6 @@ export function SeatingPlan() {
       alert("Failed to assign table. Check console/server logs.");
     }
   };
-  
 
   // Unassigns booking from table
   const handleUnassignBooking = async (booking) => {
@@ -603,11 +571,7 @@ export function SeatingPlan() {
       });
 
       // Update local state
-      setBookings((prev) =>
-        prev.map((b) =>
-          b.id === booking.id ? { ...b, tableId: null } : b
-        )
-      );
+      setBookings((prev) => prev.map((b) => (b.id === booking.id ? { ...b, tableId: null } : b)));
 
       alert("Booking unassigned from table.");
     } catch (err) {
@@ -616,10 +580,10 @@ export function SeatingPlan() {
     }
   };
 
-
   // Find the all confirmed bookings for this table
-  const tableBookingsToday = selectedTable ? bookings.filter((b) => b.status === "confirmed" && isSameTableToday(b, selectedTable)): [];
-
+  const tableBookingsToday = selectedTable
+    ? bookings.filter((b) => b.status === "confirmed" && isSameTableToday(b, selectedTable))
+    : [];
 
   const cancelAddTable = () => {
     let temp = tables.filter((table) => !table.isAdding);
@@ -628,12 +592,9 @@ export function SeatingPlan() {
     setSelectedTable(null);
   };
 
-
   return (
     <div>
-      <h2 style={{ marginBottom: "var(--spacing-lg)" }}>
-        🪑 Seating Plan Management
-      </h2>
+      <h2 style={{ marginBottom: "var(--spacing-lg)" }}>🪑 Seating Plan Management</h2>
 
       {/* Restaurant selector */}
       <div
@@ -644,10 +605,7 @@ export function SeatingPlan() {
           alignItems: "center",
         }}
       >
-        <label
-          htmlFor="restaurant-select"
-          style={{ fontWeight: 600, fontSize: "14px" }}
-        >
+        <label htmlFor="restaurant-select" style={{ fontWeight: 600, fontSize: "14px" }}>
           Restaurant:
         </label>
         <select
@@ -658,10 +616,7 @@ export function SeatingPlan() {
         >
           <option value="">Select a restaurant...</option>
           {restaurants.map((r) => (
-            <option
-              key={r.restaurantId || r.id}
-              value={r.restaurantId || r.id}
-            >
+            <option key={r.restaurantId || r.id} value={r.restaurantId || r.id}>
               {r.restaurantName || r.name}
             </option>
           ))}
@@ -690,7 +645,6 @@ export function SeatingPlan() {
             }}
             className="seating-container"
           >
-
             {/* Layout Section */}
             <div className="card">
               <div className="card-header">
@@ -736,7 +690,7 @@ export function SeatingPlan() {
                     style={{
                       display: "grid",
                       gridTemplateColumns: "repeat(3, 1fr)",
-                      "gap": "var(--spacing-md)",
+                      gap: "var(--spacing-md)",
                       fontSize: "14px",
                     }}
                   >
@@ -786,8 +740,8 @@ export function SeatingPlan() {
                 </div>
 
                 {/* Canvas Area */}
-              <div
-                ref={canvasRef}
+                <div
+                  ref={canvasRef}
                   style={{
                     position: "relative",
                     width: "100%",
@@ -797,19 +751,16 @@ export function SeatingPlan() {
                     backgroundColor: "#fafafa",
                     overflow: "hidden",
                   }}
-                    onMouseDown={handleCanvasMouseDown}
-                    onMouseMove={handleCanvasMouseMove}
-                    onMouseUp={handleCanvasMouseUp}
-                    onMouseLeave={handleCanvasMouseUp}
+                  onMouseDown={handleCanvasMouseDown}
+                  onMouseMove={handleCanvasMouseMove}
+                  onMouseUp={handleCanvasMouseUp}
+                  onMouseLeave={handleCanvasMouseUp}
                 >
                   {tables.map((table) => {
                     const booking = bookings.find(
-                      (b) =>
-                        b.tableId === table.seatingId &&
-                        b.date === today
+                      (b) => b.tableId === table.seatingId && b.date === today
                     );
-                    const isSelected =
-                      selectedTable?.seatingId === table.seatingId;
+                    const isSelected = selectedTable?.seatingId === table.seatingId;
 
                     return (
                       <div
@@ -822,7 +773,8 @@ export function SeatingPlan() {
                           top: `${table.y}px`,
                           cursor: "grab",
                           transform: isSelected ? "scale(1.1)" : "scale(1)",
-                          transition: draggingId === getTableUniqueId(table) ? "none" : "transform 0.2s",
+                          transition:
+                            draggingId === getTableUniqueId(table) ? "none" : "transform 0.2s",
                         }}
                       >
                         <div
@@ -832,11 +784,8 @@ export function SeatingPlan() {
                             width: "60px",
                             height: "60px",
                             borderRadius: "50%",
-                            backgroundColor:
-                              getTableColor(table.tableType),
-                            border: isSelected
-                              ? "3px solid var(--text-dark)"
-                              : "none",
+                            backgroundColor: getTableColor(table.tableType),
+                            border: isSelected ? "3px solid var(--text-dark)" : "none",
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center",
@@ -852,9 +801,7 @@ export function SeatingPlan() {
                               : "Click to select"
                           }
                         >
-                          <div style={{ fontSize: "16px" }}>
-                            {table.tableNumber}
-                          </div>
+                          <div style={{ fontSize: "16px" }}>{table.tableNumber}</div>
                           <div
                             style={{
                               fontSize: "10px",
@@ -870,11 +817,9 @@ export function SeatingPlan() {
                               position: "absolute",
                               top: "-20px",
                               left: "50%",
-                              transform:
-                                "translateX(-50%)",
+                              transform: "translateX(-50%)",
                               fontSize: "11px",
-                              backgroundColor:
-                                "var(--text-dark)",
+                              backgroundColor: "var(--text-dark)",
                               color: "white",
                               padding: "2px 6px",
                               borderRadius: "3px",
@@ -883,11 +828,7 @@ export function SeatingPlan() {
                               textOverflow: "ellipsis",
                             }}
                           >
-                            {
-                              booking.customerName.split(
-                                " "
-                              )[0]
-                            }
+                            {booking.customerName.split(" ")[0]}
                           </div>
                         )}
                       </div>
@@ -903,99 +844,11 @@ export function SeatingPlan() {
               {selectedTable && (
                 <>
                   {/* Table Details*/}
-                <div className="card mb-lg">
-                  <div className="card-header">
-                    <h4 className="card-title">Table Details</h4>
-                  </div>
-                  <div className="card-content">
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom:
-                          "1px solid var(--border-color)",
-                      }}
-                    >
-                      <label
-                        htmlFor="tableNumber"
-                        className="text-muted"
-                        style={{
-                          fontSize: "12px",
-                          margin: 0,
-                        }}
-                      >
-                        Table Number *
-                      </label>
-                      <input
-                        id="tableNumber"
-                        type="text"
-                        name="tableNumber"
-                        value={selectedTable?.tableNumber}
-                        onChange={handleTableForm}
-                        placeholder="Enter table number"
-                        required
-                      />
+                  <div className="card mb-lg">
+                    <div className="card-header">
+                      <h4 className="card-title">Table Details</h4>
                     </div>
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom:
-                          "1px solid var(--border-color)",
-                      }}
-                    >
-                      <label
-                        htmlFor="tableType"
-                        className="text-muted"
-                        style={{
-                          fontSize: "12px",
-                          margin: 0,
-                        }}
-                      >
-                        Type *
-                      </label>
-                      <select
-                        id="tableType"
-                        name="tableType"
-                        value={selectedTable?.tableType}
-                        onChange={handleTableForm}
-                        required
-                      >
-                        <option value="outdoor">Outdoor</option>
-                        <option value="indoor">Indoor</option>
-                        <option value="vip">VIP</option>
-                      </select>
-                    </div>
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom:
-                          "1px solid var(--border-color)",
-                      }}
-                    >
-                      <label
-                        htmlFor="pax"
-                        className="text-muted"
-                        style={{
-                          fontSize: "12px",
-                          margin: 0,
-                        }}
-                      >
-                        Capacity *
-                      </label>
-                      <input
-                        id="pax"
-                        type="number"
-                        name="pax"
-                        value={selectedTable?.pax}
-                        onChange={handleTableForm}
-                        placeholder="Enter pax"
-                        required
-                      />
-                    </div>
-
-                    {tableBookingsToday.length > 0 && (
+                    <div className="card-content">
                       <div
                         className="mb-md"
                         style={{
@@ -1003,130 +856,200 @@ export function SeatingPlan() {
                           borderBottom: "1px solid var(--border-color)",
                         }}
                       >
-                        <p
+                        <label
+                          htmlFor="tableNumber"
                           className="text-muted"
-                          style={{ fontSize: "12px", margin: 0 }}
+                          style={{
+                            fontSize: "12px",
+                            margin: 0,
+                          }}
                         >
-                          Bookings for this table (today)
-                        </p>
+                          Table Number *
+                        </label>
+                        <input
+                          id="tableNumber"
+                          type="text"
+                          name="tableNumber"
+                          value={selectedTable?.tableNumber}
+                          onChange={handleTableForm}
+                          placeholder="Enter table number"
+                          required
+                        />
+                      </div>
+                      <div
+                        className="mb-md"
+                        style={{
+                          paddingBottom: "var(--spacing-md)",
+                          borderBottom: "1px solid var(--border-color)",
+                        }}
+                      >
+                        <label
+                          htmlFor="tableType"
+                          className="text-muted"
+                          style={{
+                            fontSize: "12px",
+                            margin: 0,
+                          }}
+                        >
+                          Type *
+                        </label>
+                        <select
+                          id="tableType"
+                          name="tableType"
+                          value={selectedTable?.tableType}
+                          onChange={handleTableForm}
+                          required
+                        >
+                          <option value="outdoor">Outdoor</option>
+                          <option value="indoor">Indoor</option>
+                          <option value="vip">VIP</option>
+                        </select>
+                      </div>
+                      <div
+                        className="mb-md"
+                        style={{
+                          paddingBottom: "var(--spacing-md)",
+                          borderBottom: "1px solid var(--border-color)",
+                        }}
+                      >
+                        <label
+                          htmlFor="pax"
+                          className="text-muted"
+                          style={{
+                            fontSize: "12px",
+                            margin: 0,
+                          }}
+                        >
+                          Capacity *
+                        </label>
+                        <input
+                          id="pax"
+                          type="number"
+                          name="pax"
+                          value={selectedTable?.pax}
+                          onChange={handleTableForm}
+                          placeholder="Enter pax"
+                          required
+                        />
+                      </div>
 
-                        {tableBookingsToday.map((booking) => (
-                          <div
-                            key={booking.id}
-                            style={{
-                              marginTop: "6px",
-                              padding: "4px 0",
-                              borderBottom:
-                                "1px dashed var(--border-color)",
-                            }}
-                          >
-                            <p
-                              style={{
-                                fontWeight: "600",
-                                margin: "2px 0",
-                                fontSize: "13px",
-                              }}
-                            >
-                              {booking.customerName} • {booking.time} •{" "}
-                              {booking.partySize} pax
-                            </p>
+                      {tableBookingsToday.length > 0 && (
+                        <div
+                          className="mb-md"
+                          style={{
+                            paddingBottom: "var(--spacing-md)",
+                            borderBottom: "1px solid var(--border-color)",
+                          }}
+                        >
+                          <p className="text-muted" style={{ fontSize: "12px", margin: 0 }}>
+                            Bookings for this table (today)
+                          </p>
 
+                          {tableBookingsToday.map((booking) => (
                             <div
+                              key={booking.id}
                               style={{
-                                display: "flex",
-                                gap: "6px",
-                                marginTop: "2px",
+                                marginTop: "6px",
+                                padding: "4px 0",
+                                borderBottom: "1px dashed var(--border-color)",
                               }}
                             >
-                              {/* Move this booking to another table */}
-                              <button
-                                className="btn btn-primary btn-sm"
-                                style={{ flex: 1 }}
-                                onClick={() => {
-                                  setSelectedBooking(booking);
-                                  setShowAssignModal(true);
+                              <p
+                                style={{
+                                  fontWeight: "600",
+                                  margin: "2px 0",
+                                  fontSize: "13px",
                                 }}
                               >
-                                Move to Another Table
-                              </button>
+                                {booking.customerName} • {booking.time} • {booking.partySize} pax
+                              </p>
 
-                              {/* Unassign this booking from this table */}
-                              <button
-                                className="btn btn-secondary btn-sm"
-                                style={{ flex: 1 }}
-                                onClick={() => handleUnassignBooking(booking)}
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "6px",
+                                  marginTop: "2px",
+                                }}
                               >
-                                Unassign
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                                {/* Move this booking to another table */}
+                                <button
+                                  className="btn btn-primary btn-sm"
+                                  style={{ flex: 1 }}
+                                  onClick={() => {
+                                    setSelectedBooking(booking);
+                                    setShowAssignModal(true);
+                                  }}
+                                >
+                                  Move to Another Table
+                                </button>
 
-                    {/* Action Buttons */}
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "var(--spacing-sm)",
-                      }}
-                    >
-                      {isAddingTable ? (
-                        <>
-                          <button
-                            className="btn btn-success btn-full"
-                            onClick={() => submitAddTable()}
-                          >
-                            ➕ Add Table
-                          </button>
-                          <button
-                            className="btn btn-secondary btn-full"
-                            onClick={() => cancelAddTable()}
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <button
-                            className="btn btn-secondary btn-full"
-                            style={{
-                              border: "1px solid var(--border-color)",
-                            }}
-                            onClick={() =>
-                              setSelectedTable(null)
-                            }
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            className="btn btn-secondary btn-full"
-                            style={{
-                              border: "1px solid var(--border-color)",
-                            }}
-                            onClick={() =>
-                              submitEditTable(
-                                selectedTable.seatingId
-                              )
-                            }
-                          >
-                            ✏️ Edit
-                            </button>
-                          <button
-                            className="btn btn-danger btn-full"
-                            onClick={() =>
-                              handleDeleteTable(
-                                selectedTable.seatingId
-                              )
-                            }
-                          >
-                            🗑️ Delete Table
-                          </button>
-                        </>
+                                {/* Unassign this booking from this table */}
+                                <button
+                                  className="btn btn-secondary btn-sm"
+                                  style={{ flex: 1 }}
+                                  onClick={() => handleUnassignBooking(booking)}
+                                >
+                                  Unassign
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       )}
+
+                      {/* Action Buttons */}
+                      <div
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "var(--spacing-sm)",
+                        }}
+                      >
+                        {isAddingTable ? (
+                          <>
+                            <button
+                              className="btn btn-success btn-full"
+                              onClick={() => submitAddTable()}
+                            >
+                              ➕ Add Table
+                            </button>
+                            <button
+                              className="btn btn-secondary btn-full"
+                              onClick={() => cancelAddTable()}
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              className="btn btn-secondary btn-full"
+                              style={{
+                                border: "1px solid var(--border-color)",
+                              }}
+                              onClick={() => setSelectedTable(null)}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              className="btn btn-secondary btn-full"
+                              style={{
+                                border: "1px solid var(--border-color)",
+                              }}
+                              onClick={() => submitEditTable(selectedTable.seatingId)}
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              className="btn btn-danger btn-full"
+                              onClick={() => handleDeleteTable(selectedTable.seatingId)}
+                            >
+                              🗑️ Delete Table
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  </div>
                   </div>
                   {/* Time Slots Card */}
                   <div className="card mb-lg">
@@ -1135,10 +1058,7 @@ export function SeatingPlan() {
                     </div>
                     <div className="card-content">
                       {timeSlots.length === 0 ? (
-                        <p
-                          className="text-muted"
-                          style={{ fontSize: "14px", margin: 0 }}
-                        >
+                        <p className="text-muted" style={{ fontSize: "14px", margin: 0 }}>
                           No opening hours configured for this restaurant.
                         </p>
                       ) : (
@@ -1152,14 +1072,8 @@ export function SeatingPlan() {
                           }}
                         >
                           {timeSlots.map((slot) => {
-                            const booking = findBookingForSlotAndTable(
-                              slot,
-                              selectedTable
-                            );
-                            const status = getSlotStatus(
-                              slot,
-                              selectedTable
-                            );
+                            const booking = findBookingForSlotAndTable(slot, selectedTable);
+                            const status = getSlotStatus(slot, selectedTable);
                             const key = getSlotKey(slot, selectedTable);
                             const override = slotOverrides[key];
 
@@ -1167,8 +1081,8 @@ export function SeatingPlan() {
                               status === "occupied"
                                 ? "#ef4444"
                                 : status === "unavailable"
-                                ? "#f59e0b"
-                                : "#10b981";
+                                  ? "#f59e0b"
+                                  : "#10b981";
 
                             const tooltipLines = [
                               `${slot.start} – ${slot.end}`,
@@ -1180,9 +1094,7 @@ export function SeatingPlan() {
                               );
                             }
                             if (override?.comment) {
-                              tooltipLines.push(
-                                `Note: ${override.comment}`
-                              );
+                              tooltipLines.push(`Note: ${override.comment}`);
                             }
 
                             return (
@@ -1197,17 +1109,9 @@ export function SeatingPlan() {
                                   borderRadius: "6px",
                                   backgroundColor: bgColor,
                                   color: "white",
-                                  cursor:
-                                    status === "occupied"
-                                      ? "not-allowed"
-                                      : "pointer",
+                                  cursor: status === "occupied" ? "not-allowed" : "pointer",
                                 }}
-                                onClick={() =>
-                                  handleToggleSlot(
-                                    slot,
-                                    selectedTable
-                                  )
-                                }
+                                onClick={() => handleToggleSlot(slot, selectedTable)}
                               >
                                 <span
                                   style={{
@@ -1231,16 +1135,12 @@ export function SeatingPlan() {
                                       style={{
                                         padding: "2px 4px",
                                         fontSize: "11px",
-                                        background:
-                                          "rgba(0,0,0,0.2)",
+                                        background: "rgba(0,0,0,0.2)",
                                         border: "none",
                                       }}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleEditComment(
-                                          slot,
-                                          selectedTable
-                                        );
+                                        handleEditComment(slot, selectedTable);
                                       }}
                                     >
                                       📝 Note
@@ -1252,11 +1152,7 @@ export function SeatingPlan() {
                                         fontSize: "11px",
                                       }}
                                     >
-                                      {
-                                        booking.customerName.split(
-                                          " "
-                                        )[0]
-                                      }
+                                      {booking.customerName.split(" ")[0]}
                                     </span>
                                   )}
                                 </div>
@@ -1272,11 +1168,12 @@ export function SeatingPlan() {
                           fontSize: "11px",
                         }}
                       >
-                        • Dining duration is 90 minutes (3 slots).<br />
-                        • Click an <strong>available</strong> slot to mark it
-                        unavailable, click again to reset.<br />
-                        • 📝 Add a note for why a slot is unavailable.<br />
-                        • Hover any slot to see booking details.
+                        • Dining duration is 90 minutes (3 slots).
+                        <br />• Click an <strong>available</strong> slot to mark it unavailable,
+                        click again to reset.
+                        <br />
+                        • 📝 Add a note for why a slot is unavailable.
+                        <br />• Hover any slot to see booking details.
                       </p>
                     </div>
                   </div>
@@ -1286,9 +1183,7 @@ export function SeatingPlan() {
               {/* Unassigned Bookings */}
               <div className="card">
                 <div className="card-header">
-                  <h4 className="card-title">
-                    Unassigned Bookings
-                  </h4>
+                  <h4 className="card-title">Unassigned Bookings</h4>
                 </div>
                 <div className="card-content">
                   {unassignedBookings.length > 0 ? (
@@ -1305,19 +1200,14 @@ export function SeatingPlan() {
                           style={{
                             padding: "var(--spacing-sm)",
                             border: "1px solid var(--border-color)",
-                            borderRadius:
-                              "var(--radius-md)",
+                            borderRadius: "var(--radius-md)",
                             cursor: "pointer",
                             transition: "background 0.2s",
                           }}
                           onMouseEnter={(e) =>
-                          (e.currentTarget.style.background =
-                            "var(--bg-light)")
+                            (e.currentTarget.style.background = "var(--bg-light)")
                           }
-                          onMouseLeave={(e) =>
-                          (e.currentTarget.style.background =
-                            "white")
-                          }
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
                         >
                           <p
                             style={{
@@ -1335,20 +1225,16 @@ export function SeatingPlan() {
                               fontSize: "12px",
                             }}
                           >
-                            {booking.time} •{" "}
-                            {booking.partySize} people
+                            {booking.time} • {booking.partySize} people
                           </p>
                           <button
                             className="btn btn-primary btn-sm"
                             style={{
-                              marginTop:
-                                "var(--spacing-xs)",
+                              marginTop: "var(--spacing-xs)",
                               width: "100%",
                             }}
                             onClick={() => {
-                              setSelectedBooking(
-                                booking
-                              );
+                              setSelectedBooking(booking);
                               setShowAssignModal(true);
                             }}
                           >
@@ -1390,17 +1276,13 @@ export function SeatingPlan() {
             zIndex: 1000,
           }}
         >
-          <div
-            className="card"
-            style={{ maxWidth: "400px", width: "90%" }}
-          >
+          <div className="card" style={{ maxWidth: "400px", width: "90%" }}>
             <div className="card-header">
               <h4 className="card-title">Assign Table</h4>
             </div>
             <div className="card-content">
               <p className="mb-md">
-                Assign a table for{" "}
-                <strong>{selectedBooking.customerName}</strong> (
+                Assign a table for <strong>{selectedBooking.customerName}</strong> (
                 {selectedBooking.partySize} people)?
               </p>
               <div className="form-group mb-lg">
@@ -1423,27 +1305,16 @@ export function SeatingPlan() {
                       <button
                         key={table.seatingId}
                         className="btn btn-secondary"
-                        onClick={() =>
-                          handleAssignBooking(
-                            table.seatingId
-                          )
-                        }
+                        onClick={() => handleAssignBooking(table.seatingId)}
                         style={{
                           textAlign: "left",
-                          justifyContent:
-                            "space-between",
+                          justifyContent: "space-between",
                         }}
                       >
                         <span>
-                          Table {table.tableNumber}{" "}
-                          {getTableIcon(
-                            table.tableType
-                          )}
+                          Table {table.tableNumber} {getTableIcon(table.tableType)}
                         </span>
-                        <span
-                          className="text-muted"
-                          style={{ fontSize: "12px" }}
-                        >
+                        <span className="text-muted" style={{ fontSize: "12px" }}>
                           {table.pax} seats
                         </span>
                       </button>

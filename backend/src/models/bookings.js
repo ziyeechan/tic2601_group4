@@ -113,15 +113,12 @@ module.exports.updateBookingStatus = async (bookingID, status) => {
   if (["cancelled", "no_show"].includes(status)) {
     update.fkSeatingId = null;
   }
-  
-  return await Bookings.update(
-    update, 
-    {
-      where: {
-        bookingId: bookingID,
-      },
-    }
-  );
+
+  return await Bookings.update(update, {
+    where: {
+      bookingId: bookingID,
+    },
+  });
 };
 
 // Update booking details
@@ -188,6 +185,9 @@ module.exports.findAllBookings = async () => {
         required: false,
       },
     ],
-    order: [["bookingDate", "DESC"], ["bookingTime", "DESC"]],
+    order: [
+      ["bookingDate", "DESC"],
+      ["bookingTime", "DESC"],
+    ],
   });
 };

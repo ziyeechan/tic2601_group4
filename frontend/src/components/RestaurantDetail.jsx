@@ -2,25 +2,11 @@ import { mockMenuItems } from "../mockData";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
 
 export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
-  const menuItems = mockMenuItems.filter(
-    (item) => item.restaurantId === restaurant.restaurantId
-  );
+  const menuItems = mockMenuItems.filter((item) => item.restaurantId === restaurant.restaurantId);
 
   // Default mock data for missing fields
-  const defaultAmenities = [
-    "Wifi",
-    "Parking",
-    "Wheelchair Accessible",
-    "Reservations",
-  ];
-  const defaultTimeSlots = [
-    "12:00",
-    "13:00",
-    "18:00",
-    "19:00",
-    "20:00",
-    "21:00",
-  ];
+  const defaultAmenities = ["Wifi", "Parking", "Wheelchair Accessible", "Reservations"];
+  const defaultTimeSlots = ["12:00", "13:00", "18:00", "19:00", "20:00", "21:00"];
 
   // Generate opening hours display from database times or use defaults
   const getOpeningHoursDisplay = () => {
@@ -85,19 +71,12 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
   return (
     <div>
       {/* Back Button */}
-      <button
-        className="btn btn-secondary mb-lg"
-        onClick={onBack}
-        style={{ border: "none" }}
-      >
+      <button className="btn btn-secondary mb-lg" onClick={onBack} style={{ border: "none" }}>
         ← Back to Restaurants
       </button>
 
       {/* Hero Image */}
-      <div
-        className="aspect-video image-container mb-lg"
-        style={{ height: "300px" }}
-      >
+      <div className="aspect-video image-container mb-lg" style={{ height: "300px" }}>
         <img
           src={restaurant.image}
           alt={restaurant.name}
@@ -122,10 +101,7 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
           {/* Info Card */}
           <div className="card mb-lg">
             <div className="card-content">
-              <div
-                className="flex-between mb-md"
-                style={{ alignItems: "flex-start" }}
-              >
+              <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
                 <div>
                   <h2 style={{ margin: 0, marginBottom: "var(--spacing-sm)" }}>
                     {restaurant.restaurantName}
@@ -137,19 +113,14 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
               </div>
 
               {/* Rating */}
-              <div
-                className="flex gap-md mb-md"
-                style={{ alignItems: "center" }}
-              >
+              <div className="flex gap-md mb-md" style={{ alignItems: "center" }}>
                 <div style={{ fontSize: "20px" }}>⭐ N/A</div>
                 <div className="text-muted">(Check reviews for ratings)</div>
               </div>
 
               {/* Amenities */}
               <div style={{ marginBottom: "var(--spacing-md)" }}>
-                <h5 style={{ marginBottom: "var(--spacing-sm)" }}>
-                  Amenities:
-                </h5>
+                <h5 style={{ marginBottom: "var(--spacing-sm)" }}>Amenities:</h5>
                 <div
                   style={{
                     display: "flex",
@@ -274,14 +245,9 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                       borderBottom: "1px solid var(--border-color)",
                     }}
                   >
-                    <div
-                      className="flex-between mb-sm"
-                      style={{ alignItems: "flex-start" }}
-                    >
+                    <div className="flex-between mb-sm" style={{ alignItems: "flex-start" }}>
                       <h5 style={{ margin: 0 }}>{item.name}</h5>
-                      <span
-                        style={{ fontWeight: "600", color: "var(--success)" }}
-                      >
+                      <span style={{ fontWeight: "600", color: "var(--success)" }}>
                         ${item.price.toFixed(2)}
                       </span>
                     </div>

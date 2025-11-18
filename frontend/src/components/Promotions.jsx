@@ -35,15 +35,11 @@ export function AllPromotions({ onBack }) {
         );
 
         setUpcomingPromos(
-          promotions.filter(
-            (p) => p.startAt > new Date().toISOString().split("T")[0]
-          )
+          promotions.filter((p) => p.startAt > new Date().toISOString().split("T")[0])
         );
 
         setExpiredPromos(
-          promotions.filter(
-            (p) => p.endAt < new Date().toISOString().split("T")[0]
-          )
+          promotions.filter((p) => p.endAt < new Date().toISOString().split("T")[0])
         );
       }
     }
@@ -68,17 +64,11 @@ export function AllPromotions({ onBack }) {
     refresh && (
       <div>
         {/* Back Button */}
-        <button
-          className="btn btn-secondary mb-lg"
-          onClick={onBack}
-          style={{ border: "none" }}
-        >
+        <button className="btn btn-secondary mb-lg" onClick={onBack} style={{ border: "none" }}>
           ← Back
         </button>
 
-        <h2 style={{ marginBottom: "var(--spacing-lg)" }}>
-          🎉 Current Promotions & Offers
-        </h2>
+        <h2 style={{ marginBottom: "var(--spacing-lg)" }}>🎉 Current Promotions & Offers</h2>
 
         {/* Active Promotions */}
         <div style={{ marginBottom: "var(--spacing-xl)" }}>
@@ -169,9 +159,7 @@ export function AllPromotions({ onBack }) {
                           style={{
                             padding: "6px 12px",
                             backgroundColor:
-                              copiedCode === promo.discount
-                                ? "var(--success)"
-                                : "var(--primary)",
+                              copiedCode === promo.discount ? "var(--success)" : "var(--primary)",
                             color: "white",
                             border: "none",
                             borderRadius: "var(--radius-md)",
@@ -179,9 +167,7 @@ export function AllPromotions({ onBack }) {
                             fontSize: "12px",
                           }}
                         >
-                          {copiedCode === promo.discount
-                            ? "✓ Copied"
-                            : "📋 Copy"}
+                          {copiedCode === promo.discount ? "✓ Copied" : "📋 Copy"}
                         </button>
                       </div>
                     </div>
@@ -231,10 +217,7 @@ export function AllPromotions({ onBack }) {
               ))}
             </div>
           ) : (
-            <div
-              className="empty-state"
-              style={{ padding: "var(--spacing-lg)" }}
-            >
+            <div className="empty-state" style={{ padding: "var(--spacing-lg)" }}>
               <p className="text-muted">No active promotions at the moment.</p>
             </div>
           )}
@@ -278,9 +261,7 @@ export function AllPromotions({ onBack }) {
                       >
                         {promo.restaurantName}
                       </h5>
-                      <p style={{ margin: 0, fontWeight: "600" }}>
-                        {promo.description}
-                      </p>
+                      <p style={{ margin: 0, fontWeight: "600" }}>{promo.description}</p>
                     </div>
 
                     <div
@@ -291,10 +272,7 @@ export function AllPromotions({ onBack }) {
                         borderRadius: "var(--radius-md)",
                       }}
                     >
-                      <p
-                        className="text-muted"
-                        style={{ margin: 0, fontSize: "12px" }}
-                      >
+                      <p className="text-muted" style={{ margin: 0, fontSize: "12px" }}>
                         Starts on {new Date(promo.startAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -361,10 +339,7 @@ export function AllPromotions({ onBack }) {
                         {promo.description}
                       </p>
                     </div>
-                    <p
-                      className="text-muted"
-                      style={{ fontSize: "12px", margin: 0 }}
-                    >
+                    <p className="text-muted" style={{ fontSize: "12px", margin: 0 }}>
                       Ended on {new Date(promo.endAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -474,9 +449,7 @@ export function AllPromotions({ onBack }) {
                         cursor: "pointer",
                       }}
                     >
-                      {copiedCode === selectedPromo.discount
-                        ? "✓ Copied!"
-                        : "📋 Copy"}
+                      {copiedCode === selectedPromo.discount ? "✓ Copied!" : "📋 Copy"}
                     </button>
                   </div>
                 </div>

@@ -1,10 +1,4 @@
-export function RestaurantCard({
-  restaurant,
-  onViewDetails,
-  onBookNow,
-  isAdmin,
-  onViewChange,
-}) {
+export function RestaurantCard({ restaurant, onViewDetails, onBookNow, isAdmin, onViewChange }) {
   return (
     <div className="card" style={{ overflow: "hidden" }}>
       {/* Image Container */}
@@ -32,10 +26,7 @@ export function RestaurantCard({
       {/* Content */}
       <div className="card-content">
         {/* Title */}
-        <div
-          className="flex-between mb-md"
-          style={{ alignItems: "flex-start" }}
-        >
+        <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
           <h3 style={{ margin: "0", flex: 1 }}>{restaurant.restaurantName}</h3>
         </div>
 
@@ -50,8 +41,7 @@ export function RestaurantCard({
                   : "0.0"}
               </span>
               <span className="text-muted" style={{ fontSize: "14px" }}>
-                ({restaurant.reviewCount}{" "}
-                {restaurant.reviewCount === 1 ? "review" : "reviews"})
+                ({restaurant.reviewCount} {restaurant.reviewCount === 1 ? "review" : "reviews"})
               </span>
             </>
           ) : (
@@ -74,15 +64,15 @@ export function RestaurantCard({
           <span>📍</span>
           <span
             style={{
-              fontSize: '14px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
+              fontSize: "14px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {restaurant.address
-              ? `${restaurant.address.addressLine1}, ${restaurant.address.city}, ${restaurant.address.state || ''}, ${restaurant.address.country}`
-              : 'Address not available'}
+              ? `${restaurant.address.addressLine1}, ${restaurant.address.city}, ${restaurant.address.state || ""}, ${restaurant.address.country}`
+              : "Address not available"}
           </span>
         </div>
 
@@ -112,16 +102,11 @@ export function RestaurantCard({
       </div>
 
       {/* Footer with Buttons */}
-      <div
-        className="card-footer"
-        style={{ display: "flex", gap: "var(--spacing-sm)" }}
-      >
+      <div className="card-footer" style={{ display: "flex", gap: "var(--spacing-sm)" }}>
         <button
           className="btn btn-secondary btn-full"
           onClick={() =>
-            isAdmin === "customer"
-              ? onViewDetails(restaurant)
-              : onViewChange(restaurant)
+            isAdmin === "customer" ? onViewDetails(restaurant) : onViewChange(restaurant)
           }
           style={{ flex: 1 }}
         >

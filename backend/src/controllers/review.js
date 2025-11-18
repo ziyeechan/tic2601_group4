@@ -86,7 +86,6 @@ module.exports.createReviews = async (req, res) => {
         message: "Invalid Parameter",
       });
 
-
     if (rating == null) {
       return res.status(400).json({
         message: "Missing Fields",

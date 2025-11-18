@@ -11,10 +11,7 @@ const {
   checkSeatingAvailability,
   findAllBookings,
 } = require("../models/bookings");
-const {
-  findSeatingPlanByID,
-  findAvailableSeating,
-} = require("../models/seatingPlan");
+const { findSeatingPlanByID, findAvailableSeating } = require("../models/seatingPlan");
 const { findRestaurantByID } = require("../models/restaurant");
 
 // Generate a unique confirmation code
@@ -78,9 +75,7 @@ module.exports.createBooking = async (req, res) => {
         return res.status(400).json({
           message: `Booking time must be between ${openHour}:00 and ${
             closeHour - 1
-          }:00. Restaurant hours: ${restaurant.openingTime} - ${
-            restaurant.closingTime
-          }`,
+          }:00. Restaurant hours: ${restaurant.openingTime} - ${restaurant.closingTime}`,
         });
       }
     }
@@ -104,25 +99,15 @@ module.exports.createBooking = async (req, res) => {
       }
 
       // Check if seating is available for the requested date and time
-      const isAvailable = await checkSeatingAvailability(
-        seatingID,
-        bookingDate,
-        bookingTime
-      );
+      const isAvailable = await checkSeatingAvailability(seatingID, bookingDate, bookingTime);
       if (!isAvailable) {
         return res.status(409).json({
-          message:
-            "This table is not available for the requested date and time",
+          message: "This table is not available for the requested date and time",
         });
       }
     } else {
       // Auto-find available seating
-      seatingPlan = await findAvailableSeating(
-        restaurantID,
-        partySize,
-        bookingDate,
-        bookingTime
-      );
+      seatingPlan = await findAvailableSeating(restaurantID, partySize, bookingDate, bookingTime);
 
       if (!seatingPlan) {
         return res.status(409).json({
@@ -342,14 +327,7 @@ module.exports.findBookingsByStatus = async (req, res) => {
     }
 
     // Validate status
-    const validStatuses = [
-      "pending",
-      "confirmed",
-      "seated",
-      "completed",
-      "no_show",
-      "cancelled",
-    ];
+    const validStatuses = ["pending", "confirmed", "seated", "completed", "no_show", "cancelled"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         message: `Invalid status. Allowed values: ${validStatuses.join(", ")}`,
@@ -393,14 +371,7 @@ module.exports.updateBookingStatus = async (req, res) => {
     }
 
     // Validate status
-    const validStatuses = [
-      "pending",
-      "confirmed",
-      "seated",
-      "completed",
-      "no_show",
-      "cancelled",
-    ];
+    const validStatuses = ["pending", "confirmed", "seated", "completed", "no_show", "cancelled"];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({
         message: `Invalid status. Allowed values: ${validStatuses.join(", ")}`,
@@ -505,9 +476,7 @@ module.exports.findAllBookings = async (req, res) => {
     const bookings = await findAllBookings();
 
     // Convert Sequelize instances to plain JSON objects
-    const bookingsJSON = bookings.map((booking) =>
-      booking.toJSON ? booking.toJSON() : booking
-    );
+    const bookingsJSON = bookings.map((booking) => (booking.toJSON ? booking.toJSON() : booking));
 
     return res.status(200).json({
       totalBookings: bookingsJSON.length,

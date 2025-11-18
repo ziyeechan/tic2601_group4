@@ -2,28 +2,14 @@ import { useState, useMemo } from "react";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
 import { bookingAPI } from "../utils/api";
 
-export function BookingForm({
-  restaurant,
-  onBack,
-  onBookingComplete,
-  onBookingSuccess,
-}) {
+export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSuccess }) {
   // Generate time slots based on restaurant opening/closing hours
   const availableTimeSlots = useMemo(() => {
     if (restaurant?.openingTime && restaurant?.closingTime) {
       return generateTimeSlots(restaurant.openingTime, restaurant.closingTime);
     }
     // Fallback to default slots if hours not available
-    return [
-      "12:00",
-      "12:30",
-      "13:00",
-      "13:30",
-      "18:00",
-      "18:30",
-      "19:00",
-      "19:30",
-    ];
+    return ["12:00", "12:30", "13:00", "13:30", "18:00", "18:30", "19:00", "19:30"];
   }, [restaurant?.openingTime, restaurant?.closingTime]);
 
   const [formData, setFormData] = useState({
@@ -95,8 +81,7 @@ export function BookingForm({
     } catch (error) {
       console.error("Booking error:", error);
       const errorMessage =
-        error.response?.data?.message ||
-        "Failed to create booking. Please try again.";
+        error.response?.data?.message || "Failed to create booking. Please try again.";
       setMessage({
         type: "error",
         text: errorMessage,
@@ -111,11 +96,7 @@ export function BookingForm({
   return (
     <div>
       {/* Back Button */}
-      <button
-        className="btn btn-secondary mb-lg"
-        onClick={onBack}
-        style={{ border: "none" }}
-      >
+      <button className="btn btn-secondary mb-lg" onClick={onBack} style={{ border: "none" }}>
         ← Back
       </button>
 
@@ -134,17 +115,11 @@ export function BookingForm({
               <h3 className="card-title">Complete Your Booking</h3>
             </div>
             <div className="card-content">
-              {message && (
-                <div className={`alert alert-${message.type} mb-lg`}>
-                  {message.text}
-                </div>
-              )}
+              {message && <div className={`alert alert-${message.type} mb-lg`}>{message.text}</div>}
 
               <form onSubmit={handleSubmit}>
                 {/* Personal Information */}
-                <h4 style={{ marginBottom: "var(--spacing-md)" }}>
-                  Your Information
-                </h4>
+                <h4 style={{ marginBottom: "var(--spacing-md)" }}>Your Information</h4>
 
                 <div className="form-group">
                   <label htmlFor="customerName">👤 Full Name *</label>
@@ -247,9 +222,7 @@ export function BookingForm({
 
                 {/* Special Requests */}
                 <div className="form-group">
-                  <label htmlFor="specialRequests">
-                    💬 Special Requests (Optional)
-                  </label>
+                  <label htmlFor="specialRequests">💬 Special Requests (Optional)</label>
                   <textarea
                     id="specialRequests"
                     name="specialRequests"
@@ -299,9 +272,7 @@ export function BookingForm({
                 >
                   Restaurant
                 </p>
-                <p style={{ fontWeight: "600", margin: 0 }}>
-                  {restaurant.restaurantName}
-                </p>
+                <p style={{ fontWeight: "600", margin: 0 }}>{restaurant.restaurantName}</p>
               </div>
 
               <div
@@ -318,13 +289,9 @@ export function BookingForm({
                   Date & Time
                 </p>
                 <p style={{ fontWeight: "600", margin: 0 }}>
-                  {formData.date
-                    ? new Date(formData.date).toLocaleDateString()
-                    : "Not selected"}
+                  {formData.date ? new Date(formData.date).toLocaleDateString() : "Not selected"}
                 </p>
-                <p style={{ fontWeight: "600", margin: 0 }}>
-                  {formData.time || "Not selected"}
-                </p>
+                <p style={{ fontWeight: "600", margin: 0 }}>{formData.time || "Not selected"}</p>
               </div>
 
               <div
@@ -341,8 +308,7 @@ export function BookingForm({
                   Party Size
                 </p>
                 <p style={{ fontWeight: "600", margin: 0 }}>
-                  {formData.partySize}{" "}
-                  {formData.partySize === 1 ? "person" : "people"}
+                  {formData.partySize} {formData.partySize === 1 ? "person" : "people"}
                 </p>
               </div>
 
@@ -382,8 +348,8 @@ export function BookingForm({
 
               <div className="alert alert-info">
                 <p style={{ margin: 0, fontSize: "14px" }}>
-                  ℹ️ You'll receive a confirmation email with your booking
-                  details and confirmation code.
+                  ℹ️ You'll receive a confirmation email with your booking details and confirmation
+                  code.
                 </p>
               </div>
             </div>
