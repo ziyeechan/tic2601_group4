@@ -45,7 +45,9 @@ export function RestaurantCard({
             <>
               <span>⭐</span>
               <span style={{ fontWeight: "600" }}>
-                {restaurant.averageRating.toFixed(1)}
+                {typeof restaurant.averageRating === "number"
+                  ? restaurant.averageRating.toFixed(1)
+                  : "0.0"}
               </span>
               <span className="text-muted" style={{ fontSize: "14px" }}>
                 ({restaurant.reviewCount}{" "}
@@ -72,13 +74,15 @@ export function RestaurantCard({
           <span>📍</span>
           <span
             style={{
-              fontSize: "14px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              fontSize: '14px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
             }}
           >
-            {restaurant.address}
+            {restaurant.address
+              ? `${restaurant.address.addressLine1}, ${restaurant.address.city}, ${restaurant.address.state || ''}, ${restaurant.address.country}`
+              : 'Address not available'}
           </span>
         </div>
 

@@ -16,7 +16,7 @@ module.exports.findSeatingPlanByRestaurantID = async (restaurantID) => {
   return results;
 };
 
-module.exports.findSeatingPlanByPK = async (seatingID) => {
+module.exports.findSeatingPlanByID = async (seatingID) => {
   const results = await SeatingPlans.findByPk(seatingID);
 
   return results;
@@ -27,11 +27,13 @@ module.exports.createSeatingPlan = async (seatingInfo, restaurantID) => {
     pax: seatingInfo.pax,
     tableType: seatingInfo.tableType,
     tableNumber: seatingInfo.tableNumber,
+    x: seatingInfo.x,
+    y: seatingInfo.y, 
     fkRestaurantId: restaurantID,
   });
 };
 
-module.exports.updateSeatingPlanByPK = async (seatingID, meta) => {
+module.exports.updateSeatingPlanByID = async (seatingID, meta) => {
   await SeatingPlans.update(
     { ...meta },
     {
@@ -40,7 +42,7 @@ module.exports.updateSeatingPlanByPK = async (seatingID, meta) => {
   );
 };
 
-module.exports.deleteSeatingPlanByPK = async (seatingID) => {
+module.exports.deleteSeatingPlanByID = async (seatingID) => {
   await SeatingPlans.destroy({
     where: { seatingId: seatingID },
   });

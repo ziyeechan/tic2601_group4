@@ -22,7 +22,7 @@ module.exports = (router) => {
 
     // Endpoint to get all reviews for booking_id
   router.get(
-    "/review/bookings/:bookingID",
+    "/review/booking/:bookingID",
     reviewController.findReviewsByBookingID
   );
 

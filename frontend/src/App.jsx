@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./styles.css";
-import { restaurantAPI, promotionAPI, reviewAPI } from "./utils/api";
+import { restaurantAPI, promotionAPI, reviewAPI, addressAPI } from "./utils/api";
 import { Header } from "./components/Header";
 import { RestaurantCard } from "./components/RestaurantCard";
 import { SearchFilters } from "./components/SearchFilters";
@@ -8,7 +8,7 @@ import { RestaurantDetail } from "./components/RestaurantDetail";
 import { BookingForm } from "./components/BookingForm";
 import { MyBookings } from "./components/MyBookings";
 import { AdminBookings } from "./components/AdminBookings";
-import { SeatingPlan } from "./components/SeatingPlan2";
+import { SeatingPlan } from "./components/SeatingPlan2(Ziyee)";
 import { Analytics } from "./components/Analytics";
 import { RestaurantManagement } from "./components/RestaurantManagement2";
 import { Promotions } from "./components/Promotions2";
@@ -30,55 +30,79 @@ export default function App() {
     promotion: "",
   });
 
+  //Address table
+  const [addresses, setAddresses] = useState([]);
+
   //Promotion table
-  const [promotions, setPromotions] = useState(false);
+  const [promotions, setPromotions] = useState([]);
 
   //Review table
-  const [reviews, setReviews] = useState(false);
+  const [reviews, setReviews] = useState([]);
 
   // Track booking confirmation for auto-fill
   const [lastBookingEmail, setLastBookingEmail] = useState("");
   const [lastConfirmationCode, setLastConfirmationCode] = useState("");
 
+  //USEEFFECT
   useEffect(() => {
-    //Fetch restaurants
-    restaurantAPI
-      .getAllRestaurants()
-      .then((res) => {
-        console.log(res.data);
-        // Map imageUrl to image for component compatibility
-        const restaurantsWithImages = res.data.map((r) => ({
-          ...r,
-          image: r.imageUrl,
-        }));
-        setRestaurants(restaurantsWithImages);
-        setSelectedRestaurant(restaurantsWithImages);
-        setFilteredRestaurants(restaurantsWithImages);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+    Promise.all([
+      restaurantAPI.getAllRestaurants(),
+      addressAPI.getAllAddresses(),
+      promotionAPI.getAllPromotions(),
+      reviewAPI.getAllReviews()
+    ])
+      .then(([resRestaurants, resAddresses, resPromotions, resReviews]) => {
+        const restaurantList = resRestaurants.data;
+        const addressList = resAddresses.data;
+        const promotionList = resPromotions.data;
+        const reviewList = resReviews.data;
 
-    // Fetch promotions
-    promotionAPI
-      .getAllPromotions()
-      .then((res) => {
-        console.log("promotion", res.data);
-        setPromotions(res.data);
-      })
-      .catch((err) => {
-        console.error(err);
-      });
+        // Save raw data to state
+        setAddresses(addressList);
+        setPromotions(promotionList);
+        setReviews(reviewList);
 
-    // Fetch reviews
-    reviewAPI
-      .getAllReviews()
-      .then((res) => {
-        console.log("review", res.data);
-        setReviews(res.data);
+        // Build final restaurant objects with extra info
+        const finalRestaurants = restaurantList.map((restaurant) => {
+          // Get reviews for this restaurant
+          const reviewsForThis = reviewList.filter(
+            (review) => review.fkRestaurantId === restaurant.restaurantId
+          );
+
+          // Extract valid ratings
+          const ratings = reviewsForThis
+            .map((r) => Number(r.rating))
+            .filter((r) => !isNaN(r));
+
+          // Calculate average rating
+          const reviewCount = ratings.length;
+          const averageRating =
+            reviewCount > 0
+              ? ratings.reduce((sum, r) => sum + r, 0) / reviewCount
+              : 0;
+
+          // Find matching address
+          const restaurantAddress = addressList.find(
+            (addr) => addr.addressId === restaurant.fkAddressId
+          );
+
+          // Return the final restaurant object
+          return {
+            ...restaurant,
+            image: restaurant.imageUrl,
+            reviewCount,
+            averageRating,
+            address: restaurantAddress,
+          };
+        });
+
+        // Save final restaurant list to state
+        setRestaurants(finalRestaurants);
+        setFilteredRestaurants(finalRestaurants);
+        setSelectedRestaurant(null);
       })
       .catch((err) => {
-        console.error(err);
+        console.error("Error loading data:", err);
       });
   }, []);
 
@@ -103,9 +127,7 @@ export default function App() {
       // Combine restaurant data with address information
       const enrichedRestaurant = {
         ...restaurantData,
-        address: `${address?.addressLine1}${
-          address?.addressLine2 ? ", " + address.addressLine2 : ""
-        }, ${address?.city}, ${address?.state} ${address?.postalCode}`,
+        address,
         image: restaurantData.imageUrl, // Map imageUrl to image for components
       };
 
@@ -130,9 +152,7 @@ export default function App() {
       // Combine restaurant data with address information
       const enrichedRestaurant = {
         ...restaurantData,
-        address: `${address?.addressLine1}${
-          address?.addressLine2 ? ", " + address.addressLine2 : ""
-        }, ${address?.city}, ${address?.state} ${address?.postalCode}`,
+        address,
         image: restaurantData.imageUrl, // Map imageUrl to image for components
       };
 
@@ -162,13 +182,20 @@ export default function App() {
   const handleApplyFilters = () => {
     let filtered = [...restaurants];
 
-    //Search bar filter - yet to add location
+    //Search bar filter
     if (filters.search && filters.search.trim() !== "") {
       const term = filters.search.trim().toLowerCase();
 
       filtered = filtered.filter((restaurant) => {
-        const name = (restaurant.restaurantName || "").toLowerCase();
-        return name.includes(term);
+        const nameMatch = (restaurant.restaurantName || "").toLowerCase().includes(term);
+
+        const address = restaurant.address;
+
+        const cityMatch = (address?.city || "").toLowerCase().includes(term);
+        const stateMatch = (address?.state || "").toLowerCase().includes(term);
+        const countryMatch = (address?.country || "").toLowerCase().includes(term);
+
+        return (nameMatch || cityMatch || stateMatch || countryMatch);
       });
     }
 
@@ -180,42 +207,33 @@ export default function App() {
     }
 
     //Rating filter
-    if (filters.reviews) {
-      const selected = Number(filters.reviews);
-      filtered = filtered.filter((restaurant) => {
-        // Get reviews for this restaurant
-        const restaurantReviews = reviews.filter(
-          (review) => review.fkRestaurantId === restaurant.restaurantId
+     if (filters.reviews) {
+        const selected = Number(filters.reviews);
+        filtered = filtered.filter((r) =>
+          r.reviewCount > 0 &&
+          r.averageRating >= selected &&
+          r.averageRating < selected + 1
         );
-
-        if (restaurantReviews.length === 0) return false;
-
-        // Extract valid ratings
-        const ratings = restaurantReviews
-          .map((r) => Number(r.rating))
-          .filter((r) => !Number.isNaN(r));
-
-        if (ratings.length === 0) return false;
-
-        // Compute average
-        const averageRating =
-          ratings.reduce((sum, r) => sum + r, 0) / ratings.length;
-
-        // Filter by selected rating range
-        return averageRating >= selected && averageRating < selected + 1;
-      });
     }
+  
 
     //Promotion filter
-    if (filters.promotion == "Yes") {
+    if (filters.promotion === "Yes") {
+      const now = new Date();
+
       const promoRestaurantIds = new Set(
         promotions
-          .filter((promo) => promo.isActive) // only active promotions
+          .filter((promo) => {
+            const start = new Date(promo.startAt);
+            const end = new Date(promo.endAt);
+            return start <= now && now <= end;
+          })
           .map((promo) => promo.fkRestaurantId)
       );
-      filtered = filtered.filter((restaurant) => {
-        return promoRestaurantIds.has(restaurant.restaurantId);
-      });
+
+      filtered = filtered.filter((restaurant) =>
+        promoRestaurantIds.has(restaurant.restaurantId)
+      );
     }
 
     setFilteredRestaurants(filtered);
@@ -408,6 +426,22 @@ export default function App() {
             />
           </div>
         );
+      
+        case "restaurant-management":
+        return (
+          <div
+            className="container"
+            style={{
+              paddingTop: "var(--spacing-lg)",
+              paddingBottom: "var(--spacing-lg)",
+            }}
+          >
+            <RestaurantManagement
+              onBack={() => setCurrentView("analytics")}
+              onViewChange={setCurrentView}
+            />
+          </div>
+        );
 
       case "admin-bookings":
         return (
@@ -476,7 +510,11 @@ export default function App() {
           onClick={() => {
             const newRole = userRole === "customer" ? "admin" : "customer";
             setUserRole(newRole);
-            setCurrentView("home");
+            if (newRole === "admin") {
+              setCurrentView("analytics");
+            } else {
+              setCurrentView("home");
+            }
             alert(`Switched to ${newRole} view`);
           }}
         >

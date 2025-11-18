@@ -1,4 +1,5 @@
 const { Restaurants } = require("../schemas/restaurants.js");
+const { Addresses } = require("../schemas/addresses.js");
 
 module.exports.findAllRestaurants = async (name) => {
   const results = await Restaurants.findAll();
@@ -14,6 +15,33 @@ module.exports.findRestaurantByName = async (name) => {
   });
 
   return results;
+};
+
+const findRestaurantsByCountry = async (country) => {
+  return await Restaurants.findAll({
+    include: {
+      model: Addresses,
+      where: { country },
+    },
+  });
+};
+
+const findRestaurantsByCity = async (city) => {
+  return await Restaurants.findAll({
+    include: {
+      model: Addresses,
+      where: { city },
+    },
+  });
+};
+
+const findRestaurantsByState = async (state) => {
+  return await Restaurants.findAll({
+    include: {
+      model: Addresses,
+      where: { state },
+    },
+  });
 };
 
 module.exports.findRestaurantByID = async (restaurantID) => {
@@ -45,7 +73,7 @@ module.exports.updateRestaurant = (restaurantID, meta) =>
     }
   );
 
-module.exports.deleteRestaurantByPK = async (restaurantID) => {
+module.exports.deleteRestaurantByID = async (restaurantID) => {
   await Restaurants.destroy({
     where: { restaurantId: restaurantID },
   });

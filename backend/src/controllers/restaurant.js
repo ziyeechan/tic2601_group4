@@ -1,12 +1,16 @@
-const { createAddress, findAddressByFK } = require("../models/address");
+const { createAddress, findAddressByID, updateAddress } = require("../models/address");
 const {
   findAllRestaurants,
   findRestaurantByID,
   findRestaurantByName,
+  findRestaurantsByCountry,
+  findRestaurantsByCity,
+  findRestaurantsByState,
   createRestaurant,
   updateRestaurant,
-  deleteRestaurantByPK,
+  deleteRestaurantByID,
 } = require("../models/restaurant");
+const { Addresses } = require("../models/address");
 
 module.exports.createRestaurant = async (req, res) => {
   try {
@@ -77,7 +81,7 @@ module.exports.findRestaurantByID = async (req, res) => {
       });
 
     const restaurant = await findRestaurantByID(restaurantID);
-    const address = await findAddressByFK(restaurant.fkAddressId);
+    const address = await findAddressByID(restaurant.fkAddressId);
 
     return res.status(200).json({
       restaurant,
@@ -97,7 +101,7 @@ module.exports.findRestaurantByName = async (req, res) => {
       });
 
     const restaurant = await findRestaurantByName(name);
-    const address = await findAddressByFK(restaurant.fkAddressId);
+    const address = await findAddressByID(restaurant.fkAddressId);
 
     return res.status(200).json({
       restaurant,
@@ -107,6 +111,53 @@ module.exports.findRestaurantByName = async (req, res) => {
     console.log(err);
   }
 };
+
+module.exports.findRestaurantsByCountry = async (req, res) => {
+  try {
+    const country = req.params.country;
+    if (!country) {
+      return res.status(400).json({ message: "Missing country parameter" });
+    }
+
+    const restaurants = await findRestaurantsByCountry(country);
+    return res.status(200).json({ restaurants });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports.findRestaurantsByCity = async (req, res) => {
+  try {
+    const city = req.params.city;
+    if (!city) {
+      return res.status(400).json({ message: "Missing city parameter" });
+    }
+
+    const restaurants = await findRestaurantsByCity(city);
+    return res.status(200).json({ restaurants });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+module.exports.findRestaurantsByState = async (req, res) => {
+  try {
+    const state = req.params.state;
+    if (!state) {
+      return res.status(400).json({ message: "Missing state parameter" });
+    }
+
+    const restaurants = await findRestaurantsByState(state);
+    return res.status(200).json({ restaurants });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 module.exports.updateRestaurant = async (req, res) => {
   try {
@@ -159,7 +210,7 @@ module.exports.updateRestaurant = async (req, res) => {
         postalCode: postalCode,
       };
 
-      await updateRestaurant(restaurant.fkAddressId, formattedData);
+      await updateAddress(restaurant.fkAddressId, formattedData);
     }
     return res.status(200).send("Restaurant has been successfully updated");
   } catch (err) {
@@ -167,7 +218,7 @@ module.exports.updateRestaurant = async (req, res) => {
   }
 };
 
-module.exports.deleteRestaurantByPK = async (req, res) => {
+module.exports.deleteRestaurantByID = async (req, res) => {
   try {
     const restaurantID = parseInt(req.params.restaurantID);
     if (isNaN(restaurantID))
@@ -175,7 +226,7 @@ module.exports.deleteRestaurantByPK = async (req, res) => {
         message: "Invalid Parameter",
       });
 
-    await deleteRestaurantByPK(restaurantID);
+    await deleteRestaurantByID(restaurantID);
     return res.status(200).send("Restaurant has been successfully deleted!");
   } catch (err) {
     console.log(err);

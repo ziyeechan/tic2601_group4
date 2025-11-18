@@ -7,43 +7,43 @@ const { Reviews } = require("../src/schemas/reviews.js");
 
 module.exports.LoadData = async () => {
   try {
-    await Addresses.bulkCreate([
-      {
-        addressLine1: "21 Sesame Street 9",
-        country: "USA",
-        city: "Midtown",
-        state: "California",
-        postalCode: "CA 90209",
-      },
-      {
-        addressLine1: "123 Garden Street",
-        country: "USA",
-        city: "Downtown",
-        state: "California",
-        postalCode: "CA 90210",
-      },
-      {
-        addressLine1: "456 Cherry Blossom Ave",
-        country: "USA",
-        city: "Midtown",
-        state: "California",
-        postalCode: "CA 90211",
-      },
-      {
-        addressLine1: "789 Little Italy Street",
-        country: "USA",
-        city: "North End",
-        state: "California",
-        postalCode: "CA 90212",
-      },
-      {
-        addressLine1: "321 Curry Lane",
-        country: "USA",
-        city: "Spice District",
-        state: "California",
-        postalCode: "CA 90213",
-      },
-    ]);
+      await Addresses.bulkCreate([
+    {
+      addressLine1: "21 Sesame Street 9",
+      country: "USA",
+      city: "Midtown",
+      state: "California",
+      postalCode: "CA 90209",
+    },
+    {
+      addressLine1: "123 Garden Street",
+      country: "USA",
+      city: "Downtown",
+      state: "California",
+      postalCode: "CA 90210",
+    },
+    {
+      addressLine1: "456 Cherry Blossom Ave",
+      country: "USA",
+      city: "Uptown",
+      state: "New York",
+      postalCode: "NY 10001",
+    },
+    {
+      addressLine1: "789 Little Italy Street",
+      country: "Italy",
+      city: "Rome",
+      state: "Lazio",
+      postalCode: "00184",
+    },
+    {
+      addressLine1: "321 Curry Lane",
+      country: "India",
+      city: "Spice District",
+      state: "Kerala",
+      postalCode: "682001",
+    },
+  ]);
 
     await Restaurants.bulkCreate([
       {
@@ -89,7 +89,7 @@ module.exports.LoadData = async () => {
         cuisine: "Italian",
         description:
           "Traditional Italian family recipes passed down through generations.",
-        fkAddressId: 3,
+        fkAddressId: 4,
         phone: "+1-555-0789",
         email: "ciao@mamarosas.com",
         imageUrl:
@@ -102,7 +102,7 @@ module.exports.LoadData = async () => {
         cuisine: "Indian",
         description:
           "Authentic Indian cuisine with aromatic spices and traditional cooking methods.",
-        fkAddressId: 4,
+        fkAddressId: 5,
         phone: "+1-555-0321",
         email: "hello@spiceroute.com",
         imageUrl:
@@ -117,36 +117,41 @@ module.exports.LoadData = async () => {
         pax: 2,
         tableType: "indoor",
         tableNumber: "T1",
-        isAvailable: false, // Currently booked
         fkRestaurantId: 1,
+        x: 120,
+        y: 80,
       },
       {
         pax: 4,
         tableType: "indoor",
         tableNumber: "T2",
-        isAvailable: true,
         fkRestaurantId: 1,
+        x: 220,
+        y: 80,
       },
       {
         pax: 6,
         tableType: "vip",
         tableNumber: "VIP-1",
-        isAvailable: true,
         fkRestaurantId: 1,
+        x: 420,
+        y: 200,
       },
       {
         pax: 2,
         tableType: "outdoor",
         tableNumber: "PATIO-1",
-        isAvailable: true,
         fkRestaurantId: 1,
+        x: 80,
+        y: 260,
       },
       {
         pax: 4,
         tableType: "indoor",
         tableNumber: "T1",
-        isAvailable: false, // Currently booked
         fkRestaurantId: 2,
+        x: 140,
+        y: 100,
       },
     ]);
 
@@ -158,11 +163,11 @@ module.exports.LoadData = async () => {
         customerPhone: "+1-555-1234",
         partySize: 2,
         specialRequests: "Window table preferred",
-        bookingDate: "2024-12-15",
+        bookingDate: "2025-11-18",
         bookingTime: "19:00", // TIME format (24-hour)
         status: "confirmed",
         fkRestaurantId: 1,
-        fkSeatingId: 1,
+        fkSeatingId: null,
       },
       {
         confirmationCode: "BK4N5M3P9X",
@@ -171,25 +176,24 @@ module.exports.LoadData = async () => {
         customerPhone: "+1-555-5678",
         partySize: 4,
         specialRequests: null,
-        bookingDate: "2024-12-16",
-        bookingTime: "18:30", // TIME format (24-hour)
+        bookingDate: "2025-11-18",
+        bookingTime: "19:00", // TIME format (24-hour)
         status: "pending",
         fkRestaurantId: 1,
-        fkSeatingId: 3,
+        fkSeatingId: null,
       },
       {
-        // BACKEND FIELDS
         confirmationCode: "BK7R2W5T8Q",
         customerName: "Michael Chen",
         customerEmail: "michael.chen@email.com",
         customerPhone: "+1-555-9012",
         partySize: 3,
         specialRequests: "Vegetarian options required",
-        bookingDate: "2024-12-17",
-        bookingTime: "17:30", // TIME format (24-hour)
+        bookingDate: "2025-11-18",
+        bookingTime: "19:00", // TIME format (24-hour)
         status: "confirmed",
         fkRestaurantId: 1,
-        fkSeatingId: 5,
+        fkSeatingId: null,
       },
       {
         confirmationCode: "BK8A1B2C3D",
@@ -267,7 +271,7 @@ module.exports.LoadData = async () => {
         bookingTime: "18:45",
         status: "confirmed",
         fkRestaurantId: 2,
-        fkSeatingId: 5,
+        fkSeatingId: null,
       },
       {
         confirmationCode: "BK5Y6Z7A8B",
@@ -347,100 +351,87 @@ module.exports.LoadData = async () => {
         fkRestaurantId: 2,
         fkSeatingId: 5,
       },
-    ]);
 
-    await Reviews.bulkCreate([
+      // For testing seating plan
       {
-        rating: 5,
-        comment: "Excellent pasta! The carbonara was absolutely delicious.",
-        fkBookingId: 1,
+        confirmationCode: "BK1T0D4Y9A",
+        customerName: "Today Test 1",
+        customerEmail: "today1@email.com",
+        customerPhone: "+1-555-0001",
+        partySize: 2,
+        specialRequests: "Testing seating plan",
+        bookingDate: "2025-11-18",
+        bookingTime: "18:00",
+        status: "confirmed",
         fkRestaurantId: 1,
+        fkSeatingId: 1,          // assigned (shows as OCCUPIED on table 1)
       },
       {
-        rating: 4,
-        comment: "Great service and ambiance. Food was very good.",
-        fkBookingId: 2,
+        confirmationCode: "BK2T0D4Y9B",
+        customerName: "Today Test 2",
+        customerEmail: "today2@email.com",
+        customerPhone: "+1-555-0002",
+        partySize: 4,
+        specialRequests: null,
+        bookingDate: "2025-11-18",
+        bookingTime: "19:30",
+        status: "confirmed",
         fkRestaurantId: 1,
+        fkSeatingId: null,       // UNASSIGNED for restaurant 1
       },
       {
-        rating: 5,
-        comment:
-          "Amazing experience! Vegetarian options were plentiful and tasty.",
-        fkBookingId: 3,
+        confirmationCode: "BK3T0D4Y9C",
+        customerName: "Today Test 3",
+        customerEmail: "today3@email.com",
+        customerPhone: "+1-555-0003",
+        partySize: 3,
+        specialRequests: "Veg only",
+        bookingDate: "2025-11-18",
+        bookingTime: "20:15",
+        status: "pending",       // won't show (not confirmed)
         fkRestaurantId: 1,
+        fkSeatingId: 5,
       },
-    ]);
-
-    await Promotions.bulkCreate([
-      // The Garden Bistro (fkRestaurantId: 2)
       {
-        // promotionId: auto by DB
+        confirmationCode: "BK4T0D4Y9D",
+        customerName: "Today Test 4",
+        customerEmail: "today4@email.com",
+        customerPhone: "+1-555-0004",
+        partySize: 2,
+        specialRequests: "Corner table",
+        bookingDate: "2025-11-18",
+        bookingTime: "17:45",
+        status: "confirmed",
         fkRestaurantId: 2,
-        termsNCond:
-          "Valid for dine-in only. Applicable to 3-course set menu from 5:00 PM to 6:30 PM, Monday to Thursday. Not valid on public holidays. Cannot be combined with other promotions.",
-        description: "Early Bird Dinner: 20% off our 3-course French set menu.",
-        startAt: "2025-11-01",
-        endAt: "2025-11-30",
-        discount: "20% off 3-course set menu",
-        isActive: true,
+        fkSeatingId: null,          // unassigned for restaurant 2
       },
       {
+        confirmationCode: "BK5T0D4Y9E",
+        customerName: "Today Test 5",
+        customerEmail: "today5@email.com",
+        customerPhone: "+1-555-0005",
+        partySize: 5,
+        specialRequests: "Birthday test",
+        bookingDate: "2025-11-18",
+        bookingTime: "19:00",
+        status: "confirmed",
         fkRestaurantId: 2,
-        termsNCond:
-          "Valid for dine-in only on Fridays and Saturdays from 6:00 PM onwards. Complimentary glass limited to one per guest with purchase of any main course. Guests must be of legal drinking age.",
-        description:
-          "Wine Pairing Night: Complimentary house wine with every main course.",
-        startAt: "2025-11-15",
-        endAt: "2025-12-31",
-        discount: "Free glass of house wine",
-        isActive: true,
+        fkSeatingId: null,       // UNASSIGNED for restaurant 2
+      },
+      {
+        confirmationCode: "BK6T0D4Y9F",
+        customerName: "Today Test 6",
+        customerEmail: "today6@email.com",
+        customerPhone: "+1-555-0006",
+        partySize: 3,
+        specialRequests: null,
+        bookingDate: "2025-11-18",
+        bookingTime: "20:30",
+        status: "pending",       // not confirmed
+        fkRestaurantId: 2,
+        fkSeatingId: 3,
       },
 
-      // Sakura Sushi & Grill (fkRestaurantId: 3)
-      {
-        fkRestaurantId: 3,
-        termsNCond:
-          "Valid for dine-in and takeaway from Monday to Friday. Discount applies to the lowest-priced roll. Not valid with lunch sets or other promotions.",
-        description:
-          "Sushi Lovers Deal: Buy 2 signature rolls, get 1 chef’s choice roll at 50% off.",
-        startAt: "2025-11-05",
-        endAt: "2025-12-05",
-        discount: "50% off 1 roll (with purchase of 2)",
-        isActive: true,
-      },
-      {
-        fkRestaurantId: 3,
-        termsNCond:
-          "Valid for dine-in only from 5:00 PM to 7:00 PM daily. Discount applies to yakitori skewers only. While stocks last.",
-        description:
-          "Yakitori Happy Hour: 30% off all skewers from 5:00 PM–7:00 PM.",
-        startAt: "2025-11-01",
-        endAt: "2025-11-30",
-        discount: "30% off yakitori skewers",
-        isActive: true,
-      },
-      // Mama Rosa's Trattoria (restaurantId: 4)
-      {
-        fkRestaurantId: 4,
-        termsNCond:
-          "Valid for dine-in only, Sunday to Thursday from 5:00 PM onwards. Complimentary pizza limited to one per table. Not valid on eve of public holidays and public holidays.",
-        description:
-          "Family Pasta Night: Free margherita pizza with any 2 pasta mains.",
-        startAt: "2025-11-10",
-        endAt: "2025-12-10",
-        discount: "Free margherita pizza",
-        isActive: false,
-      },
-      {
-        fkRestaurantId: 4,
-        termsNCond:
-          "Valid for dine-in only from 11:30 AM to 2:30 PM on weekdays. Not applicable to à la carte items. Service charge and taxes apply based on full price.",
-        description: "Lunch Special: 15% off all lunch set menus.",
-        startAt: "2025-11-01",
-        endAt: "2025-11-30",
-        discount: "15% off lunch sets",
-        isActive: false,
-      },
     ]);
 
     await Reviews.bulkCreate([
@@ -473,10 +464,12 @@ module.exports.LoadData = async () => {
     await Promotions.bulkCreate([
       {
         description: "20% off on all main courses",
+        //1st discount (do you mean discountCode)?
         discount: "LPRDINE20",
         startAt: "2024-11-01",
         endAt: "2024-11-30",
         termsNCond: "Valid for dine-in only. Not applicable to beverages.",
+        //2nd discount
         discount: "20%",
         fkRestaurantId: 1,
       },

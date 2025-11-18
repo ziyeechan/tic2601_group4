@@ -61,7 +61,7 @@ const Bookings = db.define(
     },
     fkSeatingId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: SeatingPlans,
         key: "seatingId",

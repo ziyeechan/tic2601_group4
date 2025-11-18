@@ -1,6 +1,6 @@
 const {
   findAllReviews,
-  findReviewsByPK,
+  findReviewsByID,
   findReviewsByRestaurantID,
   findReviewsByBookingID,
   createReviews,
@@ -14,6 +14,7 @@ module.exports.findAllReviews = async (req, res) => {
     return res.status(200).json(reviews);
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -25,13 +26,14 @@ module.exports.findReviewsByID = async (req, res) => {
         message: "Invalid Parameter",
       });
 
-    const review = await findReviewsByPK(reviewID);
+    const review = await findReviewsByID(reviewID);
 
     return res.status(200).json({
       review,
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -50,6 +52,7 @@ module.exports.findReviewsByRestaurantID = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -68,22 +71,23 @@ module.exports.findReviewsByBookingID = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
 module.exports.createReviews = async (req, res) => {
   try {
-    const { rating, comment, createdAt } = req.body;
+    const { rating, comment } = req.body;
     const restaurantID = parseInt(req.params.restaurantID);
     const bookingID = parseInt(req.params.bookingID);
 
-    if (isNaN(restaurantID) && isNaN(bookingID))
+    if (isNaN(restaurantID) || isNaN(bookingID))
       return res.status(400).json({
         message: "Invalid Parameter",
       });
 
 
-    if (!rating || !createdAt ) {
+    if (rating == null) {
       return res.status(400).json({
         message: "Missing Fields",
       });
@@ -92,7 +96,6 @@ module.exports.createReviews = async (req, res) => {
     const reviewInfo = {
       rating: rating,
       comment: comment,
-      createdAt: createdAt,
     };
     await createReviews(reviewInfo, bookingID, restaurantID);
 
@@ -101,12 +104,13 @@ module.exports.createReviews = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
 module.exports.updateReviews = async (req, res) => {
   try {
-    const { rating, comment, createdAt } = req.body;
+    const { rating, comment } = req.body;
     const reviewID = parseInt(req.params.reviewID);
 
     if (isNaN(reviewID))
@@ -114,7 +118,7 @@ module.exports.updateReviews = async (req, res) => {
         message: "Invalid Parameter",
       });
 
-    if (!rating || !createdAt ) {
+    if (rating == null) {
       return res.status(400).json({
         message: "Missing Fields",
       });
@@ -123,7 +127,6 @@ module.exports.updateReviews = async (req, res) => {
     const reviewInfo = {
       rating: rating,
       comment: comment,
-      createdAt: createdAt,
     };
 
     await updateReviews(reviewID, reviewInfo);
@@ -133,6 +136,7 @@ module.exports.updateReviews = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -152,5 +156,6 @@ module.exports.deleteReviews = async (req, res) => {
     });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server Error" });
   }
 };
