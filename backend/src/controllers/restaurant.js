@@ -81,7 +81,7 @@ module.exports.findRestaurantByID = async (req, res) => {
       });
 
     const restaurant = await findRestaurantByID(restaurantID);
-    const address = await findAddressByFK(restaurant.fkAddressId);
+    const address = await findAddressByID(restaurant.fkAddressId);
 
     return res.status(200).json({
       restaurant,

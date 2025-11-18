@@ -319,22 +319,6 @@ export default function App() {
           </div>
         );
 
-      case "restaurant-management":
-        return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
-            <RestaurantManagement
-              onBack={() => setCurrentView("home")}
-              onViewChange={setCurrentView}
-            />
-          </div>
-        );
-
       case "promotions":
         return (
           <div
@@ -395,6 +379,22 @@ export default function App() {
             <MyBookings
               autoFillEmail={lastBookingEmail}
               highlightConfirmationCode={lastConfirmationCode}
+            />
+          </div>
+        );
+      
+        case "restaurant-management":
+        return (
+          <div
+            className="container"
+            style={{
+              paddingTop: "var(--spacing-lg)",
+              paddingBottom: "var(--spacing-lg)",
+            }}
+          >
+            <RestaurantManagement
+              onBack={() => setCurrentView("analytics")}
+              onViewChange={setCurrentView}
             />
           </div>
         );
@@ -466,7 +466,11 @@ export default function App() {
           onClick={() => {
             const newRole = userRole === "customer" ? "admin" : "customer";
             setUserRole(newRole);
-            setCurrentView("home");
+            if (newRole === "admin") {
+              setCurrentView("analytics");
+            } else {
+              setCurrentView("home");
+            }
             alert(`Switched to ${newRole} view`);
           }}
         >
