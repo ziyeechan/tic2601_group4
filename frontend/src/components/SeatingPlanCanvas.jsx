@@ -4,7 +4,7 @@ export function SeatingPlanCanvas({
   getTableIcon,
   selectedTable,
   setSelectedTable,
-  isAddingTable
+  isAddingTable,
 }) {
   const today = new Date().toISOString().split("T")[0];
   const getTableColor = (status) => {
@@ -19,9 +19,7 @@ export function SeatingPlanCanvas({
   };
 
   const getTableStatus = (table) => {
-    const booking = bookings.find(
-      (b) => b.tableId === table.id && b.date === today
-    );
+    const booking = bookings.find((b) => b.tableId === table.id && b.date === today);
     if (booking && booking.status === "confirmed") return "occupied";
     if (!table.isAvailable) return "unavailable";
     return "available";
@@ -48,9 +46,7 @@ export function SeatingPlanCanvas({
     >
       {tables.map((table) => {
         const status = getTableStatus(table);
-        const booking = bookings.find(
-          (b) => b.tableId === table.seatingId && b.date === today
-        );
+        const booking = bookings.find((b) => b.tableId === table.seatingId && b.date === today);
         const isSelected = selectedTable?.seatingId === table.seatingId;
 
         return (

@@ -28,14 +28,7 @@ module.exports.createRestaurant = async (req, res) => {
       postalCode,
     } = req.body;
 
-    if (
-      !name ||
-      !cuisine ||
-      !addressLine1 ||
-      !country ||
-      !city ||
-      !postalCode
-    ) {
+    if (!name || !cuisine || !addressLine1 || !country || !city || !postalCode) {
       return res.status(400).json({
         message: "Missing Fields",
       });
@@ -57,9 +50,7 @@ module.exports.createRestaurant = async (req, res) => {
     return res.status(200).send("Restaurant has been successfully created");
   } catch (err) {
     console.log(err);
-    return res
-      .status(500)
-      .send("Something went wrong! Contact your local administrator");
+    return res.status(500).send("Something went wrong! Contact your local administrator");
   }
 };
 
@@ -142,7 +133,6 @@ module.exports.findRestaurantsByCity = async (req, res) => {
   }
 };
 
-
 module.exports.findRestaurantsByState = async (req, res) => {
   try {
     const state = req.params.state;
@@ -157,7 +147,6 @@ module.exports.findRestaurantsByState = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
 
 module.exports.updateRestaurant = async (req, res) => {
   try {
@@ -191,14 +180,7 @@ module.exports.updateRestaurant = async (req, res) => {
       };
 
       await updateRestaurant(restaurantID, formattedData);
-    } else if (
-      addressLine1 ||
-      addressLine2 ||
-      country ||
-      state ||
-      city ||
-      postalCode
-    ) {
+    } else if (addressLine1 || addressLine2 || country || state || city || postalCode) {
       const restaurant = await findRestaurantByID(restaurantID);
 
       const formattedData = {

@@ -21,39 +21,35 @@ import axios from "axios";
 
 export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClearFilters }) {
   const cuisineOptions = [
-    'All Cuisines',
-    'French',
-    'Italian',
-    'Japanese',
-    'Indian',
-    'Chinese',
-    'Mexican',
-    'Thai',
-    'American',
-    'Mediterranean'
+    "All Cuisines",
+    "French",
+    "Italian",
+    "Japanese",
+    "Indian",
+    "Chinese",
+    "Mexican",
+    "Thai",
+    "American",
+    "Mediterranean",
   ];
 
-  const menuTypeOptions = [
-    'Halal',
-    'Vegan',
-    'Vegetarian'
-  ];
+  const menuTypeOptions = ["Halal", "Vegan", "Vegetarian"];
 
   const reviewsOptions = [
-    { label: '5 stars', value: 5 },
-    { label: '4 stars', value: 4 },
-    { label: '3 stars', value: 3 },
+    { label: "5 stars", value: 5 },
+    { label: "4 stars", value: 4 },
+    { label: "3 stars", value: 3 },
   ];
 
   const promotionOptions = [
-    { label: 'All', value: '' },
-    { label: 'Show promotion only', value: 'Yes' },
+    { label: "All", value: "" },
+    { label: "Show promotion only", value: "Yes" },
   ];
 
   const handleFilterChange = (key, value) => {
     onFiltersChange({
       ...filters,
-      [key]: value
+      [key]: value,
     });
   };
 
@@ -85,7 +81,7 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClea
           <select
             id="cuisine"
             value={filters.cuisine}
-            onChange={(e) => handleFilterChange('cuisine', e.target.value)}
+            onChange={(e) => handleFilterChange("cuisine", e.target.value)}
           >
             {cuisineOptions.map((cuisine) => (
               <option key={cuisine} value={cuisine}>
@@ -98,27 +94,29 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClea
         {/* Reviews Filter */}
         <div className="form-group">
           <label htmlFor="reviews">⭐ Reviews</label>
-            <select
-              id="reviews"
-              value={filters.reviews || ""}
-              onChange={(e) => handleFilterChange('reviews', e.target.value ? Number(e.target.value) : '')}
-            >
-              <option value="">All Ratings</option>
-              {reviewsOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+          <select
+            id="reviews"
+            value={filters.reviews || ""}
+            onChange={(e) =>
+              handleFilterChange("reviews", e.target.value ? Number(e.target.value) : "")
+            }
+          >
+            <option value="">All Ratings</option>
+            {reviewsOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
-        
+
         {/* Promotion Filter */}
         <div className="form-group">
           <label htmlFor="promtion">🏷️ Promotion</label>
           <select
             id="promotion"
             value={filters.promotion}
-            onChange={(e) => handleFilterChange('promotion', e.target.value)}
+            onChange={(e) => handleFilterChange("promotion", e.target.value)}
           >
             {promotionOptions.map((opt) => (
               <option key={opt.label} value={opt.value}>
@@ -129,18 +127,12 @@ export function SearchFilters({ filters, onFiltersChange, onApplyFilters, onClea
         </div>
 
         {/* Apply Button */}
-        <button
-          className="btn btn-primary btn-full"
-          onClick={onApplyFilters}
-        >
+        <button className="btn btn-primary btn-full" onClick={onApplyFilters}>
           Apply Filters
         </button>
 
         {/* Clear Filters */}
-        <button
-          className="btn btn-primary btn-full"
-          onClick={onClearFilters}
-        >
+        <button className="btn btn-primary btn-full" onClick={onClearFilters}>
           Clear Filters
         </button>
       </div>

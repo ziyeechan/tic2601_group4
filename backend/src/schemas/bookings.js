@@ -47,15 +47,7 @@ const Bookings = db.define(
       default: "confirmed",
       validate: {
         isIn: [
-          [
-            "pending",
-            "confirmed",
-            "seated",
-            "completed",
-            "cancelled",
-            "no_show",
-            "cancelled",
-          ],
+          ["pending", "confirmed", "seated", "completed", "cancelled", "no_show", "cancelled"],
         ],
       },
     },

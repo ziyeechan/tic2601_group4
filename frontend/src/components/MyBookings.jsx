@@ -25,9 +25,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
   const today = new Date().toISOString().split("T")[0];
 
   const upcomingBookings = bookings.filter(
-    (b) =>
-      (b.status === "confirmed" || b.status === "pending") &&
-      b.bookingDate >= today
+    (b) => (b.status === "confirmed" || b.status === "pending") && b.bookingDate >= today
   );
 
   const pastBookings = bookings.filter(
@@ -92,8 +90,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
         setBookings([]);
       } else {
         const errorMessage =
-          error.response?.data?.message ||
-          "Failed to load bookings. Please try again.";
+          error.response?.data?.message || "Failed to load bookings. Please try again.";
         setMessage({
           type: "error",
           text: errorMessage,
@@ -122,8 +119,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       } catch (error) {
         console.error("Error cancelling booking:", error);
         const errorMessage =
-          error.response?.data?.message ||
-          "Failed to cancel booking. Please try again.";
+          error.response?.data?.message || "Failed to cancel booking. Please try again.";
         setMessage({
           type: "error",
           text: errorMessage,
@@ -168,8 +164,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       }
     } catch (error) {
       console.error("Error updating booking:", error);
-      const errorMessage =
-        error.response?.data?.message || "Failed to update booking.";
+      const errorMessage = error.response?.data?.message || "Failed to update booking.";
       setMessage({
         type: "error",
         text: errorMessage,
@@ -198,9 +193,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     setMessage(null);
 
     try {
-      const response = await bookingAPI.getBookingByCode(
-        searchCode.trim()
-      );
+      const response = await bookingAPI.getBookingByCode(searchCode.trim());
       // Backend returns { booking } - extract booking object
       const booking = response.data.booking;
       setBookings([booking]); // Wrap in array for consistent display
@@ -217,8 +210,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
         setBookings([]);
       } else {
         const errorMessage =
-          error.response?.data?.message ||
-          "Failed to load booking. Please try again.";
+          error.response?.data?.message || "Failed to load booking. Please try again.";
         setMessage({
           type: "error",
           text: errorMessage,
@@ -230,8 +222,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     }
   };
 
-  const displayBookings =
-    activeTab === "upcoming" ? upcomingBookings : pastBookings;
+  const displayBookings = activeTab === "upcoming" ? upcomingBookings : pastBookings;
 
   return (
     <div>
@@ -253,42 +244,30 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
             }}
           >
             <button
-              className={`tab-button ${
-                searchMode === "email" ? "active" : ""
-              }`}
+              className={`tab-button ${searchMode === "email" ? "active" : ""}`}
               onClick={() => setSearchMode("email")}
               style={{
                 border: "none",
                 background: "none",
                 padding: "8px 12px",
                 cursor: "pointer",
-                borderBottom:
-                  searchMode === "email" ? "2px solid var(--primary)" : "none",
-                color:
-                  searchMode === "email"
-                    ? "var(--primary)"
-                    : "var(--text-muted)",
+                borderBottom: searchMode === "email" ? "2px solid var(--primary)" : "none",
+                color: searchMode === "email" ? "var(--primary)" : "var(--text-muted)",
                 fontWeight: searchMode === "email" ? "600" : "normal",
               }}
             >
               📧 Search by Email
             </button>
             <button
-              className={`tab-button ${
-                searchMode === "code" ? "active" : ""
-              }`}
+              className={`tab-button ${searchMode === "code" ? "active" : ""}`}
               onClick={() => setSearchMode("code")}
               style={{
                 border: "none",
                 background: "none",
                 padding: "8px 12px",
                 cursor: "pointer",
-                borderBottom:
-                  searchMode === "code" ? "2px solid var(--primary)" : "none",
-                color:
-                  searchMode === "code"
-                    ? "var(--primary)"
-                    : "var(--text-muted)",
+                borderBottom: searchMode === "code" ? "2px solid var(--primary)" : "none",
+                color: searchMode === "code" ? "var(--primary)" : "var(--text-muted)",
                 fontWeight: searchMode === "code" ? "600" : "normal",
               }}
             >
@@ -347,9 +326,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                   id="searchCode"
                   type="text"
                   value={searchCode}
-                  onChange={(e) =>
-                    setSearchCode(e.target.value.toUpperCase())
-                  }
+                  onChange={(e) => setSearchCode(e.target.value.toUpperCase())}
                   placeholder="Enter your confirmation code (e.g., ABC123XYZ)"
                   required
                 />
@@ -371,11 +348,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       </div>
 
       {/* Messages */}
-      {message && (
-        <div className={`alert alert-${message.type} mb-lg`}>
-          {message.text}
-        </div>
-      )}
+      {message && <div className={`alert alert-${message.type} mb-lg`}>{message.text}</div>}
 
       {/* Tabs */}
       <div className="tabs mb-lg">
@@ -407,23 +380,13 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
           {displayBookings.map((booking) => (
             <div key={booking.bookingId} className="card">
               <div className="card-content">
-                <div
-                  className="flex-between mb-md"
-                  style={{ alignItems: "flex-start" }}
-                >
+                <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
                   <div>
-                    <h4
-                      style={{ margin: 0, marginBottom: "var(--spacing-sm)" }}
-                    >
-                      {booking.restaurant?.restaurantName ||
-                        booking.restaurantName ||
-                        "Restaurant"}
+                    <h4 style={{ margin: 0, marginBottom: "var(--spacing-sm)" }}>
+                      {booking.restaurant?.restaurantName || booking.restaurantName || "Restaurant"}
                     </h4>
-                    <span
-                      className={`badge ${getStatusBadgeClass(booking.status)}`}
-                    >
-                      {booking.status.charAt(0).toUpperCase() +
-                        booking.status.slice(1)}
+                    <span className={`badge ${getStatusBadgeClass(booking.status)}`}>
+                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                     </span>
                   </div>
                   <div
@@ -466,50 +429,32 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                   }}
                 >
                   <div>
-                    <span
-                      className="text-muted"
-                      style={{ fontSize: "12px", display: "block" }}
-                    >
+                    <span className="text-muted" style={{ fontSize: "12px", display: "block" }}>
                       📅 Date & Time
                     </span>
                     <p style={{ fontWeight: "600", margin: 0 }}>
-                      {new Date(booking.bookingDate).toLocaleDateString()} at{" "}
-                      {booking.bookingTime}
+                      {new Date(booking.bookingDate).toLocaleDateString()} at {booking.bookingTime}
                     </p>
                   </div>
                   <div>
-                    <span
-                      className="text-muted"
-                      style={{ fontSize: "12px", display: "block" }}
-                    >
+                    <span className="text-muted" style={{ fontSize: "12px", display: "block" }}>
                       👥 Party Size
                     </span>
                     <p style={{ fontWeight: "600", margin: 0 }}>
-                      {booking.partySize}{" "}
-                      {booking.partySize === 1 ? "person" : "people"}
+                      {booking.partySize} {booking.partySize === 1 ? "person" : "people"}
                     </p>
                   </div>
                   <div>
-                    <span
-                      className="text-muted"
-                      style={{ fontSize: "12px", display: "block" }}
-                    >
+                    <span className="text-muted" style={{ fontSize: "12px", display: "block" }}>
                       📞 Phone
                     </span>
-                    <p style={{ fontWeight: "600", margin: 0 }}>
-                      {booking.customerPhone}
-                    </p>
+                    <p style={{ fontWeight: "600", margin: 0 }}>{booking.customerPhone}</p>
                   </div>
                   <div>
-                    <span
-                      className="text-muted"
-                      style={{ fontSize: "12px", display: "block" }}
-                    >
+                    <span className="text-muted" style={{ fontSize: "12px", display: "block" }}>
                       📧 Email
                     </span>
-                    <p style={{ fontWeight: "600", margin: 0 }}>
-                      {booking.customerEmail}
-                    </p>
+                    <p style={{ fontWeight: "600", margin: 0 }}>{booking.customerEmail}</p>
                   </div>
                 </div>
 
@@ -522,10 +467,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                       borderTop: "1px solid var(--border-color)",
                     }}
                   >
-                    <span
-                      className="text-muted"
-                      style={{ fontSize: "12px", display: "block" }}
-                    >
+                    <span className="text-muted" style={{ fontSize: "12px", display: "block" }}>
                       💬 Special Requests
                     </span>
                     <p style={{ margin: 0 }}>{booking.specialRequests}</p>
@@ -556,35 +498,32 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                     borderTop: "1px solid var(--border-color)",
                   }}
                 >
-                  <h5 style={{ margin: 0, marginBottom: "var(--spacing-md)" }}>
-                    Edit Booking
-                  </h5>
+                  <h5 style={{ margin: 0, marginBottom: "var(--spacing-md)" }}>Edit Booking</h5>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--spacing-md)", marginBottom: "var(--spacing-md)" }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "var(--spacing-md)",
+                      marginBottom: "var(--spacing-md)",
+                    }}
+                  >
                     <div>
-                      <label htmlFor={`edit-date-${booking.bookingId}`}>
-                        📅 Date
-                      </label>
+                      <label htmlFor={`edit-date-${booking.bookingId}`}>📅 Date</label>
                       <input
                         id={`edit-date-${booking.bookingId}`}
                         type="date"
                         value={editFormData.date}
-                        onChange={(e) =>
-                          setEditFormData({ ...editFormData, date: e.target.value })
-                        }
+                        onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
                       />
                     </div>
 
                     <div>
-                      <label htmlFor={`edit-time-${booking.bookingId}`}>
-                        🕐 Time
-                      </label>
+                      <label htmlFor={`edit-time-${booking.bookingId}`}>🕐 Time</label>
                       <select
                         id={`edit-time-${booking.bookingId}`}
                         value={editFormData.time}
-                        onChange={(e) =>
-                          setEditFormData({ ...editFormData, time: e.target.value })
-                        }
+                        onChange={(e) => setEditFormData({ ...editFormData, time: e.target.value })}
                       >
                         <option value="">Select a time</option>
                         {generateTimeSlots(
@@ -599,9 +538,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                     </div>
 
                     <div>
-                      <label htmlFor={`edit-party-size-${booking.bookingId}`}>
-                        👥 Party Size
-                      </label>
+                      <label htmlFor={`edit-party-size-${booking.bookingId}`}>👥 Party Size</label>
                       <select
                         id={`edit-party-size-${booking.bookingId}`}
                         value={editFormData.partySize}
@@ -660,14 +597,8 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
 
               {/* Action Buttons - Only for upcoming bookings */}
               {activeTab === "upcoming" && editingBookingId !== booking.bookingId && (
-                <div
-                  className="card-footer"
-                  style={{ display: "flex", gap: "var(--spacing-sm)" }}
-                >
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => handleEdit(booking)}
-                  >
+                <div className="card-footer" style={{ display: "flex", gap: "var(--spacing-sm)" }}>
+                  <button className="btn btn-secondary" onClick={() => handleEdit(booking)}>
                     ✏️ Edit
                   </button>
                   <button

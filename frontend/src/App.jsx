@@ -49,7 +49,7 @@ export default function App() {
       restaurantAPI.getAllRestaurants(),
       addressAPI.getAllAddresses(),
       promotionAPI.getAllPromotions(),
-      reviewAPI.getAllReviews()
+      reviewAPI.getAllReviews(),
     ])
       .then(([resRestaurants, resAddresses, resPromotions, resReviews]) => {
         const restaurantList = resRestaurants.data;
@@ -70,16 +70,12 @@ export default function App() {
           );
 
           // Extract valid ratings
-          const ratings = reviewsForThis
-            .map((r) => Number(r.rating))
-            .filter((r) => !isNaN(r));
+          const ratings = reviewsForThis.map((r) => Number(r.rating)).filter((r) => !isNaN(r));
 
           // Calculate average rating
           const reviewCount = ratings.length;
           const averageRating =
-            reviewCount > 0
-              ? ratings.reduce((sum, r) => sum + r, 0) / reviewCount
-              : 0;
+            reviewCount > 0 ? ratings.reduce((sum, r) => sum + r, 0) / reviewCount : 0;
 
           // Find matching address
           const restaurantAddress = addressList.find(
@@ -119,9 +115,7 @@ export default function App() {
   const handleRestaurantSelect = async (restaurant) => {
     try {
       // Fetch detailed restaurant info with address
-      const response = await restaurantAPI.getRestaurantById(
-        restaurant.restaurantId
-      );
+      const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
       const { restaurant: restaurantData, address } = response.data;
 
       // Combine restaurant data with address information
@@ -144,9 +138,7 @@ export default function App() {
   const handleBookNow = async (restaurant) => {
     try {
       // Fetch detailed restaurant info with address
-      const response = await restaurantAPI.getRestaurantById(
-        restaurant.restaurantId
-      );
+      const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
       const { restaurant: restaurantData, address } = response.data;
 
       // Combine restaurant data with address information
@@ -195,27 +187,22 @@ export default function App() {
         const stateMatch = (address?.state || "").toLowerCase().includes(term);
         const countryMatch = (address?.country || "").toLowerCase().includes(term);
 
-        return (nameMatch || cityMatch || stateMatch || countryMatch);
+        return nameMatch || cityMatch || stateMatch || countryMatch;
       });
     }
 
     //Cuisine filter
     if (filters.cuisine !== "All Cuisines") {
-      filtered = filtered.filter(
-        (restaurant) => restaurant.cuisine === filters.cuisine
-      );
+      filtered = filtered.filter((restaurant) => restaurant.cuisine === filters.cuisine);
     }
 
     //Rating filter
-     if (filters.reviews) {
-        const selected = Number(filters.reviews);
-        filtered = filtered.filter((r) =>
-          r.reviewCount > 0 &&
-          r.averageRating >= selected &&
-          r.averageRating < selected + 1
-        );
+    if (filters.reviews) {
+      const selected = Number(filters.reviews);
+      filtered = filtered.filter(
+        (r) => r.reviewCount > 0 && r.averageRating >= selected && r.averageRating < selected + 1
+      );
     }
-  
 
     //Promotion filter
     if (filters.promotion === "Yes") {
@@ -231,9 +218,7 @@ export default function App() {
           .map((promo) => promo.fkRestaurantId)
       );
 
-      filtered = filtered.filter((restaurant) =>
-        promoRestaurantIds.has(restaurant.restaurantId)
-      );
+      filtered = filtered.filter((restaurant) => promoRestaurantIds.has(restaurant.restaurantId));
     }
 
     setFilteredRestaurants(filtered);
@@ -354,10 +339,7 @@ export default function App() {
               paddingBottom: "var(--spacing-lg)",
             }}
           >
-            <Promotions
-              onBack={() => setCurrentView("home")}
-              restaurantId={selectedRestaurantId}
-            />
+            <Promotions onBack={() => setCurrentView("home")} restaurantId={selectedRestaurantId} />
           </div>
         );
 
@@ -370,9 +352,7 @@ export default function App() {
               paddingBottom: "var(--spacing-lg)",
             }}
           >
-            <AllPromotions
-              onBack={() => setCurrentView("home")}
-            />
+            <AllPromotions onBack={() => setCurrentView("home")} />
           </div>
         );
 
@@ -426,22 +406,6 @@ export default function App() {
             />
           </div>
         );
-      
-        case "restaurant-management":
-        return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
-            <RestaurantManagement
-              onBack={() => setCurrentView("analytics")}
-              onViewChange={setCurrentView}
-            />
-          </div>
-        );
 
       case "admin-bookings":
         return (
@@ -488,23 +452,13 @@ export default function App() {
   };
 
   return (
-    <div
-      style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}
-    >
-      <Header
-        currentView={currentView}
-        onViewChange={handleViewChange}
-        userRole={userRole}
-      />
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <Header currentView={currentView} onViewChange={handleViewChange} userRole={userRole} />
 
-      <main style={{ flex: 1, minHeight: "calc(100vh - 80px)" }}>
-        {renderCurrentView()}
-      </main>
+      <main style={{ flex: 1, minHeight: "calc(100vh - 80px)" }}>{renderCurrentView()}</main>
 
       {/* Role Switcher for Demo */}
-      <div
-        style={{ position: "fixed", bottom: "16px", right: "16px", zIndex: 50 }}
-      >
+      <div style={{ position: "fixed", bottom: "16px", right: "16px", zIndex: 50 }}>
         <button
           className="btn btn-primary"
           onClick={() => {

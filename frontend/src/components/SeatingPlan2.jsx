@@ -170,9 +170,7 @@ export function SeatingPlan() {
   return (
     refresh && (
       <div>
-        <h2 style={{ marginBottom: "var(--spacing-lg)" }}>
-          🪑 Seating Plan Management
-        </h2>
+        <h2 style={{ marginBottom: "var(--spacing-lg)" }}>🪑 Seating Plan Management</h2>
 
         <div
           style={{
@@ -344,16 +342,12 @@ export function SeatingPlan() {
                       required
                     />
                   </TextContainer>
-                  {bookings.find(
-                    (b) => b.tableId === selectedTable.id && b.date === today
-                  ) && (
+                  {bookings.find((b) => b.tableId === selectedTable.id && b.date === today) && (
                     <TextContainer
                       text="Current Booking"
                       data={
-                        bookings.find(
-                          (b) =>
-                            b.tableId === selectedTable.id && b.date === today
-                        )?.customerName
+                        bookings.find((b) => b.tableId === selectedTable.id && b.date === today)
+                          ?.customerName
                       }
                     />
                   )}
@@ -392,17 +386,13 @@ export function SeatingPlan() {
                         <button
                           className="btn btn-secondary btn-full"
                           style={{ border: "1px solid var(--border-color)" }}
-                          onClick={() =>
-                            submitEditTable(selectedTable.seatingId)
-                          }
+                          onClick={() => submitEditTable(selectedTable.seatingId)}
                         >
                           ✏️ Edit
                         </button>
                         <button
                           className="btn btn-danger btn-full"
-                          onClick={() =>
-                            handleDeleteTable(selectedTable.seatingId)
-                          }
+                          onClick={() => handleDeleteTable(selectedTable.seatingId)}
                         >
                           🗑️ Delete Table
                         </button>
@@ -436,12 +426,8 @@ export function SeatingPlan() {
                           cursor: "pointer",
                           transition: "background 0.2s",
                         }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background = "var(--bg-light)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background = "white")
-                        }
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-light)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "white")}
                       >
                         <p
                           style={{
@@ -452,10 +438,7 @@ export function SeatingPlan() {
                         >
                           {booking.customerName}
                         </p>
-                        <p
-                          className="text-muted"
-                          style={{ margin: 0, fontSize: "12px" }}
-                        >
+                        <p className="text-muted" style={{ margin: 0, fontSize: "12px" }}>
                           {booking.time} • {booking.partySize} people
                         </p>
                         <button
@@ -475,10 +458,7 @@ export function SeatingPlan() {
                     ))}
                   </div>
                 ) : (
-                  <p
-                    className="text-muted"
-                    style={{ margin: 0, fontSize: "14px" }}
-                  >
+                  <p className="text-muted" style={{ margin: 0, fontSize: "14px" }}>
                     No unassigned bookings for today
                   </p>
                 )}
@@ -507,8 +487,7 @@ export function SeatingPlan() {
               <Card.Header title="Assign Table" />
               <Card.Content>
                 <p className="mb-md">
-                  Assign a table for{" "}
-                  <strong>{selectedBooking.customerName}</strong> (
+                  Assign a table for <strong>{selectedBooking.customerName}</strong> (
                   {selectedBooking.partySize} people)?
                 </p>
                 <div className="form-group mb-lg">
@@ -521,11 +500,7 @@ export function SeatingPlan() {
                     }}
                   >
                     {tables
-                      .filter(
-                        (t) =>
-                          t.isAvailable &&
-                          t.capacity >= selectedBooking.partySize
-                      )
+                      .filter((t) => t.isAvailable && t.capacity >= selectedBooking.partySize)
                       .map((table) => (
                         <button
                           key={table.id}
@@ -539,10 +514,7 @@ export function SeatingPlan() {
                           <span>
                             Table {table.number} {getTableIcon(table.type)}
                           </span>
-                          <span
-                            className="text-muted"
-                            style={{ fontSize: "12px" }}
-                          >
+                          <span className="text-muted" style={{ fontSize: "12px" }}>
                             {table.capacity} seats
                           </span>
                         </button>

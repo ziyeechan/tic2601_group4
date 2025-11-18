@@ -13,10 +13,7 @@ module.exports = (router) => {
   );
 
   // Endpoint to get all seating plans for restaurantId
-  router.get(
-    "/seating/:restaurantID",
-    seatingController.findSeatingPlanByRestaurantID
-  );
+  router.get("/seating/:restaurantID", seatingController.findSeatingPlanByRestaurantID);
 
   // Endpoint to get seating plan by seatingId
   router.get("/seating/id/:seatingID", seatingController.findSeatingPlanByID);

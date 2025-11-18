@@ -9,9 +9,7 @@ const addressRoutes = require("./addressRoutes");
 module.exports = (router) => {
   // Default Endpoint
   router.get("/", (req, res) => {
-    res
-      .status(200)
-      .send("Makan Time APIs are online and functioning properly!");
+    res.status(200).send("Makan Time APIs are online and functioning properly!");
   });
 
   // Aggregate all routes
@@ -21,5 +19,5 @@ module.exports = (router) => {
   promotionRoutes(router);
   reviewRoutes(router);
   analyticsRoutes(router);
-  // addressRoutes(router);
+  addressRoutes(router);
 };
