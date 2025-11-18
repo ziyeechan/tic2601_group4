@@ -27,6 +27,8 @@ module.exports.createSeatingPlan = async (seatingInfo, restaurantID) => {
     pax: seatingInfo.pax,
     tableType: seatingInfo.tableType,
     tableNumber: seatingInfo.tableNumber,
+    x: seatingInfo.x,
+    y: seatingInfo.y, 
     fkRestaurantId: restaurantID,
   });
 };

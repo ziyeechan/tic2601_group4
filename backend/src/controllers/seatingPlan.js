@@ -14,14 +14,14 @@ module.exports.createSeatingPlan = async (req, res) => {
       return res.status(400).json({
         message: "Invalid Parameter",
       });
-    const { pax, tableType, tableNumber } = req.body;
+    const { pax, tableType, tableNumber, x, y, isAvailable } = req.body;
 
     //Check if pax, tableType, tableNumber are present
-    if (!pax || !tableType || !tableNumber) {
+    if (!pax || !tableType || !tableNumber || x == null || y == null) {
       return res.status(400).json({ message: "Missing Fields" });
     }
 
-    const seatingInfo = { pax, tableType, tableNumber };
+    const seatingInfo = { pax, tableType, tableNumber, x, y, isAvailable };
     await createSeatingPlan(seatingInfo, restaurantID);
     return res
       .status(200)
@@ -110,21 +110,25 @@ module.exports.updateSeatingPlanByID = async (req, res) => {
         message: "Invalid Parameter",
       });
 
-    const { pax, tableNumber, tableType, isAvailable } = req.body;
-    
-    if (pax || tableNumber || tableType || isAvailable) {
-      const formattedData = {
-        pax: pax,
-        tableType: tableType,
-        tableNumber: tableNumber,
-        isAvailable: isAvailable,
-      };
+    const { pax, tableNumber, tableType, isAvailable, x, y } = req.body;
 
-      await updateSeatingPlanByID(seatingID, formattedData);
-      return res
-        .status(200)
-        .send("New Seating Plan has been successfully updated");
+    const formattedData = {};
+
+    if (pax != null) formattedData.pax = pax;
+    if (tableNumber != null) formattedData.tableNumber = tableNumber;
+    if (tableType != null) formattedData.tableType = tableType;
+    if (isAvailable != null) formattedData.isAvailable = isAvailable;
+    if (x != null) formattedData.x = x;
+    if (y != null) formattedData.y = y;
+
+    if (Object.keys(formattedData).length === 0) {
+      return res.status(400).json({ message: "No fields to update" });
     }
+
+    await updateSeatingPlanByID(seatingID, formattedData);
+    return res
+      .status(200)
+      .send("New Seating Plan has been successfully updated");
   } catch (err) {
     console.log(err);
     return res

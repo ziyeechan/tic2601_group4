@@ -119,6 +119,8 @@ module.exports.LoadData = async () => {
         tableNumber: "T1",
         isAvailable: false, // Currently booked
         fkRestaurantId: 1,
+        x: 120,
+        y: 80,
       },
       {
         pax: 4,
@@ -126,6 +128,8 @@ module.exports.LoadData = async () => {
         tableNumber: "T2",
         isAvailable: true,
         fkRestaurantId: 1,
+        x: 220,
+        y: 80,
       },
       {
         pax: 6,
@@ -133,6 +137,8 @@ module.exports.LoadData = async () => {
         tableNumber: "VIP-1",
         isAvailable: true,
         fkRestaurantId: 1,
+        x: 420,
+        y: 200,
       },
       {
         pax: 2,
@@ -140,6 +146,8 @@ module.exports.LoadData = async () => {
         tableNumber: "PATIO-1",
         isAvailable: true,
         fkRestaurantId: 1,
+        x: 80,
+        y: 260,
       },
       {
         pax: 4,
@@ -147,6 +155,8 @@ module.exports.LoadData = async () => {
         tableNumber: "T1",
         isAvailable: false, // Currently booked
         fkRestaurantId: 2,
+        x: 140,
+        y: 100,
       },
     ]);
 
@@ -178,7 +188,6 @@ module.exports.LoadData = async () => {
         fkSeatingId: 3,
       },
       {
-        // BACKEND FIELDS
         confirmationCode: "BK7R2W5T8Q",
         customerName: "Michael Chen",
         customerEmail: "michael.chen@email.com",
@@ -347,6 +356,87 @@ module.exports.LoadData = async () => {
         fkRestaurantId: 2,
         fkSeatingId: 5,
       },
+
+      // For testing seating plan
+      {
+        confirmationCode: "BK1T0D4Y9A",
+        customerName: "Today Test 1",
+        customerEmail: "today1@email.com",
+        customerPhone: "+1-555-0001",
+        partySize: 2,
+        specialRequests: "Testing seating plan",
+        bookingDate: "2025-11-18",
+        bookingTime: "18:00",
+        status: "confirmed",
+        fkRestaurantId: 1,
+        fkSeatingId: 1,          // assigned (shows as OCCUPIED on table 1)
+      },
+      {
+        confirmationCode: "BK2T0D4Y9B",
+        customerName: "Today Test 2",
+        customerEmail: "today2@email.com",
+        customerPhone: "+1-555-0002",
+        partySize: 4,
+        specialRequests: null,
+        bookingDate: "2025-11-18",
+        bookingTime: "19:30",
+        status: "confirmed",
+        fkRestaurantId: 1,
+        fkSeatingId: null,       // UNASSIGNED for restaurant 1
+      },
+      {
+        confirmationCode: "BK3T0D4Y9C",
+        customerName: "Today Test 3",
+        customerEmail: "today3@email.com",
+        customerPhone: "+1-555-0003",
+        partySize: 3,
+        specialRequests: "Veg only",
+        bookingDate: "2025-11-18",
+        bookingTime: "20:15",
+        status: "pending",       // won't show (not confirmed)
+        fkRestaurantId: 1,
+        fkSeatingId: 5,
+      },
+      {
+        confirmationCode: "BK4T0D4Y9D",
+        customerName: "Today Test 4",
+        customerEmail: "today4@email.com",
+        customerPhone: "+1-555-0004",
+        partySize: 2,
+        specialRequests: "Corner table",
+        bookingDate: "2025-11-18",
+        bookingTime: "17:45",
+        status: "confirmed",
+        fkRestaurantId: 2,
+        fkSeatingId: 5,          // assigned (shows on table 5)
+      },
+      {
+        confirmationCode: "BK5T0D4Y9E",
+        customerName: "Today Test 5",
+        customerEmail: "today5@email.com",
+        customerPhone: "+1-555-0005",
+        partySize: 5,
+        specialRequests: "Birthday test",
+        bookingDate: "2025-11-18",
+        bookingTime: "19:00",
+        status: "confirmed",
+        fkRestaurantId: 2,
+        fkSeatingId: null,       // UNASSIGNED for restaurant 2
+      },
+      {
+        confirmationCode: "BK6T0D4Y9F",
+        customerName: "Today Test 6",
+        customerEmail: "today6@email.com",
+        customerPhone: "+1-555-0006",
+        partySize: 3,
+        specialRequests: null,
+        bookingDate: "2025-11-18",
+        bookingTime: "20:30",
+        status: "pending",       // not confirmed
+        fkRestaurantId: 2,
+        fkSeatingId: 3,
+      },
+
     ]);
 
     await Reviews.bulkCreate([
@@ -379,10 +469,12 @@ module.exports.LoadData = async () => {
     await Promotions.bulkCreate([
       {
         description: "20% off on all main courses",
+        //1st discount (do you mean discountCode)?
         discount: "LPRDINE20",
         startAt: "2024-11-01",
         endAt: "2024-11-30",
         termsNCond: "Valid for dine-in only. Not applicable to beverages.",
+        //2nd discount
         discount: "20%",
         fkRestaurantId: 1,
       },

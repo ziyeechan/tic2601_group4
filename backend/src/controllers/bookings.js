@@ -419,8 +419,9 @@ module.exports.updateBooking = async (req, res) => {
       "customerPhone",
       "partySize",
       "specialRequests",
-      "date",
-      "time",
+      "bookingDate",
+      "bookingTime",
+      "fkSeatingId"
     ];
 
     const filteredData = {};
