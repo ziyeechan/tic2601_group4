@@ -1,6 +1,6 @@
 export function Card({ children, className = "", styles }) {
   return (
-    <div className={`card mb-lg ${className}`} style={styles}>
+    <div className={`card ${className}`} style={styles}>
       {children}
     </div>
   );
@@ -15,12 +15,12 @@ Card.Header = function Header({ children, className, title }) {
   );
 };
 
-Card.Content = function Content({ children, className }) {
-  return <div className={`card-content ${className}`}>{children}</div>;
+Card.Content = function Content({ children, className, styles }) {
+  return <div className={`card-content ${className}`} style={styles}>{children}</div>;
 };
 
-Card.Footer = function Footer({ children, className }) {
-  return <div className={`card-footer ${className}`}>{children}</div>;
+Card.Footer = function Footer({ children, className, styles }) {
+  return <div className={`card-footer ${className}`} style={styles}>{children}</div>;
 };
 
 export function TextContainer({ children, text, data }) {

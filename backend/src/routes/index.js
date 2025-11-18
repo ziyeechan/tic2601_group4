@@ -21,5 +21,5 @@ module.exports = (router) => {
   promotionRoutes(router);
   reviewRoutes(router);
   analyticsRoutes(router);
-  // addressRoutes(router);
+  addressRoutes(router);
 };
