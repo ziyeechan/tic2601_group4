@@ -153,7 +153,7 @@ module.exports.LoadData = async () => {
         pax: 4,
         tableType: "indoor",
         tableNumber: "T1",
-        isAvailable: false, // Currently booked
+        isAvailable: true,
         fkRestaurantId: 2,
         x: 140,
         y: 100,
@@ -168,11 +168,11 @@ module.exports.LoadData = async () => {
         customerPhone: "+1-555-1234",
         partySize: 2,
         specialRequests: "Window table preferred",
-        bookingDate: "2024-12-15",
+        bookingDate: "2025-11-18",
         bookingTime: "19:00", // TIME format (24-hour)
         status: "confirmed",
         fkRestaurantId: 1,
-        fkSeatingId: 1,
+        fkSeatingId: null,
       },
       {
         confirmationCode: "BK4N5M3P9X",
@@ -181,11 +181,11 @@ module.exports.LoadData = async () => {
         customerPhone: "+1-555-5678",
         partySize: 4,
         specialRequests: null,
-        bookingDate: "2024-12-16",
-        bookingTime: "18:30", // TIME format (24-hour)
+        bookingDate: "2025-11-18",
+        bookingTime: "19:00", // TIME format (24-hour)
         status: "pending",
         fkRestaurantId: 1,
-        fkSeatingId: 3,
+        fkSeatingId: null,
       },
       {
         confirmationCode: "BK7R2W5T8Q",
@@ -194,11 +194,11 @@ module.exports.LoadData = async () => {
         customerPhone: "+1-555-9012",
         partySize: 3,
         specialRequests: "Vegetarian options required",
-        bookingDate: "2024-12-17",
-        bookingTime: "17:30", // TIME format (24-hour)
+        bookingDate: "2025-11-18",
+        bookingTime: "19:00", // TIME format (24-hour)
         status: "confirmed",
         fkRestaurantId: 1,
-        fkSeatingId: 5,
+        fkSeatingId: null,
       },
       {
         confirmationCode: "BK8A1B2C3D",
@@ -276,7 +276,7 @@ module.exports.LoadData = async () => {
         bookingTime: "18:45",
         status: "confirmed",
         fkRestaurantId: 2,
-        fkSeatingId: 5,
+        fkSeatingId: null,
       },
       {
         confirmationCode: "BK5Y6Z7A8B",
@@ -408,7 +408,7 @@ module.exports.LoadData = async () => {
         bookingTime: "17:45",
         status: "confirmed",
         fkRestaurantId: 2,
-        fkSeatingId: 5,          // assigned (shows on table 5)
+        fkSeatingId: null,          // unassigned for restaurant 2
       },
       {
         confirmationCode: "BK5T0D4Y9E",
