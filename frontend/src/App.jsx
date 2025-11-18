@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import "./styles.css";
-import {
-  restaurantAPI,
-  promotionAPI,
-  reviewAPI,
-  addressAPI,
-} from "./utils/api";
+import { restaurantAPI, promotionAPI, reviewAPI, addressAPI } from "./utils/api";
 import { Header } from "./components/Header";
 import { RestaurantCard } from "./components/RestaurantCard";
 import { SearchFilters } from "./components/SearchFilters";
@@ -54,7 +49,7 @@ export default function App() {
       restaurantAPI.getAllRestaurants(),
       addressAPI.getAllAddresses(),
       promotionAPI.getAllPromotions(),
-      reviewAPI.getAllReviews(),
+      reviewAPI.getAllReviews()
     ])
       .then(([resRestaurants, resAddresses, resPromotions, resReviews]) => {
         const restaurantList = resRestaurants.data;
@@ -192,19 +187,15 @@ export default function App() {
       const term = filters.search.trim().toLowerCase();
 
       filtered = filtered.filter((restaurant) => {
-        const nameMatch = (restaurant.restaurantName || "")
-          .toLowerCase()
-          .includes(term);
+        const nameMatch = (restaurant.restaurantName || "").toLowerCase().includes(term);
 
         const address = restaurant.address;
 
         const cityMatch = (address?.city || "").toLowerCase().includes(term);
         const stateMatch = (address?.state || "").toLowerCase().includes(term);
-        const countryMatch = (address?.country || "")
-          .toLowerCase()
-          .includes(term);
+        const countryMatch = (address?.country || "").toLowerCase().includes(term);
 
-        return nameMatch || cityMatch || stateMatch || countryMatch;
+        return (nameMatch || cityMatch || stateMatch || countryMatch);
       });
     }
 
@@ -216,15 +207,15 @@ export default function App() {
     }
 
     //Rating filter
-    if (filters.reviews) {
-      const selected = Number(filters.reviews);
-      filtered = filtered.filter(
-        (r) =>
+     if (filters.reviews) {
+        const selected = Number(filters.reviews);
+        filtered = filtered.filter((r) =>
           r.reviewCount > 0 &&
           r.averageRating >= selected &&
           r.averageRating < selected + 1
-      );
+        );
     }
+  
 
     //Promotion filter
     if (filters.promotion === "Yes") {
@@ -337,6 +328,23 @@ export default function App() {
           </div>
         );
 
+      case "restaurant-management":
+        return (
+          <div
+            className="container"
+            style={{
+              paddingTop: "var(--spacing-lg)",
+              paddingBottom: "var(--spacing-lg)",
+            }}
+          >
+            <RestaurantManagement
+              onBack={() => setCurrentView("home")}
+              onViewChange={setCurrentView}
+              restaurantId={selectedRestaurantId}
+            />
+          </div>
+        );
+
       case "promotions":
         return (
           <div
@@ -362,7 +370,9 @@ export default function App() {
               paddingBottom: "var(--spacing-lg)",
             }}
           >
-            <AllPromotions onBack={() => setCurrentView("home")} />
+            <AllPromotions
+              onBack={() => setCurrentView("home")}
+            />
           </div>
         );
 
@@ -416,8 +426,8 @@ export default function App() {
             />
           </div>
         );
-
-      case "restaurant-management":
+      
+        case "restaurant-management":
         return (
           <div
             className="container"
@@ -429,7 +439,6 @@ export default function App() {
             <RestaurantManagement
               onBack={() => setCurrentView("analytics")}
               onViewChange={setCurrentView}
-              restaurantId={selectedRestaurantId}
             />
           </div>
         );

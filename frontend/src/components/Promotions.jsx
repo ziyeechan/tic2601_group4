@@ -99,136 +99,135 @@ export function AllPromotions({ onBack }) {
               }}
             >
               {activePromos.map((promo) => (
-                <>
-                  <Card
-                    key={promo.id}
-                    styles={{ borderLeft: "4px solid var(--success)" }}
-                  >
-                    <Card.Content>
-                      <div className="mb-md">
-                        <h5
-                          style={{
-                            margin: 0,
-                            marginBottom: "var(--spacing-xs)",
-                            color: "var(--primary)",
-                          }}
-                        >
-                          {promo.restaurantName}
-                        </h5>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontWeight: "600",
-                            color: "var(--success)",
-                          }}
-                        >
-                          {promo.description}
-                        </p>
-                      </div>
-
-                      <div
-                        className="mb-md"
+                <div
+                  key={promo.id}
+                  className="card"
+                  style={{ borderLeft: "4px solid var(--success)" }}
+                >
+                  <div className="card-content">
+                    <div className="mb-md">
+                      <h5
                         style={{
-                          padding: "var(--spacing-md)",
-                          backgroundColor: "var(--primary-light)",
-                          borderRadius: "var(--radius-md)",
+                          margin: 0,
+                          marginBottom: "var(--spacing-xs)",
+                          color: "var(--primary)",
                         }}
                       >
-                        <p
-                          className="text-muted"
-                          style={{
-                            margin: 0,
-                            fontSize: "12px",
-                            marginBottom: "4px",
-                          }}
-                        >
-                          Discount Code
-                        </p>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "var(--spacing-sm)",
-                            alignItems: "center",
-                          }}
-                        >
-                          <code
-                            style={{
-                              fontSize: "16px",
-                              fontWeight: "700",
-                              padding: "4px 8px",
-                              backgroundColor: "white",
-                              borderRadius: "4px",
-                              flex: 1,
-                            }}
-                          >
-                            {promo.discount}
-                          </code>
-                          <button
-                            className="btn btn-sm"
-                            onClick={() => handleCopyCode(promo.discount)}
-                            style={{
-                              padding: "6px 12px",
-                              backgroundColor:
-                                copiedCode === promo.discount
-                                  ? "var(--success)"
-                                  : "var(--primary)",
-                              color: "white",
-                              border: "none",
-                              borderRadius: "var(--radius-md)",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                            }}
-                          >
-                            {copiedCode === promo.discount
-                              ? "✓ Copied"
-                              : "📋 Copy"}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div
-                        className="mb-md"
+                        {promo.restaurantName}
+                      </h5>
+                      <p
                         style={{
-                          paddingBottom: "var(--spacing-md)",
-                          borderBottom: "1px solid var(--border-color)",
+                          margin: 0,
+                          fontWeight: "600",
+                          color: "var(--success)",
                         }}
                       >
-                        <p
-                          className="text-muted"
+                        {promo.description}
+                      </p>
+                    </div>
+
+                    <div
+                      className="mb-md"
+                      style={{
+                        padding: "var(--spacing-md)",
+                        backgroundColor: "var(--primary-light)",
+                        borderRadius: "var(--radius-md)",
+                      }}
+                    >
+                      <p
+                        className="text-muted"
+                        style={{
+                          margin: 0,
+                          fontSize: "12px",
+                          marginBottom: "4px",
+                        }}
+                      >
+                        Discount Code
+                      </p>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "var(--spacing-sm)",
+                          alignItems: "center",
+                        }}
+                      >
+                        <code
                           style={{
-                            fontSize: "12px",
-                            margin: 0,
-                            marginBottom: "4px",
+                            fontSize: "16px",
+                            fontWeight: "700",
+                            padding: "4px 8px",
+                            backgroundColor: "white",
+                            borderRadius: "4px",
+                            flex: 1,
                           }}
                         >
-                          Valid Until
-                        </p>
-                        <p style={{ margin: 0, fontWeight: "600" }}>
-                          {new Date(promo.endAt).toLocaleDateString()}
-                        </p>
+                          {promo.discount}
+                        </code>
+                        <button
+                          className="btn btn-sm"
+                          onClick={() => handleCopyCode(promo.discount)}
+                          style={{
+                            padding: "6px 12px",
+                            backgroundColor:
+                              copiedCode === promo.discount
+                                ? "var(--success)"
+                                : "var(--primary)",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "var(--radius-md)",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                          }}
+                        >
+                          {copiedCode === promo.discount
+                            ? "✓ Copied"
+                            : "📋 Copy"}
+                        </button>
                       </div>
+                    </div>
 
+                    <div
+                      className="mb-md"
+                      style={{
+                        paddingBottom: "var(--spacing-md)",
+                        borderBottom: "1px solid var(--border-color)",
+                      }}
+                    >
                       <p
                         className="text-muted"
                         style={{
                           fontSize: "12px",
                           margin: 0,
-                          marginBottom: "var(--spacing-md)",
+                          marginBottom: "4px",
                         }}
                       >
-                        {promo.termsNCond}
+                        Valid Until
                       </p>
+                      <p style={{ margin: 0, fontWeight: "600" }}>
+                        {new Date(promo.endAt).toLocaleDateString()}
+                      </p>
+                    </div>
 
-                      <button
-                        className="btn btn-primary btn-full"
-                        onClick={() => setSelectedPromo(promo)}
-                        style={{ padding: "8px 16px", fontSize: "14px" }}
-                      >
-                        View Details
-                      </button>
-                    </Card.Content>
-                  </Card>
-                </>
+                    <p
+                      className="text-muted"
+                      style={{
+                        fontSize: "12px",
+                        margin: 0,
+                        marginBottom: "var(--spacing-md)",
+                      }}
+                    >
+                      {promo.termsNCond}
+                    </p>
+
+                    <button
+                      className="btn btn-primary btn-full"
+                      onClick={() => setSelectedPromo(promo)}
+                      style={{ padding: "8px 16px", fontSize: "14px" }}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
@@ -260,57 +259,55 @@ export function AllPromotions({ onBack }) {
               }}
             >
               {upcomingPromos.map((promo) => (
-                <>
-                  <Card
-                    key={promo.id}
-                    styles={{
-                      borderLeft: "4px solid var(--warning)",
-                      opacity: 0.8,
-                    }}
-                  >
-                    <Card.Content>
-                      <div className="mb-md">
-                        <h5
-                          style={{
-                            margin: 0,
-                            marginBottom: "var(--spacing-xs)",
-                            color: "var(--primary)",
-                          }}
-                        >
-                          {promo.restaurantName}
-                        </h5>
-                        <p style={{ margin: 0, fontWeight: "600" }}>
-                          {promo.description}
-                        </p>
-                      </div>
-
-                      <div
-                        className="mb-md"
+                <div
+                  key={promo.id}
+                  className="card"
+                  style={{
+                    borderLeft: "4px solid var(--warning)",
+                    opacity: 0.8,
+                  }}
+                >
+                  <div className="card-content">
+                    <div className="mb-md">
+                      <h5
                         style={{
-                          padding: "var(--spacing-md)",
-                          backgroundColor: "var(--bg-light)",
-                          borderRadius: "var(--radius-md)",
+                          margin: 0,
+                          marginBottom: "var(--spacing-xs)",
+                          color: "var(--primary)",
                         }}
                       >
-                        <p
-                          className="text-muted"
-                          style={{ margin: 0, fontSize: "12px" }}
-                        >
-                          Starts on{" "}
-                          {new Date(promo.startAt).toLocaleDateString()}
-                        </p>
-                      </div>
+                        {promo.restaurantName}
+                      </h5>
+                      <p style={{ margin: 0, fontWeight: "600" }}>
+                        {promo.description}
+                      </p>
+                    </div>
 
-                      <button
-                        className="btn btn-secondary btn-full"
-                        onClick={() => setSelectedPromo(promo)}
-                        style={{ padding: "8px 16px", fontSize: "14px" }}
+                    <div
+                      className="mb-md"
+                      style={{
+                        padding: "var(--spacing-md)",
+                        backgroundColor: "var(--bg-light)",
+                        borderRadius: "var(--radius-md)",
+                      }}
+                    >
+                      <p
+                        className="text-muted"
+                        style={{ margin: 0, fontSize: "12px" }}
                       >
-                        View Details
-                      </button>
-                    </Card.Content>
-                  </Card>
-                </>
+                        Starts on {new Date(promo.startAt).toLocaleDateString()}
+                      </p>
+                    </div>
+
+                    <button
+                      className="btn btn-secondary btn-full"
+                      onClick={() => setSelectedPromo(promo)}
+                      style={{ padding: "8px 16px", fontSize: "14px" }}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -335,45 +332,43 @@ export function AllPromotions({ onBack }) {
               }}
             >
               {expiredPromos.map((promo) => (
-                <>
-                  <Card
-                    key={promo.id}
-                    style={{
-                      borderLeft: "4px solid var(--text-muted)",
-                      opacity: 0.6,
-                    }}
-                  >
-                    <Card.Content>
-                      {" "}
-                      <div className="mb-md">
-                        <h5
-                          style={{
-                            margin: 0,
-                            marginBottom: "var(--spacing-xs)",
-                            color: "var(--primary)",
-                          }}
-                        >
-                          {promo.restaurantName}
-                        </h5>
-                        <p
-                          style={{
-                            margin: 0,
-                            fontWeight: "600",
-                            textDecoration: "line-through",
-                          }}
-                        >
-                          {promo.description}
-                        </p>
-                      </div>
-                      <p
-                        className="text-muted"
-                        style={{ fontSize: "12px", margin: 0 }}
+                <div
+                  key={promo.id}
+                  className="card"
+                  style={{
+                    borderLeft: "4px solid var(--text-muted)",
+                    opacity: 0.6,
+                  }}
+                >
+                  <div className="card-content">
+                    <div className="mb-md">
+                      <h5
+                        style={{
+                          margin: 0,
+                          marginBottom: "var(--spacing-xs)",
+                          color: "var(--primary)",
+                        }}
                       >
-                        Ended on {new Date(promo.endAt).toLocaleDateString()}
+                        {promo.restaurantName}
+                      </h5>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontWeight: "600",
+                          textDecoration: "line-through",
+                        }}
+                      >
+                        {promo.description}
                       </p>
-                    </Card.Content>
-                  </Card>
-                </>
+                    </div>
+                    <p
+                      className="text-muted"
+                      style={{ fontSize: "12px", margin: 0 }}
+                    >
+                      Ended on {new Date(promo.endAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -395,10 +390,7 @@ export function AllPromotions({ onBack }) {
               zIndex: 1000,
             }}
           >
-            <Card
-              className="mb-lg"
-              styles={{ maxWidth: "550px", width: "90%" }}
-            >
+            <Card styles={{ maxWidth: "550px", width: "90%" }}>
               <Card.Header className="flex-between">
                 <h4>{selectedPromo.description}</h4>
                 <button

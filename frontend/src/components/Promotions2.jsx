@@ -169,11 +169,12 @@ export function Promotions({ onBack, restaurantId }) {
               }}
             >
               {activePromos.map((promo) => (
-                <Card
+                <div
                   key={promo.id}
+                  className="card"
                   style={{ borderLeft: "4px solid var(--success)" }}
                 >
-                  <Card.Content>
+                  <div className="card-content">
                     <div className="mb-md">
                       <h5
                         style={{
@@ -295,8 +296,8 @@ export function Promotions({ onBack, restaurantId }) {
                     >
                       View Details
                     </button>
-                  </Card.Content>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           ) : (
@@ -328,14 +329,15 @@ export function Promotions({ onBack, restaurantId }) {
               }}
             >
               {upcomingPromos.map((promo) => (
-                <Card
+                <div
                   key={promo.id}
+                  className="card"
                   style={{
                     borderLeft: "4px solid var(--warning)",
                     opacity: 0.8,
                   }}
                 >
-                  <Card.Content>
+                  <div className="card-content">
                     <div className="mb-md">
                       <h5
                         style={{
@@ -374,8 +376,8 @@ export function Promotions({ onBack, restaurantId }) {
                     >
                       View Details
                     </button>
-                  </Card.Content>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -400,14 +402,15 @@ export function Promotions({ onBack, restaurantId }) {
               }}
             >
               {expiredPromos.map((promo) => (
-                <Card
+                <div
                   key={promo.id}
+                  className="card"
                   style={{
                     borderLeft: "4px solid var(--text-muted)",
                     opacity: 0.6,
                   }}
                 >
-                  <Card.Content>
+                  <div className="card-content">
                     <div className="mb-md">
                       <h5
                         style={{
@@ -434,8 +437,8 @@ export function Promotions({ onBack, restaurantId }) {
                     >
                       Ended on {new Date(promo.endAt).toLocaleDateString()}
                     </p>
-                  </Card.Content>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -457,10 +460,7 @@ export function Promotions({ onBack, restaurantId }) {
               zIndex: 1000,
             }}
           >
-            <Card
-              className="mb-lg"
-              styles={{ maxWidth: "550px", width: "90%" }}
-            >
+            <Card styles={{ maxWidth: "550px", width: "90%" }}>
               <Card.Header className="flex-between">
                 <h4>{selectedPromo.description}</h4>
                 <button
