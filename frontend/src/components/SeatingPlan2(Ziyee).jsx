@@ -502,15 +502,36 @@ export function SeatingPlan() {
 
   // Submit table data when edit table form is submitted
   const submitEditTable = async (tableId) => {
-    await seatingAPI
-      .updateSeatingPlan(tableId, selectedTable)
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-    setSelectedTable(null);
+    if (!selectedTable) return;
+
+    // Only send the fields your backend expects
+    const payload = {
+      tableNumber: selectedTable.tableNumber,
+      tableType: selectedTable.tableType,
+      pax: selectedTable.pax,
+      isAvailable: selectedTable.isAvailable,
+      x: selectedTable.x,
+      y: selectedTable.y,
+    };
+
+    try {
+      const res = await seatingAPI.updateSeatingPlan(tableId, payload);
+      console.log("Updated seating plan:", res.data || res);
+
+      // Update local state so the UI reflects the edit
+      setTables((prev) =>
+        prev.map((t) =>
+          Number(t.seatingId) === Number(tableId)
+            ? { ...t, ...payload }
+            : t
+        )
+      );
+
+      setSelectedTable(null);
+    } catch (error) {
+      console.error("Failed to update seating plan", error);
+      alert("Failed to edit table. Check console/server logs.");
+    }
   };
 
   // Handle assign booking to table
@@ -558,19 +579,19 @@ export function SeatingPlan() {
   
 
   // Unassigns booking from table
-  const handleUnassignBooking = async () => {
-    if (!currentBooking) return;
+  const handleUnassignBooking = async (booking) => {
+    if (!booking) return;
 
     try {
       // Update DB
-      await bookingAPI.updateBooking(currentBooking.id, {
+      await bookingAPI.updateBooking(booking.id, {
         fkSeatingId: null,
       });
 
       // Update local state
       setBookings((prev) =>
         prev.map((b) =>
-          b.id === currentBooking.id ? { ...b, tableId: null } : b
+          b.id === booking.id ? { ...b, tableId: null } : b
         )
       );
 
@@ -581,8 +602,9 @@ export function SeatingPlan() {
     }
   };
 
-  // Find the confirmed booking for this table
-  const currentBooking = selectedTable && bookings.find((b) => b.status === "confirmed" && isSameTableToday(b, selectedTable));
+
+  // Find the all confirmed bookings for this table
+  const tableBookingsToday = selectedTable ? bookings.filter((b) => b.status === "confirmed" && isSameTableToday(b, selectedTable)): [];
 
 
   const cancelAddTable = () => {
@@ -959,7 +981,7 @@ export function SeatingPlan() {
                       />
                     </div>
 
-                    {currentBooking && (
+                    {tableBookingsToday.length > 0 && (
                       <div
                         className="mb-md"
                         style={{
@@ -971,37 +993,60 @@ export function SeatingPlan() {
                           className="text-muted"
                           style={{ fontSize: "12px", margin: 0 }}
                         >
-                          Current Booking
-                        </p>
-                        <p
-                          style={{
-                            fontWeight: "600",
-                            margin: "4px 0 4px",
-                          }}
-                        >
-                          {currentBooking.customerName} • {currentBooking.time} •{" "}
-                          {currentBooking.partySize} pax
+                          Bookings for this table (today)
                         </p>
 
-                        {/* Move booking to another table */}
-                        <button
-                          className="btn btn-primary btn-full"
-                          style={{ marginBottom: "var(--spacing-xs)" }}
-                          onClick={() => {
-                            setSelectedBooking(currentBooking);
-                            setShowAssignModal(true);
-                          }}
-                        >
-                          Move Booking to Another Table
-                        </button>
+                        {tableBookingsToday.map((booking) => (
+                          <div
+                            key={booking.id}
+                            style={{
+                              marginTop: "6px",
+                              padding: "4px 0",
+                              borderBottom:
+                                "1px dashed var(--border-color)",
+                            }}
+                          >
+                            <p
+                              style={{
+                                fontWeight: "600",
+                                margin: "2px 0",
+                                fontSize: "13px",
+                              }}
+                            >
+                              {booking.customerName} • {booking.time} •{" "}
+                              {booking.partySize} pax
+                            </p>
 
-                        {/* Unassign booking from this table */}
-                        <button
-                          className="btn btn-secondary btn-full"
-                          onClick={handleUnassignBooking}
-                        >
-                          Unassign Booking (Free Table)
-                        </button>
+                            <div
+                              style={{
+                                display: "flex",
+                                gap: "6px",
+                                marginTop: "2px",
+                              }}
+                            >
+                              {/* Move this booking to another table */}
+                              <button
+                                className="btn btn-primary btn-sm"
+                                style={{ flex: 1 }}
+                                onClick={() => {
+                                  setSelectedBooking(booking);
+                                  setShowAssignModal(true);
+                                }}
+                              >
+                                Move to Another Table
+                              </button>
+
+                              {/* Unassign this booking from this table */}
+                              <button
+                                className="btn btn-secondary btn-sm"
+                                style={{ flex: 1 }}
+                                onClick={() => handleUnassignBooking(booking)}
+                              >
+                                Unassign
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
 

@@ -117,7 +117,7 @@ module.exports.LoadData = async () => {
         pax: 2,
         tableType: "indoor",
         tableNumber: "T1",
-        isAvailable: false, // Currently booked
+        isAvailable: true,
         fkRestaurantId: 1,
         x: 120,
         y: 80,
