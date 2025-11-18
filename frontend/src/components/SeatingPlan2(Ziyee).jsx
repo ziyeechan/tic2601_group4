@@ -205,16 +205,67 @@ export function SeatingPlan() {
     }
   };
 
-
-
-  // Get table status
+  // Modify table status
+  const isSameTableToday = (b, table) =>
+  b.date === today &&
+  b.tableId != null &&
+  Number(b.tableId) === Number(table.seatingId);
+  
   const getTableStatus = (table) => {
-    const booking = bookings.find(
-      (b) => b.tableId === table.seatingId && b.date === today
-    );
+    const booking = bookings.find((b) => isSameTableToday(b, table));
+
     if (booking && booking.status === "confirmed") return "occupied";
     if (!table.isAvailable) return "unavailable";
     return "available";
+  };
+
+  const toggleTableAvailability = async () => {
+    if (!selectedTable || !selectedTable.seatingId) return;
+
+    const newValue = !selectedTable.isAvailable;
+
+    const bookingToUnassign = !newValue && currentBooking ? currentBooking : null;
+
+    try {
+      if (bookingToUnassign) {
+        //Update DB, remove fkSeatingId
+        await bookingAPI.updateBooking(bookingToUnassign.id, {
+          fkSeatingId: null,
+        });
+
+        //Update local state, booking now unassigned
+        setBookings((prev) =>
+          prev.map((b) =>
+            b.id === bookingToUnassign.id ? { ...b, tableId: null } : b
+          )
+        );
+      }
+
+      //Update table availability
+      await seatingAPI.updateSeatingPlan(selectedTable.seatingId, {
+        pax: selectedTable.pax,
+        tableNumber: selectedTable.tableNumber,
+        tableType: selectedTable.tableType,
+        isAvailable: newValue,
+      });
+
+      //Reflect in state
+      setTables((prev) =>
+        prev.map((t) =>
+          t.seatingId === selectedTable.seatingId
+            ? { ...t, isAvailable: newValue }
+            : t
+        )
+      );
+
+      // Update selectedTable
+      setSelectedTable((prev) =>
+        prev ? { ...prev, isAvailable: newValue } : prev
+      );
+    } catch (err) {
+      console.error("Failed to toggle availability", err);
+      alert("Failed to update table availability.");
+    }
   };
 
   // Get table icon
@@ -345,19 +396,19 @@ export function SeatingPlan() {
     if (!selectedBooking) return;
 
     try {
-      // 1) Update in DB
+      // Update in DB
       await bookingAPI.updateBooking(selectedBooking.id, {
         fkSeatingId: tableId,
       });
 
-      // 2) Update local state so UI reflects the change immediately
+      // Update local state so UI reflects the change immediately
       setBookings((prev) =>
         prev.map((b) =>
           b.id === selectedBooking.id ? { ...b, tableId } : b
         )
       );
 
-      // 3) Close modal + clear selection
+      // Close modal and clear selection
       setShowAssignModal(false);
       setSelectedBooking(null);
     } catch (err) {
@@ -365,6 +416,35 @@ export function SeatingPlan() {
       alert("Failed to assign table. Check console/server logs.");
     }
   };
+  
+
+  // Unassigns booking from table
+  const handleUnassignBooking = async () => {
+    if (!currentBooking) return;
+
+    try {
+      // Update DB
+      await bookingAPI.updateBooking(currentBooking.id, {
+        fkSeatingId: null,
+      });
+
+      // Update local state
+      setBookings((prev) =>
+        prev.map((b) =>
+          b.id === currentBooking.id ? { ...b, tableId: null } : b
+        )
+      );
+
+      alert("Booking unassigned from table.");
+    } catch (err) {
+      console.error("Failed to unassign booking from table", err);
+      alert("Failed to unassign booking. Check console/server logs.");
+    }
+  };
+
+  // Find the confirmed booking for this table
+  const currentBooking = selectedTable && bookings.find((b) => b.status === "confirmed" && isSameTableToday(b, selectedTable));
+
 
   const cancelAddTable = () => {
     let temp = tables.filter((table) => !table.isAdding);
@@ -372,6 +452,7 @@ export function SeatingPlan() {
     setIsAddingTable(false);
     setSelectedTable(null);
   };
+
 
   return (
     <div>
@@ -737,45 +818,51 @@ export function SeatingPlan() {
                       />
                     </div>
 
-                    {bookings.find(
-                      (b) =>
-                        b.tableId === selectedTable.seatingId &&
-                        b.date === today
-                    ) && (
-                        <div
-                          className="mb-md"
+                    {currentBooking && (
+                      <div
+                        className="mb-md"
+                        style={{
+                          paddingBottom: "var(--spacing-md)",
+                          borderBottom: "1px solid var(--border-color)",
+                        }}
+                      >
+                        <p
+                          className="text-muted"
+                          style={{ fontSize: "12px", margin: 0 }}
+                        >
+                          Current Booking
+                        </p>
+                        <p
                           style={{
-                            paddingBottom: "var(--spacing-md)",
-                            borderBottom:
-                              "1px solid var(--border-color)",
+                            fontWeight: "600",
+                            margin: "4px 0 4px",
                           }}
                         >
-                          <p
-                            className="text-muted"
-                            style={{
-                              fontSize: "12px",
-                              margin: 0,
-                            }}
-                          >
-                            Current Booking
-                          </p>
-                          <p
-                            style={{
-                              fontWeight: "600",
-                              margin: 0,
-                            }}
-                          >
-                            {
-                              bookings.find(
-                                (b) =>
-                                  b.tableId ===
-                                  selectedTable.seatingId &&
-                                  b.date === today
-                              )?.customerName
-                            }
-                          </p>
-                        </div>
-                      )}
+                          {currentBooking.customerName} • {currentBooking.time} •{" "}
+                          {currentBooking.partySize} pax
+                        </p>
+
+                        {/* Move booking to another table */}
+                        <button
+                          className="btn btn-primary btn-full"
+                          style={{ marginBottom: "var(--spacing-xs)" }}
+                          onClick={() => {
+                            setSelectedBooking(currentBooking);
+                            setShowAssignModal(true);
+                          }}
+                        >
+                          Move Booking to Another Table
+                        </button>
+
+                        {/* Unassign booking from this table */}
+                        <button
+                          className="btn btn-secondary btn-full"
+                          onClick={handleUnassignBooking}
+                        >
+                          Unassign Booking (Free Table)
+                        </button>
+                      </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div
@@ -825,6 +912,15 @@ export function SeatingPlan() {
                             }
                           >
                             ✏️ Edit
+                            </button>
+                          <button
+                            className="btn btn-warning btn-full"
+                            style={{
+                              border: "1px solid var(--border-color)",
+                            }}
+                            onClick={toggleTableAvailability}
+                          >
+                            {selectedTable.isAvailable ? "Mark as Unavailable" : "Mark as Available"}
                           </button>
                           <button
                             className="btn btn-danger btn-full"
@@ -976,7 +1072,8 @@ export function SeatingPlan() {
                     .filter(
                       (t) =>
                         t.isAvailable &&
-                        t.pax >= selectedBooking.partySize
+                        t.pax >= selectedBooking.partySize &&
+                        Number(t.seatingId) !== Number(selectedBooking.tableId)
                     )
                     .map((table) => (
                       <button

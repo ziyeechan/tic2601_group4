@@ -107,8 +107,15 @@ module.exports.findBookingsByStatus = async (restaurantID, status) => {
 
 // Update booking status
 module.exports.updateBookingStatus = async (bookingID, status) => {
+  const update = { status };
+
+  // If booking is no longer active, free up the seat
+  if (["cancelled", "no_show"].includes(status)) {
+    update.fkSeatingId = null;
+  }
+  
   return await Bookings.update(
-    { status },
+    update, 
     {
       where: {
         bookingId: bookingID,
