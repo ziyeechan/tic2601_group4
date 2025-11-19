@@ -206,19 +206,17 @@ export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSu
 
                 <div className="form-group">
                   <label htmlFor="partySize">👥 Party Size *</label>
-                  <select
+                  <input
                     id="partySize"
+                    type="number"
                     name="partySize"
+                    min="1"
+                    max="100"
                     value={formData.partySize}
                     onChange={handleChange}
+                    placeholder="Enter number of people"
                     required
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map((size) => (
-                      <option key={size} value={size}>
-                        {size} {size === 1 ? "person" : "people"}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
 
                 {/* Special Requests */}

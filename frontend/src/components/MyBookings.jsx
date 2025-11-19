@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { bookingAPI } from "../utils/api";
+import { bookingAPI, reviewAPI } from "../utils/api";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
+import { Reviews } from "./Reviews";
 import { Card } from "./Common";
-
 export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" }) {
   const [bookings, setBookings] = useState([]);
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -14,6 +14,8 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
   const [editFormData, setEditFormData] = useState({});
   const [searchMode, setSearchMode] = useState("email"); // "email" or "code"
   const [searchCode, setSearchCode] = useState("");
+  const [reviewingBooking, setReviewingBooking] = useState(null);
+  const [bookingReviews, setBookingReviews] = useState({}); // Map bookingId -> review
 
   // Auto-search if email is provided
   useEffect(() => {
@@ -73,6 +75,11 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       setBookings(bookingsData);
       setCustomerEmail(emailToSearch);
 
+      // Fetch reviews for completed bookings
+      if (bookingsData.length > 0) {
+        fetchBookingReviews(bookingsData);
+      }
+
       if (bookingsData.length === 0) {
         setMessage({
           type: "info",
@@ -116,6 +123,9 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
           const response = await bookingAPI.getBookingsByEmail(customerEmail);
           const bookingsData = response.data.bookings || [];
           setBookings(bookingsData);
+          if (bookingsData.length > 0) {
+            fetchBookingReviews(bookingsData);
+          }
         }
       } catch (error) {
         console.error("Error cancelling booking:", error);
@@ -162,6 +172,9 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
         const response = await bookingAPI.getBookingsByEmail(customerEmail);
         const bookingsData = response.data.bookings || [];
         setBookings(bookingsData);
+        if (bookingsData.length > 0) {
+          fetchBookingReviews(bookingsData);
+        }
       }
     } catch (error) {
       console.error("Error updating booking:", error);
@@ -176,6 +189,38 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
   const handleCancelEdit = () => {
     setEditingBookingId(null);
     setEditFormData({});
+  };
+
+  // Fetch reviews for completed bookings
+  const fetchBookingReviews = async (bookingsList) => {
+    const reviewsMap = {};
+
+    try {
+      for (const booking of bookingsList) {
+        if (booking.status === "completed") {
+          try {
+            const response = await reviewAPI.getReviewsByBooking(booking.bookingId);
+            if (response.data && response.data.reviewInfo && response.data.reviewInfo.length > 0) {
+              const review = response.data.reviewInfo[0]; // Get first review for this booking
+              reviewsMap[booking.bookingId] = {
+                reviewId: review.reviewId,
+                rating: review.rating,
+                comment: review.comment,
+                createdAt: review.createdAt,
+              };
+            }
+          } catch (error) {
+            // 404 or no reviews means no review exists - that's fine
+            if (error.response?.status && error.response.status !== 404) {
+              console.error(`Error fetching review for booking ${booking.bookingId}:`, error);
+            }
+          }
+        }
+      }
+      setBookingReviews(reviewsMap);
+    } catch (error) {
+      console.error("Error fetching booking reviews:", error);
+    }
   };
 
   // Fetch booking by confirmation code
@@ -200,6 +245,9 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       setBookings([booking]); // Wrap in array for consistent display
       setCustomerEmail(booking.customerEmail);
       setActiveTab("upcoming"); // Show in upcoming tab by default
+
+      // Fetch reviews for this booking
+      fetchBookingReviews([booking]);
     } catch (error) {
       console.error("Error fetching booking:", error);
 
@@ -382,7 +430,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                 <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
                   <div>
                     <h4 style={{ margin: 0, marginBottom: "var(--spacing-sm)" }}>
-                      {booking.restaurant?.restaurantName || booking.restaurantName || "Restaurant"}
+                      {booking.Restaurant?.restaurantName || "Restaurant"}
                     </h4>
                     <span className={`badge ${getStatusBadgeClass(booking.status)}`}>
                       {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
@@ -472,6 +520,54 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                     <p style={{ margin: 0 }}>{booking.specialRequests}</p>
                   </div>
                 )}
+
+                {/* Existing Review Display (for completed bookings) */}
+                {activeTab === "past" &&
+                  booking.status === "completed" &&
+                  bookingReviews[booking.bookingId] && (
+                    <div
+                      className="mb-md"
+                      style={{
+                        paddingTop: "var(--spacing-md)",
+                        borderTop: "1px solid var(--border-color)",
+                        backgroundColor: "var(--bg-light)",
+                        padding: "var(--spacing-md)",
+                        borderRadius: "var(--radius-md)",
+                        marginTop: "var(--spacing-md)",
+                      }}
+                    >
+                      <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
+                        <h5 style={{ margin: 0, marginBottom: "var(--spacing-sm)" }}>
+                          ⭐ Your Review
+                        </h5>
+                        <span className="text-muted" style={{ fontSize: "12px" }}>
+                          {new Date(
+                            bookingReviews[booking.bookingId].createdAt
+                          ).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <div
+                        style={{ display: "flex", gap: "2px", marginBottom: "var(--spacing-sm)" }}
+                      >
+                        {[...Array(5)].map((_, i) => (
+                          <span key={i} style={{ fontSize: "16px" }}>
+                            {i < bookingReviews[booking.bookingId].rating ? "⭐" : "☆"}
+                          </span>
+                        ))}
+                        <span
+                          className="text-muted"
+                          style={{ fontSize: "12px", marginLeft: "8px" }}
+                        >
+                          {bookingReviews[booking.bookingId].rating}.0/5.0
+                        </span>
+                      </div>
+
+                      <p style={{ margin: 0, color: "var(--text-dark)" }}>
+                        {bookingReviews[booking.bookingId].comment}
+                      </p>
+                    </div>
+                  )}
 
                 {/* Booking Date */}
                 {booking.createdAt && (
@@ -593,19 +689,44 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                   </div>
                 </div>
               )}
-
-              {/* Action Buttons - Only for upcoming bookings */}
-              {activeTab === "upcoming" && editingBookingId !== booking.bookingId && (
+              {editingBookingId !== booking.bookingId && (
                 <Card.Footer styles={{ display: "flex", gap: "var(--spacing-sm)" }}>
-                  <button className="btn btn-secondary" onClick={() => handleEdit(booking)}>
-                    ✏️ Edit
-                  </button>
-                  <button
-                    className="btn btn-danger"
-                    onClick={() => handleCancel(booking.bookingId)}
-                  >
-                    ✕ Cancel
-                  </button>
+                  {/* Upcoming bookings - Edit and Cancel */}
+                  {activeTab === "upcoming" && (
+                    <>
+                      <button className="btn btn-secondary" onClick={() => handleEdit(booking)}>
+                        ✏️ Edit
+                      </button>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => handleCancel(booking.bookingId)}
+                      >
+                        ✕ Cancel
+                      </button>
+                    </>
+                  )}
+
+                  {/* Past bookings - Single review button (Write or Edit) for completed */}
+                  {activeTab === "past" && booking.status === "completed" && (
+                    <button
+                      className="btn btn-primary"
+                      onClick={() => setReviewingBooking(booking)}
+                      style={{ flex: 1 }}
+                    >
+                      {bookingReviews[booking.bookingId] ? "✏️ Edit Review" : "⭐ Write a Review"}
+                    </button>
+                  )}
+
+                  {/* Other past statuses - no action */}
+                  {activeTab === "past" && booking.status !== "completed" && (
+                    <div className="text-muted" style={{ fontSize: "12px" }}>
+                      {booking.status === "cancelled"
+                        ? "❌ This booking was cancelled"
+                        : booking.status === "no_show"
+                          ? "⏭️ You didn't show up for this booking"
+                          : "You can leave a review once the booking is completed"}
+                    </div>
+                  )}
                 </Card.Footer>
               )}
             </Card>
@@ -619,6 +740,85 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
               ? "You don't have any upcoming bookings yet. Start exploring restaurants!"
               : "You don't have any past bookings."}
           </p>
+        </div>
+      )}
+
+      {/* Review Modal - Option 1: From Completed Bookings */}
+      {reviewingBooking && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 2000,
+            overflow: "auto",
+          }}
+        >
+          <div
+            className="card"
+            style={{
+              maxWidth: "800px",
+              width: "90%",
+              maxHeight: "90vh",
+              overflow: "auto",
+            }}
+          >
+            <div className="card-header">
+              <div className="flex-between" style={{ alignItems: "center" }}>
+                <h3 className="card-title" style={{ margin: 0 }}>
+                  ⭐ Review: {reviewingBooking.restaurant?.restaurantName || "Restaurant"}
+                </h3>
+                <button
+                  onClick={() => setReviewingBooking(null)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    fontSize: "24px",
+                    cursor: "pointer",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="card-content">
+              <div
+                style={{
+                  marginBottom: "var(--spacing-md)",
+                  paddingBottom: "var(--spacing-md)",
+                  borderBottom: "1px solid var(--border-color)",
+                }}
+              >
+                <p className="text-muted" style={{ margin: 0, fontSize: "14px" }}>
+                  Booking Date: {new Date(reviewingBooking.bookingDate).toLocaleDateString()} at{" "}
+                  {reviewingBooking.bookingTime}
+                </p>
+              </div>
+              <Reviews
+                restaurant={{
+                  restaurantId:
+                    reviewingBooking.fkRestaurantId || reviewingBooking.Restaurant?.restaurantId,
+                  restaurantName: reviewingBooking.Restaurant?.restaurantName,
+                }}
+                bookingId={reviewingBooking.bookingId}
+                existingReview={bookingReviews[reviewingBooking.bookingId] || null}
+                onBack={() => {
+                  setReviewingBooking(null);
+                  // Refresh booking reviews
+                  if (customerEmail) {
+                    fetchBookingReviews(bookings);
+                  }
+                }}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>

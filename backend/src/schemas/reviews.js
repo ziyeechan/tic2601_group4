@@ -11,6 +11,15 @@ const Reviews = db.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    fkBookingId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      unique: true, // Enforce one review per booking
+    },
+    fkRestaurantId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
     rating: {
       type: DataTypes.INTEGER,
       allowNull: false,
