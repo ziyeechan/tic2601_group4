@@ -96,13 +96,22 @@ module.exports.createReviews = async (req, res) => {
       rating: rating,
       comment: comment,
     };
-    await createReviews(reviewInfo, bookingID, restaurantID);
+    const newReview = await createReviews(reviewInfo, bookingID, restaurantID);
 
     return res.status(200).json({
       message: "Review has been created",
+      data: newReview,
     });
   } catch (err) {
     console.log(err);
+
+    // Handle UNIQUE constraint violation on fkBookingId
+    if (err.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).json({
+        message: "You have already submitted a review for this booking. Please edit your existing review instead."
+      });
+    }
+
     return res.status(500).json({ message: "Server Error" });
   }
 };

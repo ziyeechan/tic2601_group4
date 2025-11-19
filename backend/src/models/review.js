@@ -11,6 +11,12 @@ module.exports.findReviewsByID = async (reviewID) => {
 module.exports.findReviewsByRestaurantID = async (restaurantID) => {
   return await Reviews.findAll({
     where: { fkRestaurantId: restaurantID },
+    include: [
+      {
+        association: "booking",
+        attributes: ["customerName"],
+      },
+    ],
   });
 };
 
