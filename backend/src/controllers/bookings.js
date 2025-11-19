@@ -13,6 +13,7 @@ const {
 } = require("../models/bookings");
 const { findSeatingPlanByID, findAvailableSeating } = require("../models/seatingPlan");
 const { findRestaurantByID } = require("../models/restaurant");
+const { findReviewsByMultipleBookingIDs } = require("../models/review");
 
 // Generate a unique confirmation code
 const generateConfirmationCode = () => {
@@ -162,6 +163,7 @@ module.exports.createBooking = async (req, res) => {
 module.exports.findBookingByConfirmationCode = async (req, res) => {
   try {
     const { confirmationCode } = req.params;
+    const { includeReviews } = req.query;
 
     if (!confirmationCode) {
       return res.status(400).json({
@@ -177,8 +179,27 @@ module.exports.findBookingByConfirmationCode = async (req, res) => {
       });
     }
 
+    // If includeReviews=true, fetch review in ONE query
+    let review = null;
+    if (includeReviews === "true") {
+      const reviews = await findReviewsByMultipleBookingIDs([booking.bookingId]);
+      if (reviews && reviews.length > 0) {
+        review = {
+          reviewId: reviews[0].reviewId,
+          rating: reviews[0].rating,
+          comment: reviews[0].comment,
+          createdAt: reviews[0].createdAt,
+        };
+      }
+    }
+
+    const enrichedBooking = {
+      ...(booking.toJSON?.() || booking),
+      review: review,
+    };
+
     return res.status(200).json({
-      booking: booking,
+      booking: enrichedBooking,
     });
   } catch (err) {
     console.log(err);
@@ -193,6 +214,7 @@ module.exports.findBookingByConfirmationCode = async (req, res) => {
 module.exports.findBookingsByCustomerEmail = async (req, res) => {
   try {
     const { email } = req.params;
+    const { includeReviews } = req.query;
 
     if (!email) {
       return res.status(400).json({
@@ -215,9 +237,35 @@ module.exports.findBookingsByCustomerEmail = async (req, res) => {
       });
     }
 
+    //If includeReviews=true, fetch all reviews in ONE query
+    let reviewsMap = {};
+    if (includeReviews === "true" && bookings.length > 0) {
+      // Get all booking IDs
+      const bookingIds = bookings.map((b) => b.bookingId);
+
+      // Fetch all reviews for these bookings in a SINGLE query (not N queries!)
+      const reviews = await findReviewsByMultipleBookingIDs(bookingIds);
+
+      // Create map of bookingId -> review
+      reviews.forEach((review) => {
+        reviewsMap[review.fkBookingId] = {
+          reviewId: review.reviewId,
+          rating: review.rating,
+          comment: review.comment,
+          createdAt: review.createdAt,
+        };
+      });
+    }
+
+    // Merge reviews into bookings if present
+    const enrichedBookings = bookings.map((booking) => ({
+      ...(booking.toJSON?.() || booking),
+      review: reviewsMap[booking.bookingId] || null,
+    }));
+
     return res.status(200).json({
       count: bookings.length,
-      bookings: bookings,
+      bookings: enrichedBookings,
     });
   } catch (err) {
     console.log(err);
