@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { bookingAPI, restaurantAPI } from "../utils/api";
+import { Card } from "./Common";
 
 export function AdminBookings({ restaurantId: propRestaurantId }) {
   const [bookings, setBookings] = useState([]);
@@ -272,11 +273,10 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
       <h2 style={{ marginBottom: "var(--spacing-lg)" }}>📋 Bookings Management</h2>
 
       {/* Restaurant Selector Card */}
-      <div className="card mb-lg">
-        <div className="card-header">
-          <h4 className="card-title">Select Restaurant</h4>
-        </div>
-        <div className="card-content">
+      <Card className="mb-lg">
+        <Card.Header title="Select Restaurant" />
+        <Card.Content>
+          {" "}
           <div className="form-group" style={{ maxWidth: "400px" }}>
             <label htmlFor="restaurantSelect">🏪 Restaurant</label>
             <select
@@ -292,15 +292,13 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
               ))}
             </select>
           </div>
-        </div>
-      </div>
+        </Card.Content>
+      </Card>
 
       {/* Filters Card */}
-      <div className="card mb-lg">
-        <div className="card-header">
-          <h4 className="card-title">Filters & Search</h4>
-        </div>
-        <div className="card-content">
+      <Card className="mb-lg">
+        <Card.Header title="Filters & Search" />
+        <Card.Content>
           <div
             style={{
               display: "grid",
@@ -350,8 +348,8 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
               />
             </div>
           </div>
-        </div>
-      </div>
+        </Card.Content>
+      </Card>
 
       {/* Bookings Table */}
       {loading ? (
@@ -359,7 +357,7 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
           <h3>Loading bookings...</h3>
         </div>
       ) : filtered.length > 0 ? (
-        <div className="card">
+        <Card>
           <div style={{ overflowX: "auto" }}>
             <table>
               <thead>
@@ -428,7 +426,7 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       ) : (
         <div className="empty-state">
           <h3>No bookings found</h3>
@@ -446,8 +444,8 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
         }}
         className="stats-cards"
       >
-        <div className="card">
-          <div className="card-content" style={{ textAlign: "center" }}>
+        <Card>
+          <Card.Content styles={{ textAlign: "center" }}>
             <div
               style={{
                 fontSize: "24px",
@@ -460,10 +458,11 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
             <p className="text-muted" style={{ margin: 0 }}>
               Confirmed
             </p>
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-content" style={{ textAlign: "center" }}>
+          </Card.Content>
+        </Card>
+
+        <Card>
+          <Card.Content styles={{ textAlign: "center" }}>
             <div
               style={{
                 fontSize: "24px",
@@ -476,10 +475,10 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
             <p className="text-muted" style={{ margin: 0 }}>
               Pending
             </p>
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-content" style={{ textAlign: "center" }}>
+          </Card.Content>
+        </Card>
+        <Card>
+          <Card.Content styles={{ textAlign: "center" }}>
             <div
               style={{
                 fontSize: "24px",
@@ -492,10 +491,10 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
             <p className="text-muted" style={{ margin: 0 }}>
               Completed
             </p>
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-content" style={{ textAlign: "center" }}>
+          </Card.Content>
+        </Card>
+        <Card>
+          <Card.Content styles={{ textAlign: "center" }}>
             <div
               style={{
                 fontSize: "24px",
@@ -508,8 +507,8 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
             <p className="text-muted" style={{ margin: 0 }}>
               No Shows
             </p>
-          </div>
-        </div>
+          </Card.Content>
+        </Card>
       </div>
     </div>
   );

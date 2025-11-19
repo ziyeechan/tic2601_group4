@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { reviewAPI, bookingAPI } from "../utils/api";
+import { Card } from "./Common";
 import { BookingVerification } from "./BookingVerification";
 
 export function Reviews({ restaurant, onBack, bookingId, existingReview = null }) {
@@ -195,8 +196,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           {reviews.length > 0 ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-md)" }}>
               {reviews.map((review) => (
-                <div key={review.id || review.reviewId} className="card">
-                  <div className="card-content">
+                <Card key={review.id || review.reviewId}>
+                  <Card.Content>
                     <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
                       <div>
                         <h5 style={{ margin: 0, marginBottom: "var(--spacing-xs)" }}>
@@ -227,8 +228,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                     </div>
 
                     <p style={{ margin: 0, color: "var(--text-dark)" }}>{review.comment}</p>
-                  </div>
-                </div>
+                  </Card.Content>
+                </Card>
               ))}
             </div>
           ) : (
@@ -242,11 +243,9 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
         {/* Rating Summary Sidebar */}
         <div>
           {/* Rating Summary Card */}
-          <div className="card mb-lg">
-            <div className="card-header">
-              <h4 className="card-title">Rating Summary</h4>
-            </div>
-            <div className="card-content" style={{ textAlign: "center" }}>
+          <Card className="mb-lg">
+            <Card.Header title="Rating Summary" />
+            <Card.Content styles={{ textAlign: "center" }}>
               <div
                 style={{
                   fontSize: "48px",
@@ -322,8 +321,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                   );
                 })}
               </div>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
 
           {/* Write Review Button */}
           {!showForm && (
@@ -362,13 +361,9 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
             zIndex: 1000,
           }}
         >
-          <div className="card" style={{ maxWidth: "500px", width: "90%" }}>
-            <div className="card-header">
-              <h4 className="card-title">
-                {isEditing ? "✏️ Edit Your Review" : "⭐ Write Your Review"}
-              </h4>
-            </div>
-            <div className="card-content">
+          <Card styles={{ maxWidth: "500px", width: "90%" }}>
+            <Card.Header title={`${isEditing ? "✏️ Edit Your Review" : "⭐ Write Your Review"}`} />"
+            <Card.Content>
               <form onSubmit={handleSubmitReview}>
                 {/* Only show name field when creating new review, not when editing */}
                 {!isEditing && (
@@ -472,8 +467,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
         </div>
       )}
 

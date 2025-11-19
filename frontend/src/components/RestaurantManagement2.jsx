@@ -153,7 +153,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
               // View Mode
               <div>
                 {/* Restaurant Info Card */}
-                <Card>
+                <Card className="mb-lg">
                   <Card.Header>
                     <div className="flex-between">
                       <h3 className="card-title">Restaurant Information</h3>
@@ -202,7 +202,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                 </Card>
 
                 {/* Address Card */}
-                <Card>
+                <Card className="mb-lg">
                   <Card.Header title="Address Information" />
                   <Card.Content>
                     <TextContainer text="📍 Full Address">
@@ -223,7 +223,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
             ) : (
               // Edit Mode
               <form onSubmit={handleSave}>
-                <Card>
+                <Card className="mb-lg">
                   <Card.Header title="Edit Restaurant Information" />
                   <Card.Content>
                     <FormInput
@@ -278,10 +278,8 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                   </Card.Content>
                 </Card>
 
-                <Card>
-                  <Card.Header>
-                    <h4 className="card-title">Edit Address Information</h4>
-                  </Card.Header>
+                <Card className="mb-lg">
+                  <Card.Header title="Edit Address Information"/>
                   <Card.Content>
                     <FormInput
                       name="addressLine1"
@@ -355,7 +353,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
 
           {/* Sidebar */}
           <div>
-            <Card>
+            <Card className="mb-lg">
               <Card.Header title="Quick Info" />
               <Card.Content>
                 <TextContainer text="Restaurant ID" data={restaurant.restaurantId} />

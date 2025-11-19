@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { Card } from "./Common";
 
 export function SearchFilters({ restaurants, promotions, onFiltered }) {
 
@@ -107,11 +108,9 @@ export function SearchFilters({ restaurants, promotions, onFiltered }) {
   };
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h4 className="card-title">🔍 Search Filters</h4>
-      </div>
-      <div className="card-content">
+    <Card>
+      <Card.Header title="🔍 Search Filters" />
+      <Card.Content>
         {/* 🔍 Search Bar */}
         <div className="form-group">
           <label htmlFor="search">Search bar</label>
@@ -188,7 +187,7 @@ export function SearchFilters({ restaurants, promotions, onFiltered }) {
         <button className="btn btn-primary btn-full" onClick={handleClearFilters}>
           Clear Filters
         </button>
-      </div>
-    </div>
+      </Card.Content>
+    </Card>
   );
 }

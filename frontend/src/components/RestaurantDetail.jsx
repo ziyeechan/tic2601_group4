@@ -3,6 +3,7 @@ import { mockMenuItems } from "../mockData";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
 import { Reviews } from "./Reviews";
 import { reviewAPI } from "../utils/api";
+import { Card } from "./Common";
 
 export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
   const [averageRating, setAverageRating] = useState(0);
@@ -135,8 +136,8 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
         {/* Left Column - Basic Info */}
         <div>
           {/* Info Card */}
-          <div className="card mb-lg">
-            <div className="card-content">
+          <Card className="mb-lg">
+            <Card.Content>
               <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
                 <div>
                   <h2 style={{ margin: 0, marginBottom: "var(--spacing-sm)" }}>
@@ -162,15 +163,13 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
 
               {/* Description */}
               <p className="text-muted">{restaurant.description}</p>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
 
           {/* Contact Info Card */}
-          <div className="card mb-lg">
-            <div className="card-header">
-              <h4 className="card-title">Contact Information</h4>
-            </div>
-            <div className="card-content">
+          <Card className="mb-lg">
+            <Card.Header title="Contact Information" />
+            <Card.Content>
               <div className="mb-md">
                 <div className="text-muted" style={{ fontSize: "14px" }}>
                   📍 Address
@@ -199,15 +198,13 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                 </div>
                 <p>{restaurant.email}</p>
               </div>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
 
           {/* Opening Hours Card */}
-          <div className="card">
-            <div className="card-header">
-              <h4 className="card-title">Opening Hours</h4>
-            </div>
-            <div className="card-content">
+          <Card>
+            <Card.Header title="Opening Hours" />
+            <Card.Content>
               {Object.entries(openingHours).map(([day, hours]) => (
                 <div
                   key={day}
@@ -221,18 +218,17 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                   <span className="text-muted">{hours}</span>
                 </div>
               ))}
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
         </div>
 
         {/* Right Column - Menu & Booking */}
         <div>
           {/* Available Times Card */}
-          <div className="card mb-lg">
-            <div className="card-header">
-              <h4 className="card-title">Available Time Slots</h4>
-            </div>
-            <div className="card-content">
+          <Card className="mb-lg">
+            <Card.Header title="Available Time Slots" />
+            <Card.Content>
+              {" "}
               <div
                 style={{
                   display: "grid",
@@ -250,16 +246,14 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                   </button>
                 ))}
               </div>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
 
           {/* Menu Card */}
           {menuItems.length > 0 && (
-            <div className="card mb-lg">
-              <div className="card-header">
-                <h4 className="card-title">Sample Menu</h4>
-              </div>
-              <div className="card-content">
+            <Card className="mb-lg">
+              <Card.Header title="Sample Menu" />
+              <Card.Content>
                 {menuItems.map((item) => (
                   <div
                     key={item.id}
@@ -310,8 +304,8 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                     )}
                   </div>
                 ))}
-              </div>
-            </div>
+              </Card.Content>
+            </Card>
           )}
 
           {/* Book Now Button */}
