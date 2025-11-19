@@ -1,16 +1,34 @@
 import { useState, useEffect } from "react";
-import { reviewAPI } from "../utils/api";
+import { reviewAPI, bookingAPI } from "../utils/api";
+import { BookingVerification } from "./BookingVerification";
 
-export function Reviews({ restaurant, onBack, bookingId }) {
+export function Reviews({ restaurant, onBack, bookingId, existingReview = null }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [verifiedBookingId, setVerifiedBookingId] = useState(bookingId || null);
+  const [isEditing, setIsEditing] = useState(!!existingReview);
   const [formData, setFormData] = useState({
     customerName: "",
     rating: 5,
     comment: "",
+    isAnonymous: false,
   });
+
+  // Initialize form with existing review data if editing
+  useEffect(() => {
+    if (existingReview && isEditing) {
+      setFormData({
+        customerName: "",
+        rating: existingReview.rating || 5,
+        comment: existingReview.comment || "",
+        isAnonymous: false,
+      });
+      setShowForm(true);
+    }
+  }, [existingReview, isEditing]);
 
   // Fetch reviews on mount
   useEffect(() => {
@@ -19,15 +37,18 @@ export function Reviews({ restaurant, onBack, bookingId }) {
         if (restaurant?.restaurantId) {
           const response = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId);
           // Transform API response to match component state format
-          const transformedReviews = (response.data || []).map((review) => ({
-            id: review.reviewId,
-            reviewId: review.reviewId,
-            restaurantId: review.fkRestaurantId,
-            customerName: review.customerName || "Anonymous",
-            rating: review.rating,
-            comment: review.comment,
-            createdAt: review.createdAt,
-          }));
+          const reviewsArray = response.data.reviewInfo || response.data.data || [];
+          const transformedReviews = (Array.isArray(reviewsArray) ? reviewsArray : []).map(
+            (review) => ({
+              id: review.reviewId,
+              reviewId: review.reviewId,
+              restaurantId: review.fkRestaurantId,
+              customerName: review.booking?.customerName || "Anonymous",
+              rating: parseInt(review.rating) || 0,
+              comment: review.comment,
+              createdAt: review.createdAt,
+            })
+          );
           setReviews(transformedReviews);
         }
       } catch (error) {
@@ -53,47 +74,95 @@ export function Reviews({ restaurant, onBack, bookingId }) {
   const handleSubmitReview = async (e) => {
     e.preventDefault();
 
-    if (!formData.customerName.trim() || !formData.comment.trim()) {
-      alert("Please fill in all fields");
+    if (!formData.comment.trim()) {
+      alert("Please write a comment for your review");
+      return;
+    }
+
+    if (!formData.isAnonymous && !formData.customerName.trim()) {
+      alert("Please enter your name or choose to review anonymously");
       return;
     }
 
     try {
       setSubmitting(true);
 
-      // Call API to create review
-      const response = await reviewAPI.createReview(
-        restaurant.restaurantId,
-        bookingId || null, // bookingId may not always be provided
-        {
-          customerName: formData.customerName,
+      if (isEditing && existingReview?.reviewId) {
+        const updatePayload = {
           rating: formData.rating,
           comment: formData.comment,
+        };
+
+        const response = await reviewAPI.updateReview(existingReview.reviewId, updatePayload);
+
+        // Update local state
+        setFormData({
+          customerName: "",
+          rating: 5,
+          comment: "",
+          isAnonymous: false,
+        });
+        setShowForm(false);
+        setIsEditing(false);
+        alert("Review updated successfully!");
+
+        // Trigger parent refresh
+        if (onBack) {
+          onBack();
         }
-      );
+      } else {
+        // Create new review
+        const response = await reviewAPI.createReview(
+          restaurant.restaurantId,
+          verifiedBookingId || null,
+          {
+            customerName: formData.isAnonymous ? null : formData.customerName,
+            rating: formData.rating,
+            comment: formData.comment,
+          }
+        );
 
-      // Add new review to local state (from API response)
-      const newReview = {
-        id: response.data.reviewId,
-        reviewId: response.data.reviewId,
-        restaurantId: response.data.fkRestaurantId,
-        customerName: response.data.customerName,
-        rating: response.data.rating,
-        comment: response.data.comment,
-        createdAt: response.data.createdAt,
-      };
+        // Add new review to local state (from API response)
+        const newReview = {
+          id: response.data.data?.reviewId || response.data.reviewId,
+          reviewId: response.data.data?.reviewId || response.data.reviewId,
+          restaurantId: response.data.data?.fkRestaurantId || restaurant.restaurantId,
+          customerName: formData.customerName || "Anonymous",
+          rating: parseInt(response.data.data?.rating || formData.rating),
+          comment: response.data.data?.comment || formData.comment,
+          createdAt: response.data.data?.createdAt || new Date().toISOString(),
+        };
 
-      setReviews([newReview, ...reviews]);
-      setFormData({
-        customerName: "",
-        rating: 5,
-        comment: "",
-      });
-      setShowForm(false);
-      alert("Review submitted successfully!");
+        setReviews([newReview, ...reviews]);
+        setFormData({
+          customerName: "",
+          rating: 5,
+          comment: "",
+          isAnonymous: false,
+        });
+        setShowForm(false);
+        alert("Review submitted successfully!");
+
+        // Trigger parent refresh if from MyBookings
+        if (onBack && verifiedBookingId) {
+          onBack();
+        }
+      }
     } catch (error) {
       console.error("Error submitting review:", error);
-      alert(error.response?.data?.message || "Failed to submit review. Please try again.");
+      const errorMsg =
+        error.response?.data?.message || "Failed to submit review. Please try again.";
+
+      // Check for duplicate review constraint (409 = Conflict)
+      if (error.response?.status === 409) {
+        alert(errorMsg);
+      } else if (error.response?.status === 400 && errorMsg.includes("UNIQUE constraint failed")) {
+        alert(
+          "You have already submitted a review for this booking. Please edit your existing review instead."
+        );
+      } else {
+        alert(errorMsg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -101,7 +170,7 @@ export function Reviews({ restaurant, onBack, bookingId }) {
 
   const averageRating =
     reviews.length > 0
-      ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+      ? (reviews.reduce((sum, r) => sum + (parseInt(r.rating) || 0), 0) / reviews.length).toFixed(1)
       : 0;
 
   const getRatingColor = (rating) => {
@@ -112,29 +181,17 @@ export function Reviews({ restaurant, onBack, bookingId }) {
 
   if (loading) {
     return (
-      <div>
-        <button className="btn btn-secondary mb-lg" onClick={onBack} style={{ border: "none" }}>
-          ← Back
-        </button>
-        <div style={{ textAlign: "center", padding: "var(--spacing-lg)" }}>
-          <p>Loading reviews...</p>
-        </div>
+      <div style={{ textAlign: "center", padding: "var(--spacing-lg)" }}>
+        <p>Loading reviews...</p>
       </div>
     );
   }
 
   return (
     <div>
-      {/* Back Button */}
-      <button className="btn btn-secondary mb-lg" onClick={onBack} style={{ border: "none" }}>
-        ← Back
-      </button>
-
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "var(--spacing-lg)" }}>
         {/* Reviews List */}
         <div>
-          <h2 style={{ marginBottom: "var(--spacing-lg)" }}>⭐ Reviews & Ratings</h2>
-
           {reviews.length > 0 ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-md)" }}>
               {reviews.map((review) => (
@@ -272,7 +329,15 @@ export function Reviews({ restaurant, onBack, bookingId }) {
           {!showForm && (
             <button
               className="btn btn-primary btn-full"
-              onClick={() => setShowForm(true)}
+              onClick={() => {
+                if (verifiedBookingId) {
+                  // Already verified, show form
+                  setShowForm(true);
+                } else {
+                  // Need to verify booking first
+                  setShowVerification(true);
+                }
+              }}
               style={{ padding: "12px 24px", fontSize: "16px" }}
             >
               ✏️ Write a Review
@@ -299,23 +364,48 @@ export function Reviews({ restaurant, onBack, bookingId }) {
         >
           <div className="card" style={{ maxWidth: "500px", width: "90%" }}>
             <div className="card-header">
-              <h4 className="card-title">Write Your Review</h4>
+              <h4 className="card-title">
+                {isEditing ? "✏️ Edit Your Review" : "⭐ Write Your Review"}
+              </h4>
             </div>
             <div className="card-content">
               <form onSubmit={handleSubmitReview}>
-                <div className="form-group">
-                  <label htmlFor="customerName">👤 Your Name *</label>
-                  <input
-                    id="customerName"
-                    type="text"
-                    name="customerName"
-                    value={formData.customerName}
-                    onChange={handleChange}
-                    placeholder="Enter your name"
-                    required
-                    disabled={submitting}
-                  />
-                </div>
+                {/* Only show name field when creating new review, not when editing */}
+                {!isEditing && (
+                  <div className="form-group">
+                    <label htmlFor="customerName">
+                      👤 Your Name {!formData.isAnonymous && "*"}
+                    </label>
+                    <input
+                      id="customerName"
+                      type="text"
+                      name="customerName"
+                      value={formData.customerName}
+                      onChange={handleChange}
+                      placeholder="Enter your name"
+                      required={!formData.isAnonymous}
+                      disabled={submitting || formData.isAnonymous}
+                    />
+                    <div style={{ marginTop: "8px" }}>
+                      <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
+                        <input
+                          type="checkbox"
+                          checked={formData.isAnonymous}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              isAnonymous: e.target.checked,
+                              customerName: e.target.checked ? "" : prev.customerName,
+                            }))
+                          }
+                          disabled={submitting}
+                          style={{ marginRight: "8px" }}
+                        />
+                        <span style={{ fontSize: "14px" }}>🤫 Post anonymously</span>
+                      </label>
+                    </div>
+                  </div>
+                )}
 
                 <div className="form-group">
                   <label htmlFor="rating">⭐ Rating *</label>
@@ -360,17 +450,22 @@ export function Reviews({ restaurant, onBack, bookingId }) {
                 </div>
 
                 <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
-                  <button
-                    type="submit"
-                    className="btn btn-primary btn-full"
-                    disabled={submitting}
-                  >
-                    {submitting ? "⏳ Submitting..." : "✓ Submit Review"}
+                  <button type="submit" className="btn btn-primary btn-full" disabled={submitting}>
+                    {submitting
+                      ? isEditing
+                        ? "⏳ Updating..."
+                        : "⏳ Submitting..."
+                      : isEditing
+                        ? "✓ Update Review"
+                        : "✓ Submit Review"}
                   </button>
                   <button
                     type="button"
                     className="btn btn-secondary btn-full"
-                    onClick={() => setShowForm(false)}
+                    onClick={() => {
+                      setShowForm(false);
+                      setIsEditing(false);
+                    }}
                     disabled={submitting}
                   >
                     Cancel
@@ -380,6 +475,18 @@ export function Reviews({ restaurant, onBack, bookingId }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Booking Verification Modal - Only show if not already verified */}
+      {showVerification && !verifiedBookingId && (
+        <BookingVerification
+          onBookingVerified={(booking) => {
+            setVerifiedBookingId(booking.bookingId);
+            setShowVerification(false);
+            setShowForm(true);
+          }}
+          onClose={() => setShowVerification(false)}
+        />
       )}
     </div>
   );

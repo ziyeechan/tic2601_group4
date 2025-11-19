@@ -1,11 +1,47 @@
+import { useState, useEffect } from "react";
 import { mockMenuItems } from "../mockData";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
+import { Reviews } from "./Reviews";
+import { reviewAPI } from "../utils/api";
 
 export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+
+  // Fetch reviews to calculate average rating
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        if (restaurant?.restaurantId) {
+          const response = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId);
+          const reviewsArray = response.data.reviewInfo || [];
+
+          if (Array.isArray(reviewsArray) && reviewsArray.length > 0) {
+            const ratings = reviewsArray
+              .map((review) => parseInt(review.rating) || 0)
+              .filter((rating) => rating > 0);
+
+            const avgRating =
+              ratings.length > 0
+                ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
+                : 0;
+
+            setAverageRating(avgRating);
+            setReviewCount(reviewsArray.length);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+        setAverageRating(0);
+        setReviewCount(0);
+      }
+    };
+
+    fetchReviews();
+  }, [restaurant?.restaurantId]);
   const menuItems = mockMenuItems.filter((item) => item.restaurantId === restaurant.restaurantId);
 
   // Default mock data for missing fields
-  const defaultAmenities = ["Wifi", "Parking", "Wheelchair Accessible", "Reservations"];
   const defaultTimeSlots = ["12:00", "13:00", "18:00", "19:00", "20:00", "21:00"];
 
   // Generate opening hours display from database times or use defaults
@@ -114,25 +150,13 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
 
               {/* Rating */}
               <div className="flex gap-md mb-md" style={{ alignItems: "center" }}>
-                <div style={{ fontSize: "20px" }}>⭐ N/A</div>
-                <div className="text-muted">(Check reviews for ratings)</div>
-              </div>
-
-              {/* Amenities */}
-              <div style={{ marginBottom: "var(--spacing-md)" }}>
-                <h5 style={{ marginBottom: "var(--spacing-sm)" }}>Amenities:</h5>
-                <div
-                  style={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: "var(--spacing-sm)",
-                  }}
-                >
-                  {(restaurant.amenities || defaultAmenities).map((amenity) => (
-                    <span key={amenity} className="badge badge-primary">
-                      {amenity}
-                    </span>
-                  ))}
+                <div style={{ fontSize: "20px" }}>
+                  ⭐ {averageRating > 0 ? averageRating : "N/A"}
+                </div>
+                <div className="text-muted">
+                  {reviewCount > 0
+                    ? `(${reviewCount} ${reviewCount === 1 ? "review" : "reviews"})`
+                    : "(No reviews yet)"}
                 </div>
               </div>
 
@@ -298,6 +322,20 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
           >
             🎫 Book Now
           </button>
+        </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div style={{ marginTop: "var(--spacing-lg)" }}>
+        <div className="card">
+          <div className="card-header">
+            <h3 className="card-title" style={{ margin: 0 }}>
+              ⭐ Reviews & Ratings
+            </h3>
+          </div>
+          <div className="card-content">
+            <Reviews restaurant={restaurant} onBack={onBack} />
+          </div>
         </div>
       </div>
     </div>

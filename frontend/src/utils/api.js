@@ -134,7 +134,7 @@ export const reviewAPI = {
   getReviewsByRestaurant: (restaurantId) => api.get(`/review/restaurant/${restaurantId}`),
 
   // Get all reviews for a specific booking
-  getReviewsByBooking: (bookingId) => api.get(`/review/bookings/${bookingId}`),
+  getReviewsByBooking: (bookingId) => api.get(`/review/booking/${bookingId}`),
 
   // Update a review
   updateReview: (reviewId, reviewData) => api.put(`/review/${reviewId}`, reviewData),
