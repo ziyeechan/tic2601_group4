@@ -24,75 +24,74 @@ export default function App() {
   const [restaurants, setRestaurants] = useState(false);
   const [filteredRestaurants, setFilteredRestaurants] = useState(false);
 
-  //Address table
-  const [addresses, setAddresses] = useState([]);
-
-  //Promotion table
-  const [promotions, setPromotions] = useState([]);
-
-  //Review table
-  const [reviews, setReviews] = useState([]);
-
   // Track booking confirmation for auto-fill
   const [lastBookingEmail, setLastBookingEmail] = useState("");
   const [lastConfirmationCode, setLastConfirmationCode] = useState("");
 
   //USEEFFECT
   useEffect(() => {
-    Promise.all([
-      restaurantAPI.getAllRestaurants(),
-      addressAPI.getAllAddresses(),
-      promotionAPI.getAllPromotions(),
-      reviewAPI.getAllReviews(),
-    ])
-      .then(([resRestaurants, resAddresses, resPromotions, resReviews]) => {
-        const restaurantList = resRestaurants.data;
-        const addressList = resAddresses.data;
-        const promotionList = resPromotions.data;
-        const reviewList = resReviews.data;
+    // Use the new backend search endpoint for initial load
+    // This replaces 4 API calls with 1 call and provides rich data
+    restaurantAPI
+      .searchRestaurants({})
+      .then((response) => {
+        const restaurantList = response.data.restaurants;
 
-        // Save raw data to state
-        setAddresses(addressList);
-        setPromotions(promotionList);
-        setReviews(reviewList);
-
-        // Build final restaurant objects with extra info
-        const finalRestaurants = restaurantList.map((restaurant) => {
-          // Get reviews for this restaurant
-          const reviewsForThis = reviewList.filter(
-            (review) => review.fkRestaurantId === restaurant.restaurantId
-          );
-
-          // Extract valid ratings
-          const ratings = reviewsForThis.map((r) => Number(r.rating)).filter((r) => !isNaN(r));
-
-          // Calculate average rating
-          const reviewCount = ratings.length;
-          const averageRating =
-            reviewCount > 0 ? ratings.reduce((sum, r) => sum + r, 0) / reviewCount : 0;
-
-          // Find matching address
-          const restaurantAddress = addressList.find(
-            (addr) => addr.addressId === restaurant.fkAddressId
-          );
-
-          // Return the final restaurant object
-          return {
-            ...restaurant,
-            image: restaurant.imageUrl,
-            reviewCount,
-            averageRating,
-            address: restaurantAddress,
-          };
-        });
+        // Enrich with fields expected by components for compatibility
+        const enrichedRestaurants = restaurantList.map((restaurant) => ({
+          ...restaurant,
+          image: restaurant.imageUrl, // Map imageUrl to image field
+          reviewCount: restaurant.reviewSummary?.totalReviews || 0,
+          averageRating: restaurant.reviewSummary?.averageRating || 0,
+        }));
 
         // Save final restaurant list to state
-        setRestaurants(finalRestaurants);
-        setFilteredRestaurants(finalRestaurants);
+        setRestaurants(enrichedRestaurants);
+        setFilteredRestaurants(enrichedRestaurants);
         setSelectedRestaurant(null);
       })
       .catch((err) => {
-        console.error("Error loading data:", err);
+        console.error("Error loading restaurants:", err);
+        // Fallback: try old endpoints if new one fails
+        Promise.all([
+          restaurantAPI.getAllRestaurants(),
+          addressAPI.getAllAddresses(),
+          promotionAPI.getAllPromotions(),
+          reviewAPI.getAllReviews(),
+        ])
+          .then(([resRestaurants, resAddresses, resPromotions, resReviews]) => {
+            const restaurantList = resRestaurants.data;
+            const addressList = resAddresses.data;
+            const reviewList = resReviews.data;
+
+            const finalRestaurants = restaurantList.map((restaurant) => {
+              const reviewsForThis = reviewList.filter(
+                (review) => review.fkRestaurantId === restaurant.restaurantId
+              );
+              const ratings = reviewsForThis.map((r) => Number(r.rating)).filter((r) => !isNaN(r));
+              const reviewCount = ratings.length;
+              const averageRating =
+                reviewCount > 0 ? ratings.reduce((sum, r) => sum + r, 0) / reviewCount : 0;
+              const restaurantAddress = addressList.find(
+                (addr) => addr.addressId === restaurant.fkAddressId
+              );
+
+              return {
+                ...restaurant,
+                image: restaurant.imageUrl,
+                reviewCount,
+                averageRating,
+                address: restaurantAddress,
+              };
+            });
+
+            setRestaurants(finalRestaurants);
+            setFilteredRestaurants(finalRestaurants);
+            setSelectedRestaurant(null);
+          })
+          .catch((err) => {
+            console.error("Error loading data from fallback:", err);
+          });
       });
   }, []);
 
@@ -108,19 +107,26 @@ export default function App() {
 
   const handleRestaurantSelect = async (restaurant) => {
     try {
-      // Fetch detailed restaurant info with address
-      const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
-      const { restaurant: restaurantData, address } = response.data;
+      // Check if restaurant already has enriched data from search endpoint
+      if (restaurant.promotions && restaurant.dietaryTypes) {
+        // Use existing enriched data
+        setSelectedRestaurant(restaurant);
+        setCurrentView("restaurant-detail");
+      } else {
+        // Fetch detailed restaurant info with address (fallback for old data)
+        const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
+        const { restaurant: restaurantData, address } = response.data;
 
-      // Combine restaurant data with address information
-      const enrichedRestaurant = {
-        ...restaurantData,
-        address,
-        image: restaurantData.imageUrl, // Map imageUrl to image for components
-      };
+        // Combine restaurant data with address information
+        const enrichedRestaurant = {
+          ...restaurantData,
+          address,
+          image: restaurantData.imageUrl, // Map imageUrl to image for components
+        };
 
-      setSelectedRestaurant(enrichedRestaurant);
-      setCurrentView("restaurant-detail");
+        setSelectedRestaurant(enrichedRestaurant);
+        setCurrentView("restaurant-detail");
+      }
     } catch (err) {
       console.error("Error fetching restaurant details:", err);
       // Fallback to using the restaurant data passed from card
@@ -131,19 +137,26 @@ export default function App() {
 
   const handleBookNow = async (restaurant) => {
     try {
-      // Fetch detailed restaurant info with address
-      const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
-      const { restaurant: restaurantData, address } = response.data;
+      // Check if restaurant already has enriched data from search endpoint
+      if (restaurant.promotions && restaurant.dietaryTypes) {
+        // Use existing enriched data
+        setSelectedRestaurant(restaurant);
+        setCurrentView("booking-form");
+      } else {
+        // Fetch detailed restaurant info with address (fallback for old data)
+        const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
+        const { restaurant: restaurantData, address } = response.data;
 
-      // Combine restaurant data with address information
-      const enrichedRestaurant = {
-        ...restaurantData,
-        address,
-        image: restaurantData.imageUrl, // Map imageUrl to image for components
-      };
+        // Combine restaurant data with address information
+        const enrichedRestaurant = {
+          ...restaurantData,
+          address,
+          image: restaurantData.imageUrl, // Map imageUrl to image for components
+        };
 
-      setSelectedRestaurant(enrichedRestaurant);
-      setCurrentView("booking-form");
+        setSelectedRestaurant(enrichedRestaurant);
+        setCurrentView("booking-form");
+      }
     } catch (err) {
       console.error("Error fetching restaurant details:", err);
       // Fallback to using the restaurant data passed from card
@@ -185,7 +198,6 @@ export default function App() {
               <div className="sidebar" style={{ gridColumn: "span 1" }}>
                 <SearchFilters
                   restaurants={restaurants || []}
-                  promotions={promotions || []}
                   onFiltered={setFilteredRestaurants}
                 />
               </div>

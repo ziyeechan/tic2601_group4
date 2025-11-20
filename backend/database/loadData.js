@@ -4,44 +4,45 @@ const { SeatingPlans } = require("../src/schemas/seatingPlans.js");
 const { Bookings } = require("../src/schemas/bookings.js");
 const { Promotions } = require("../src/schemas/promotions.js");
 const { Reviews } = require("../src/schemas/reviews.js");
+const { Menus } = require("../src/schemas/menus.js");
 
 module.exports.LoadData = async () => {
   try {
       await Addresses.bulkCreate([
     {
-      addressLine1: "21 Sesame Street 9",
-      country: "USA",
-      city: "Midtown",
-      state: "California",
-      postalCode: "CA 90209",
+      addressLine1: "123 Orchard Road",
+      country: "Singapore",
+      city: "Orchard",
+      state: "Singapore",
+      postalCode: "238801",
     },
     {
-      addressLine1: "123 Garden Street",
-      country: "USA",
-      city: "Downtown",
-      state: "California",
-      postalCode: "CA 90210",
+      addressLine1: "456 Marina Bay Street",
+      country: "Singapore",
+      city: "Marina Bay",
+      state: "Singapore",
+      postalCode: "018972",
     },
     {
-      addressLine1: "456 Cherry Blossom Ave",
-      country: "USA",
-      city: "Uptown",
-      state: "New York",
-      postalCode: "NY 10001",
+      addressLine1: "789 Clementi Avenue 2",
+      country: "Singapore",
+      city: "Clementi",
+      state: "Singapore",
+      postalCode: "129603",
     },
     {
-      addressLine1: "789 Little Italy Street",
-      country: "Italy",
-      city: "Rome",
-      state: "Lazio",
-      postalCode: "00184",
+      addressLine1: "321 Bukit Merah View",
+      country: "Singapore",
+      city: "Bukit Merah",
+      state: "Singapore",
+      postalCode: "150321",
     },
     {
-      addressLine1: "321 Curry Lane",
-      country: "India",
-      city: "Spice District",
-      state: "Kerala",
-      postalCode: "682001",
+      addressLine1: "654 Bedok Reservoir Road",
+      country: "Singapore",
+      city: "Bedok",
+      state: "Singapore",
+      postalCode: "479261",
     },
   ]);
 
@@ -458,6 +459,75 @@ module.exports.LoadData = async () => {
           "Great Indian food with rich flavors. Really appreciated the vegetarian options and the staff were very accommodating.",
         fkBookingId: 3,
         fkRestaurantId: 4,
+      },
+    ]);
+
+    // Add menu dietary types for each restaurant
+    await Menus.bulkCreate([
+      // Pasta Delights - Italian restaurant (Restaurant 1)
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/pasta_delights_vegetarian.pdf",
+        fkRestaurantId: 1,
+      },
+      {
+        menuTypes: "Vegan",
+        menuFilepath: "/menus/pasta_delights_vegan.pdf",
+        fkRestaurantId: 1,
+      },
+      // The Garden Bistro - French restaurant (Restaurant 2)
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/garden_bistro_vegetarian.pdf",
+        fkRestaurantId: 2,
+      },
+      {
+        menuTypes: "Halal",
+        menuFilepath: "/menus/garden_bistro_halal.pdf",
+        fkRestaurantId: 2,
+      },
+      // Sakura Sushi & Grill - Japanese restaurant (Restaurant 3)
+      {
+        menuTypes: "Vegan",
+        menuFilepath: "/menus/sakura_sushi_vegan.pdf",
+        fkRestaurantId: 3,
+      },
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/sakura_sushi_vegetarian.pdf",
+        fkRestaurantId: 3,
+      },
+      // Mama Rosa's Trattoria - Italian restaurant (Restaurant 4)
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/mama_rosas_vegetarian.pdf",
+        fkRestaurantId: 4,
+      },
+      {
+        menuTypes: "Vegan",
+        menuFilepath: "/menus/mama_rosas_vegan.pdf",
+        fkRestaurantId: 4,
+      },
+      {
+        menuTypes: "Halal",
+        menuFilepath: "/menus/mama_rosas_halal.pdf",
+        fkRestaurantId: 4,
+      },
+      // Spice Route - Indian restaurant (Restaurant 5)
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/spice_route_vegetarian.pdf",
+        fkRestaurantId: 5,
+      },
+      {
+        menuTypes: "Vegan",
+        menuFilepath: "/menus/spice_route_vegan.pdf",
+        fkRestaurantId: 5,
+      },
+      {
+        menuTypes: "Halal",
+        menuFilepath: "/menus/spice_route_halal.pdf",
+        fkRestaurantId: 5,
       },
     ]);
 
