@@ -1,48 +1,8 @@
-import { useState, useEffect } from "react";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
 import { Reviews } from "./Reviews";
-import { reviewAPI } from "../utils/api";
 import { Card } from "./Common";
 
 export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
-  const [averageRating, setAverageRating] = useState(0);
-  const [reviewCount, setReviewCount] = useState(0);
-
-  // Fetch reviews to calculate average rating
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        if (restaurant?.restaurantId) {
-          const response = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId);
-          const reviewsArray = response.data.reviewInfo || [];
-
-          if (Array.isArray(reviewsArray) && reviewsArray.length > 0) {
-            const ratings = reviewsArray
-              .map((review) => parseInt(review.rating) || 0)
-              .filter((rating) => rating > 0);
-
-            const avgRating =
-              ratings.length > 0
-                ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
-                : 0;
-
-            setAverageRating(avgRating);
-            setReviewCount(reviewsArray.length);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching reviews:", error);
-        setAverageRating(0);
-        setReviewCount(0);
-      }
-    };
-
-    fetchReviews();
-  }, [restaurant?.restaurantId]);
-
-  // Default mock data for missing fields
-  const defaultTimeSlots = ["12:00", "13:00", "18:00", "19:00", "20:00", "21:00"];
-
   // Generate opening hours display from database times or use defaults
   const getOpeningHoursDisplay = () => {
     if (restaurant.openingTime && restaurant.closingTime) {
@@ -87,21 +47,10 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
     if (restaurant.openingTime && restaurant.closingTime) {
       return generateTimeSlots(restaurant.openingTime, restaurant.closingTime);
     }
-    return defaultTimeSlots;
   };
 
   const openingHours = getOpeningHoursDisplay();
   const availableTimeSlots = getAvailableTimeSlots();
-
-  const getAllergenBadge = (allergen) => {
-    const colors = {
-      dairy: "#fee2e2",
-      shellfish: "#fef3c7",
-      gluten: "#cffafe",
-      nuts: "#fce7f3",
-    };
-    return colors[allergen] || "#e2e8f0";
-  };
 
   return (
     <div>
@@ -145,18 +94,6 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                   <p className="text-muted" style={{ margin: 0 }}>
                     {restaurant.cuisine || "Cuisine Not Specified"}
                   </p>
-                </div>
-              </div>
-
-              {/* Rating */}
-              <div className="flex gap-md mb-md" style={{ alignItems: "center" }}>
-                <div style={{ fontSize: "20px" }}>
-                  ⭐ {averageRating > 0 ? averageRating : "N/A"}
-                </div>
-                <div className="text-muted">
-                  {reviewCount > 0
-                    ? `(${reviewCount} ${reviewCount === 1 ? "review" : "reviews"})`
-                    : "(No reviews yet)"}
                 </div>
               </div>
 
