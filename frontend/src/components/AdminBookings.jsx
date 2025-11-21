@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { bookingAPI, restaurantAPI } from "../utils/api";
-import { Card } from "./Common";
+import { Card, Toast } from "./Common";
 
 export function AdminBookings({ restaurantId: propRestaurantId }) {
   const [bookings, setBookings] = useState([]);
@@ -11,6 +11,10 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
   const [dateFilter, setDateFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [updatingBookings, setUpdatingBookings] = useState(new Set());
+
+  const [show, setShow] = useState(false);
+  const [type, setType] = useState("");
+  const [text, setText] = useState("");
 
   // Load restaurants on mount
   useEffect(() => {
@@ -95,6 +99,12 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
     }
   };
 
+  const handleToast = (type, message) => {
+    setShow(true);
+    setType(type);
+    setText(message);
+  };
+
   const getStatusBadgeClass = (status) => {
     const statusClasses = {
       confirmed: "status-confirmed",
@@ -161,7 +171,8 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
 
       const errorMessage =
         error.response?.data?.message || "Failed to update booking status. Please try again.";
-      alert(errorMessage);
+      handleToast("danger", errorMessage);
+      // alert(errorMessage);
     } finally {
       setUpdatingBookings((prev) => {
         const newSet = new Set(prev);

@@ -10,9 +10,24 @@ import { MyBookings } from "./components/MyBookings";
 import { AdminBookings } from "./components/AdminBookings";
 import { SeatingPlan } from "./components/SeatingPlan";
 import { Analytics } from "./components/Analytics";
-import { RestaurantManagement } from "./components/RestaurantManagement2";
+import { RestaurantManagement } from "./components/RestaurantManagement";
 import { Promotions } from "./components/Promotions2";
 import { AllPromotions } from "./components/Promotions";
+import { Toast } from "./components/Common";
+
+const Views = ({ children }) => {
+  return (
+    <div
+      className="container"
+      style={{
+        paddingTop: "var(--spacing-lg)",
+        paddingBottom: "var(--spacing-lg)",
+      }}
+    >
+      {children}
+    </div>
+  );
+};
 
 export default function App() {
   const [currentView, setCurrentView] = useState("home");
@@ -36,6 +51,11 @@ export default function App() {
   // Track booking confirmation for auto-fill
   const [lastBookingEmail, setLastBookingEmail] = useState("");
   const [lastConfirmationCode, setLastConfirmationCode] = useState("");
+
+  // For toast
+  const [show, setShow] = useState(false);
+  const [type, setType] = useState("");
+  const [text, setText] = useState("");
 
   //USEEFFECT
   useEffect(() => {
@@ -99,6 +119,12 @@ export default function App() {
   const handleViewChange = (view) => {
     setCurrentView(view);
     setSelectedRestaurant(null);
+  };
+
+  const handleToast = (type, message) => {
+    setShow(true);
+    setType(type);
+    setText(message);
   };
 
   const handleRestaurantView = (restaurant) => {
@@ -165,13 +191,7 @@ export default function App() {
     switch (currentView) {
       case "home":
         return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <div
               style={{
                 display: "grid",
@@ -236,140 +256,86 @@ export default function App() {
                 )}
               </div>
             </div>
-          </div>
+          </Views>
         );
 
       case "restaurant-management":
         return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <RestaurantManagement
               onBack={() => setCurrentView("home")}
               onViewChange={setCurrentView}
               restaurantId={selectedRestaurantId}
             />
-          </div>
+          </Views>
         );
 
       case "promotions":
         return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <Promotions onBack={() => setCurrentView("home")} restaurantId={selectedRestaurantId} />
-          </div>
+          </Views>
         );
 
       case "all-promotions":
         return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <AllPromotions onBack={() => setCurrentView("home")} />
-          </div>
+          </Views>
         );
 
       case "restaurant-detail":
         return selectedRestaurant ? (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <RestaurantDetail
               restaurant={selectedRestaurant}
               onBack={() => setCurrentView("home")}
               onBookNow={handleBookNow}
             />
-          </div>
+          </Views>
         ) : null;
 
       case "booking-form":
         return selectedRestaurant ? (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <BookingForm
               restaurant={selectedRestaurant}
               onBack={() => setCurrentView("restaurant-detail")}
               onBookingComplete={handleBookingComplete}
               onBookingSuccess={handleBookingSuccess}
             />
-          </div>
+          </Views>
         ) : null;
 
       case "my-bookings":
         return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <MyBookings
               autoFillEmail={lastBookingEmail}
               highlightConfirmationCode={lastConfirmationCode}
             />
-          </div>
+          </Views>
         );
 
       case "admin-bookings":
         return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <AdminBookings />
-          </div>
+          </Views>
         );
 
       case "seating":
         return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <SeatingPlan />
-          </div>
+          </Views>
         );
 
       case "analytics":
         return (
-          <div
-            className="container"
-            style={{
-              paddingTop: "var(--spacing-lg)",
-              paddingBottom: "var(--spacing-lg)",
-            }}
-          >
+          <Views>
             <Analytics />
-          </div>
+          </Views>
         );
 
       default:
@@ -395,12 +361,14 @@ export default function App() {
             } else {
               setCurrentView("home");
             }
-            alert(`Switched to ${newRole} view`);
+            handleToast("info", `Switched to ${newRole} view`);
+            // alert(`Switched to ${newRole} view`);
           }}
         >
           👤 Switch to {userRole === "customer" ? "Admin" : "Customer"} View
         </button>
       </div>
+      {show && <Toast type={type} text={text} duration={2500} onClose={() => setShow(false)} />}
     </div>
   );
 }

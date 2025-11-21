@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { seatingAPI } from "../utils/api";
-import { Card } from "./Common";
+import { Card, Toast } from "./Common";
 
 export function SeatingPlanCanvas({
   tables,
@@ -19,7 +19,17 @@ export function SeatingPlanCanvas({
   const [draggingId, setDraggingId] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
+  const [show, setShow] = useState(false);
+  const [type, setType] = useState("");
+  const [text, setText] = useState("");
+
   const radius = 60;
+
+  const handleToast = (type, message) => {
+    setShow(true);
+    setType(type);
+    setText(message);
+  };
 
   //Dragging function of restaurant layout
   const getTableUniqueId = (table) => table.seatingId || table.tempId;
@@ -40,17 +50,20 @@ export function SeatingPlanCanvas({
           )
       );
 
-      alert("Layout saved");
+      handleToast("success", "Layout saved.");
+      // alert("Layout saved");
     } catch (err) {
       console.error("Failed to save layout", err);
-      alert("Failed to save layout");
+      handleToast("danger", "Failed to save layout.");
+      // alert("Failed to save layout");
     }
   };
 
   // Create node on canvas for add table button
   const handleAddTable = () => {
     if (!selectedRestaurantId) {
-      alert("Please select a restaurant first");
+      handleToast("warning", "Please select a restaurant first.");
+      // alert("Please select a restaurant first");
       return;
     }
 
@@ -141,8 +154,10 @@ export function SeatingPlanCanvas({
   };
 
   const handleTableClick = (table) => {
-    if (isAddingTable) alert("Please fill in the new table before changing");
-    else {
+    if (isAddingTable) {
+      handleToast("warning", "Please fill in the new table before changing.");
+      // alert("Please fill in the new table before changing");
+    } else {
       setSelectedTable(table);
     }
   };
@@ -334,6 +349,8 @@ export function SeatingPlanCanvas({
             );
           })}
         </div>
+
+        {show && <Toast type={type} text={text} duration={2500} onClose={() => setShow(false)} />}
       </Card.Content>
     </Card>
   );

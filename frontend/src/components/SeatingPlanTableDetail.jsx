@@ -1,6 +1,6 @@
 import { seatingAPI, bookingAPI } from "../utils/api";
-import { Card } from "./Common";
-
+import { Card, TextContainer, Toast } from "./Common";
+import { useState } from "react";
 export function SeatingPlanTableDetail({
   selectedTable,
   setSelectedTable,
@@ -16,6 +16,16 @@ export function SeatingPlanTableDetail({
   setShowAssignModal,
 }) {
   if (!selectedTable) return null;
+
+  const [show, setShow] = useState(false);
+  const [type, setType] = useState("");
+  const [text, setText] = useState("");
+
+  const handleToast = (type, message) => {
+    setShow(true);
+    setType(type);
+    setText(message);
+  };
 
   // Populate fields when form is being filled
   const handleTableForm = (e) => {
@@ -34,7 +44,8 @@ export function SeatingPlanTableDetail({
   // Submit table data when add table form is submitted
   const submitAddTable = async () => {
     if (!selectedRestaurantId) {
-      alert("Please select a restaurant first");
+      handleToast("warning", "Please select a restaurant first.");
+      // alert("Please select a restaurant first");
       return;
     }
 
@@ -53,7 +64,8 @@ export function SeatingPlanTableDetail({
       setTables(data);
     } catch (error) {
       console.error("Failed to create seating plan", error);
-      alert("Failed to create table. Check console/server logs.");
+      handleToast("danger", "Failed to create table. Check console/server logs.");
+      // alert("Failed to create table. Check console/server logs.");
     }
   };
 
@@ -70,7 +82,8 @@ export function SeatingPlanTableDetail({
 
     if (!tableId) {
       console.error("No valid tableId for update", { selectedTable });
-      alert("Cannot update table: missing seatingId.");
+      handleToast("warning", "Cannot update table: missing seatingId.");
+      // alert("Cannot update table: missing seatingId.");
       return;
     }
 
@@ -96,7 +109,8 @@ export function SeatingPlanTableDetail({
       setSelectedTable(null);
     } catch (error) {
       console.error("Failed to update seating plan", error);
-      alert("Failed to edit table. Check console/server logs.");
+      handleToast("danger", "Failed to edit table. Check console/server logs.");
+      // alert("Failed to edit table. Check console/server logs.");
     }
   };
 
@@ -127,7 +141,8 @@ export function SeatingPlanTableDetail({
         console.log("Deleted seating plan", tableId);
       } catch (error) {
         console.error("Failed to delete seating plan", error);
-        alert("Failed to delete table. Check console/server logs.");
+        handleToast("danger", "Failed to delete table. Check console/server logs.");
+        // alert("Failed to delete table. Check console/server logs.");
         return;
       }
 
@@ -154,10 +169,12 @@ export function SeatingPlanTableDetail({
       // Update local state
       setBookings((prev) => prev.map((b) => (b.id === booking.id ? { ...b, tableId: null } : b)));
 
-      alert("Booking unassigned from table.");
+      handleToast("success", "Booking unassigned from table.");
+      // alert("Booking unassigned from table.");
     } catch (err) {
       console.error("Failed to unassign booking from table", err);
-      alert("Failed to unassign booking. Check console/server logs.");
+      handleToast("danger", "Failed to unassign booking. Check console/server logs.");
+      // alert("Failed to unassign booking. Check console/server logs.");
     }
   };
 
@@ -174,13 +191,7 @@ export function SeatingPlanTableDetail({
     <Card className="mb-lg">
       <Card.Header title="Table Details" />
       <Card.Content>
-        <div
-          className="mb-md"
-          style={{
-            paddingBottom: "var(--spacing-md)",
-            borderBottom: "1px solid var(--border-color)",
-          }}
-        >
+        <TextContainer className="mb-md">
           <label
             htmlFor="tableNumber"
             className="text-muted"
@@ -200,14 +211,8 @@ export function SeatingPlanTableDetail({
             placeholder="Enter table number"
             required
           />
-        </div>
-        <div
-          className="mb-md"
-          style={{
-            paddingBottom: "var(--spacing-md)",
-            borderBottom: "1px solid var(--border-color)",
-          }}
-        >
+        </TextContainer>
+        <TextContainer className="mb-md">
           <label
             htmlFor="tableType"
             className="text-muted"
@@ -229,14 +234,8 @@ export function SeatingPlanTableDetail({
             <option value="indoor">Indoor</option>
             <option value="vip">VIP</option>
           </select>
-        </div>
-        <div
-          className="mb-md"
-          style={{
-            paddingBottom: "var(--spacing-md)",
-            borderBottom: "1px solid var(--border-color)",
-          }}
-        >
+        </TextContainer>
+        <TextContainer className="mb-md">
           <label
             htmlFor="pax"
             className="text-muted"
@@ -256,16 +255,10 @@ export function SeatingPlanTableDetail({
             placeholder="Enter pax"
             required
           />
-        </div>
+        </TextContainer>
 
         {tableBookingsToday.length > 0 && (
-          <div
-            className="mb-md"
-            style={{
-              paddingBottom: "var(--spacing-md)",
-              borderBottom: "1px solid var(--border-color)",
-            }}
-          >
+          <TextContainer className="mb-md">
             <p className="text-muted" style={{ fontSize: "12px", margin: 0 }}>
               Bookings for this table (today)
             </p>
@@ -316,7 +309,7 @@ export function SeatingPlanTableDetail({
                 </div>
               </div>
             ))}
-          </div>
+          </TextContainer>
         )}
 
         {/* Action Buttons */}
@@ -362,6 +355,8 @@ export function SeatingPlanTableDetail({
             </>
           )}
         </div>
+
+        {show && <Toast type={type} text={text} duration={2500} onClose={() => setShow(false)} />}
       </Card.Content>
     </Card>
   );

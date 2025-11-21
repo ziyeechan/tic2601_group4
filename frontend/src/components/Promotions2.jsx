@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { promotionAPI } from "../utils/api";
-import { Card, FormInput, Toast } from "./Common";
+import { Card, FormInput, Toast, TextContainer } from "./Common";
 
 export function Promotions({ onBack, restaurantId }) {
   const [promotions, setPromotions] = useState(null);
@@ -258,27 +258,11 @@ export function Promotions({ onBack, restaurantId }) {
                       </div>
                     </div>
 
-                    <div
+                    <TextContainer
                       className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <p
-                        className="text-muted"
-                        style={{
-                          fontSize: "12px",
-                          margin: 0,
-                          marginBottom: "4px",
-                        }}
-                      >
-                        Valid Until
-                      </p>
-                      <p style={{ margin: 0, fontWeight: "600" }}>
-                        {new Date(promo.endAt).toLocaleDateString()}
-                      </p>
-                    </div>
+                      title="Valid Until"
+                      data={new Date(promo.endAt).toLocaleDateString()}
+                    />
 
                     <p
                       className="text-muted"
@@ -472,45 +456,13 @@ export function Promotions({ onBack, restaurantId }) {
               </Card.Header>
               {!isEditingPromotions ? (
                 <Card.Content>
-                  <div
-                    className="mb-lg"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <p
-                      className="text-muted"
-                      style={{
-                        margin: 0,
-                        fontSize: "12px",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Restaurant
-                    </p>
+                  <TextContainer className="mb-lg" title="Restaurant">
                     <p style={{ margin: 0, fontWeight: "600", fontSize: "16px" }}>
                       {selectedPromo.restaurantName}
                     </p>
-                  </div>
+                  </TextContainer>
 
-                  <div
-                    className="mb-lg"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <p
-                      className="text-muted"
-                      style={{
-                        margin: 0,
-                        fontSize: "12px",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Discount Code
-                    </p>
+                  <TextContainer className="mb-lg" title="Discount Code">
                     <div
                       style={{
                         display: "flex",
@@ -547,29 +499,13 @@ export function Promotions({ onBack, restaurantId }) {
                         {copiedCode === selectedPromo.discount ? "✓ Copied!" : "📋 Copy"}
                       </button>
                     </div>
-                  </div>
+                  </TextContainer>
 
-                  <div
+                  <TextContainer
                     className="mb-lg"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
+                    title="Valid Period"
+                    data={`${new Date(selectedPromo.startAt).toLocaleDateString()} to${" "}${new Date(selectedPromo.endAt).toLocaleDateString()}`}
                   >
-                    <p
-                      className="text-muted"
-                      style={{
-                        margin: 0,
-                        fontSize: "12px",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Valid Period
-                    </p>
-                    <p style={{ margin: 0, fontWeight: "600" }}>
-                      {new Date(selectedPromo.startAt).toLocaleDateString()} to{" "}
-                      {new Date(selectedPromo.endAt).toLocaleDateString()}
-                    </p>
                     <p
                       className="text-muted"
                       style={{ margin: 0, fontSize: "12px", marginTop: "4px" }}
@@ -578,7 +514,7 @@ export function Promotions({ onBack, restaurantId }) {
                         ? "✓ Currently Active"
                         : "Not Active"}
                     </p>
-                  </div>
+                  </TextContainer>
 
                   <div className="mb-lg">
                     <p
