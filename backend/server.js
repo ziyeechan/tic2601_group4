@@ -16,7 +16,7 @@ const router = express.Router();
 
 // set to true to seed the database with dummy data, once seeded,
 // set back to false, else it will reset the data on every load
-const onFirstLoad = false;
+const onFirstLoad = true;
 
 // Enable CORS for frontend development
 app.use((req, res, next) => {
