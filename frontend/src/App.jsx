@@ -38,7 +38,7 @@ export default function App() {
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(-1);
   const [restaurants, setRestaurants] = useState(false);
   const [filteredRestaurants, setFilteredRestaurants] = useState(false);
-
+  const [reload, setReload] = useState(false);
   //Address table
   const [addresses, setAddresses] = useState([]);
 
@@ -110,11 +110,12 @@ export default function App() {
         setRestaurants(finalRestaurants);
         setFilteredRestaurants(finalRestaurants);
         setSelectedRestaurant(null);
+        setReload(true);
       })
       .catch((err) => {
         console.error("Error loading data:", err);
       });
-  }, []);
+  }, [reload]);
 
   const handleViewChange = (view) => {
     setCurrentView(view);
@@ -221,7 +222,17 @@ export default function App() {
                       gap: "var(--spacing-md)",
                     }}
                   >
-                    <h2 style={{ margin: 0 }}>Available Restaurants</h2>
+                    <div className="flex-between gap-lg">
+                      <h2 style={{ margin: 0 }}>Available Restaurants</h2>
+                      {userRole != "customer" && (
+                        <button
+                          className="btn btn-success"
+                          onClick={() => setCurrentView("restaurant-management")}
+                        >
+                          Create Restaurant
+                        </button>
+                      )}
+                    </div>
                     <p className="text-muted" style={{ margin: 0 }}>
                       {filteredRestaurants.length} restaurants found
                     </p>
@@ -252,6 +263,7 @@ export default function App() {
                   <div className="empty-state">
                     <h3>No restaurants found</h3>
                     <p>Try adjusting your filters to see more results.</p>
+                    <button className="btn btn-success mt-lg">Create Restaurant</button>
                   </div>
                 )}
               </div>
@@ -266,6 +278,8 @@ export default function App() {
               onBack={() => setCurrentView("home")}
               onViewChange={setCurrentView}
               restaurantId={selectedRestaurantId}
+              handleAppToast={handleToast}
+              setReload={setReload}
             />
           </Views>
         );

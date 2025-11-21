@@ -45,7 +45,7 @@ module.exports.createRestaurant = async (req, res) => {
 
     const addressId = await createAddress(addressInfo);
     const restaurantInfo = { name, description, cuisine, phone, email };
-    await createRestaurant(restaurantInfo, addressId);
+    await createRestaurant(restaurantInfo, addressId.dataValues.addressId);
 
     return res.status(200).send("Restaurant has been successfully created");
   } catch (err) {
