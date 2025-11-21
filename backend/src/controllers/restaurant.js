@@ -1,16 +1,18 @@
-const { createAddress, findAddressByID, updateAddress, findAllAddresses } = require("../models/address");
+const { createAddress, findAddressByID, updateAddress } = require("../models/address");
 const {
   findAllRestaurants,
   findRestaurantByID,
   findRestaurantByName,
-  findRestaurantsByCountry,
-  findRestaurantsByCity,
-  findRestaurantsByState,
   createRestaurant,
   updateRestaurant,
   deleteRestaurantByID,
 } = require("../models/restaurant");
+const { Op, sequelize } = require("sequelize");
 const { Restaurants } = require("../schemas/restaurants.js");
+const { Addresses } = require("../schemas/addresses");
+const { Reviews } = require("../schemas/reviews");
+const { Promotions } = require("../schemas/promotions");
+const { Menus } = require("../schemas/menus");
 
 module.exports.createRestaurant = async (req, res) => {
   try {
@@ -103,51 +105,6 @@ module.exports.findRestaurantByName = async (req, res) => {
   }
 };
 
-module.exports.findRestaurantsByCountry = async (req, res) => {
-  try {
-    const country = req.params.country;
-    if (!country) {
-      return res.status(400).json({ message: "Missing country parameter" });
-    }
-
-    const restaurants = await findRestaurantsByCountry(country);
-    return res.status(200).json({ restaurants });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
-
-module.exports.findRestaurantsByCity = async (req, res) => {
-  try {
-    const city = req.params.city;
-    if (!city) {
-      return res.status(400).json({ message: "Missing city parameter" });
-    }
-
-    const restaurants = await findRestaurantsByCity(city);
-    return res.status(200).json({ restaurants });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
-
-module.exports.findRestaurantsByState = async (req, res) => {
-  try {
-    const state = req.params.state;
-    if (!state) {
-      return res.status(400).json({ message: "Missing state parameter" });
-    }
-
-    const restaurants = await findRestaurantsByState(state);
-    return res.status(200).json({ restaurants });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
-
 module.exports.updateRestaurant = async (req, res) => {
   try {
     const restaurantID = parseInt(req.params.restaurantID);
@@ -219,6 +176,7 @@ module.exports.deleteRestaurantByID = async (req, res) => {
  * Advanced restaurant search with filtering and aggregation
  * GET /restaurant/search
  * Query params: q, cuisine, minRating, maxRating, hasPromotion, dietaryType, limit, offset
+ * Optimized to use database queries instead of in-memory filtering
  */
 module.exports.searchRestaurants = async (req, res) => {
   try {
@@ -233,76 +191,50 @@ module.exports.searchRestaurants = async (req, res) => {
       offset = 0,
     } = req.query;
 
-    // Fetch all restaurants and convert to JSON
-    let allRestaurants = await findAllRestaurants();
-    allRestaurants = allRestaurants.map((r) => r.toJSON ? r.toJSON() : r);
-
-    // Fetch all addresses for enrichment
-    const allAddressesRaw = await findAllAddresses();
-    const allAddresses = allAddressesRaw.map((a) => a.toJSON ? a.toJSON() : a);
-
-    // Fetch all reviews for rating calculation
-    let allReviews = [];
-    try {
-      allReviews = await Restaurants.sequelize.query(
-        "SELECT * FROM reviews",
-        { type: require("sequelize").QueryTypes.SELECT }
-      );
-    } catch (e) {
-      // Reviews table might not have data yet
-      allReviews = [];
-    }
-
-    // Fetch all promotions for filtering
-    let allPromotions = [];
-    try {
-      allPromotions = await Restaurants.sequelize.query(
-        "SELECT * FROM promotions",
-        { type: require("sequelize").QueryTypes.SELECT }
-      );
-    } catch (e) {
-      allPromotions = [];
-    }
-
-    // Fetch all menus for dietary type filtering
-    let allMenus = [];
-    try {
-      allMenus = await Restaurants.sequelize.query(
-        "SELECT * FROM menus",
-        { type: require("sequelize").QueryTypes.SELECT }
-      );
-    } catch (e) {
-      allMenus = [];
-    }
-
-    // Filter by text search
+    // Build WHERE clause for restaurants
+    const where = {};
     if (q) {
-      const searchTerm = q.toLowerCase();
-      allRestaurants = allRestaurants.filter(
-        (r) =>
-          (r.restaurantName && r.restaurantName.toLowerCase().includes(searchTerm)) ||
-          (r.description && r.description.toLowerCase().includes(searchTerm))
-      );
+      where[Op.or] = [
+        sequelize.where(
+          sequelize.fn("LOWER", sequelize.col("restaurantName")),
+          Op.like,
+          `%${q.toLowerCase()}%`
+        ),
+        sequelize.where(
+          sequelize.fn("LOWER", sequelize.col("description")),
+          Op.like,
+          `%${q.toLowerCase()}%`
+        ),
+      ];
     }
-
-    // Filter by cuisine
     if (cuisine) {
       const cuisines = cuisine.split(",").map((c) => c.trim());
-      allRestaurants = allRestaurants.filter((r) => cuisines.includes(r.cuisine));
+      where.cuisine = { [Op.in]: cuisines };
     }
 
-    // Enrich restaurants with reviews and promotions data
-    const now = new Date();
-    let enrichedRestaurants = allRestaurants.map((restaurant) => {
-      // Get reviews for this restaurant
-      const restaurantReviews = allReviews.filter(
-        (review) => review.fkRestaurantId === restaurant.restaurantId
-      );
+    // Fetch restaurants with eager loading (JOINs) - only loads data for filtered restaurants
+    const restaurants = await Restaurants.findAll({
+      where,
+      include: [
+        { model: Addresses, required: false },
+        { model: Reviews, required: false },
+        { model: Promotions, required: false },
+        { model: Menus, required: false },
+      ],
+      subQuery: false,
+      raw: false,
+      nest: true,
+    });
 
-      // Calculate average rating
-      const ratings = restaurantReviews
-        .map((r) => parseInt(r.rating))
-        .filter((r) => !isNaN(r));
+    // Enrich restaurants with calculated data
+    const now = new Date();
+    const enrichedRestaurants = restaurants.map((restaurant) => {
+      const restaurantJSON = restaurant.toJSON ? restaurant.toJSON() : restaurant;
+
+      // Get reviews for this restaurant and calculate average rating
+      // Reviews are already loaded via eager loading (as lowercase key from toJSON)
+      const restaurantReviews = Array.isArray(restaurantJSON.reviews) ? restaurantJSON.reviews : [];
+      const ratings = restaurantReviews.map((r) => parseInt(r.rating)).filter((r) => !isNaN(r));
 
       // Calculate rating distribution
       const ratingDistribution = {
@@ -353,79 +285,86 @@ module.exports.searchRestaurants = async (req, res) => {
         },
       };
 
+      const averageRating =
+        ratings.length > 0
+          ? parseFloat((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
+          : 0;
+
       const reviewSummary = {
-        averageRating:
-          ratings.length > 0
-            ? parseFloat((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
-            : 0,
+        averageRating,
         totalReviews: ratings.length,
         ratingDistribution,
       };
 
-      // Get active promotions for this restaurant
-      const activePromotions = allPromotions.filter(
-        (p) =>
-          p.fkRestaurantId === restaurant.restaurantId &&
-          new Date(p.startAt) <= now &&
-          new Date(p.endAt) >= now
+      // Promotions are already loaded via eager loading, just filter by date
+      const allRestaurantPromotions = Array.isArray(restaurantJSON.promotions)
+        ? restaurantJSON.promotions
+        : [];
+      const restaurantPromotions = allRestaurantPromotions.filter(
+        (p) => new Date(p.startAt) <= now && new Date(p.endAt) >= now
       );
 
-      // Get address info
-      const address = allAddresses.find((a) => a.addressId === restaurant.fkAddressId);
+      // Menus are already loaded via eager loading
+      const restaurantMenus = Array.isArray(restaurantJSON.menus) ? restaurantJSON.menus : [];
+      const dietaryTypes = restaurantMenus.map((m) => m.menuTypes).filter(Boolean);
 
-      // Get menus (dietary types) for this restaurant
-      const restaurantMenus = allMenus.filter(
-        (menu) => menu.fkRestaurantId === restaurant.restaurantId
-      );
+      // Address is already loaded via eager loading
+      const restaurantAddress = restaurantJSON.address || restaurantJSON.Address || null;
 
       return {
-        ...restaurant,
-        reviewSummary,
-        hasActivePromotion: activePromotions.length > 0,
-        address,
-        promotions: activePromotions,
-        menus: restaurantMenus,
-        dietaryTypes: restaurantMenus.map((m) => m.menuTypes).filter(Boolean),
+        // Core restaurant data
+        restaurantId: restaurantJSON.restaurantId,
+        restaurantName: restaurantJSON.restaurantName,
+        description: restaurantJSON.description,
+        cuisine: restaurantJSON.cuisine,
+        phone: restaurantJSON.phone,
+        email: restaurantJSON.email,
+        imageUrl: restaurantJSON.imageUrl,
+        openingTime: restaurantJSON.openingTime,
+        closingTime: restaurantJSON.closingTime,
+        fkAddressId: restaurantJSON.fkAddressId,
+
+        // Related data (explicitly returned)
+        address: restaurantAddress || null,
+        reviews: restaurantReviews, // ← Actual review objects for this restaurant
+        promotions: restaurantPromotions, // ← Filtered active promotions for this restaurant
+        menus: restaurantMenus, // ← Menus for this restaurant
+
+        // Calculated/enriched data
+        reviewSummary, // ← Aggregate review stats
+        dietaryTypes,
+        hasActivePromotion: restaurantPromotions.length > 0,
       };
     });
 
+    // Apply filters that require calculated data
+    let filtered = enrichedRestaurants;
+
     // Filter by rating
     if (minRating) {
-      enrichedRestaurants = enrichedRestaurants.filter(
-        (r) => r.reviewSummary.averageRating >= parseFloat(minRating)
-      );
+      filtered = filtered.filter((r) => r.reviewSummary.averageRating >= parseFloat(minRating));
     }
     if (maxRating) {
-      enrichedRestaurants = enrichedRestaurants.filter(
-        (r) => r.reviewSummary.averageRating <= parseFloat(maxRating)
-      );
+      filtered = filtered.filter((r) => r.reviewSummary.averageRating <= parseFloat(maxRating));
     }
 
     // Filter by promotion
     if (hasPromotion === "true") {
-      enrichedRestaurants = enrichedRestaurants.filter(
-        (r) => r.hasActivePromotion
-      );
+      filtered = filtered.filter((r) => r.hasActivePromotion);
     }
 
-    // Filter by dietary type (Halal, Vegan, Vegetarian)
+    // Filter by dietary type
     if (dietaryType && dietaryType !== "All") {
-      const restaurantIdsWithDietaryType = new Set(
-        allMenus
-          .filter((menu) =>
-            (menu.menuTypes || "").toLowerCase().includes(dietaryType.toLowerCase())
-          )
-          .map((menu) => menu.fkRestaurantId)
-      );
-
-      enrichedRestaurants = enrichedRestaurants.filter((r) =>
-        restaurantIdsWithDietaryType.has(r.restaurantId)
+      filtered = filtered.filter((r) =>
+        r.dietaryTypes.some((type) =>
+          (type || "").toLowerCase().includes(dietaryType.toLowerCase())
+        )
       );
     }
 
     // Apply pagination
-    const total = enrichedRestaurants.length;
-    const paginatedRestaurants = enrichedRestaurants.slice(
+    const total = filtered.length;
+    const paginatedRestaurants = filtered.slice(
       parseInt(offset) || 0,
       (parseInt(offset) || 0) + (parseInt(limit) || 20)
     );
@@ -443,8 +382,7 @@ module.exports.searchRestaurants = async (req, res) => {
     console.error("Error searching restaurants:", error);
     res.status(500).json({
       message: "Failed to search restaurants",
-      error:
-        process.env.NODE_ENV === "development" ? error.message : undefined,
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
     });
   }
 };

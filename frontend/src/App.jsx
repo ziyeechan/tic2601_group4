@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./styles.css";
-import { restaurantAPI, promotionAPI, reviewAPI, addressAPI } from "./utils/api";
+import { restaurantAPI } from "./utils/api";
 import { Header } from "./components/Header";
 import { RestaurantCard } from "./components/RestaurantCard";
 import { SearchFilters } from "./components/SearchFilters";
@@ -30,14 +30,15 @@ export default function App() {
 
   //USEEFFECT
   useEffect(() => {
-    // Use the new backend search endpoint for initial load
-    // This replaces 4 API calls with 1 call and provides rich data
+    // Fetch all restaurants with enriched data (reviews, promotions, menus, address)
+    // Single API call replaces the previous multi-call approach
     restaurantAPI
       .searchRestaurants({})
       .then((response) => {
         const restaurantList = response.data.restaurants;
+        console.log(restaurantList, "restaurantList");
 
-        // Enrich with fields expected by components for compatibility
+        // Map fields for component compatibility
         const enrichedRestaurants = restaurantList.map((restaurant) => ({
           ...restaurant,
           image: restaurant.imageUrl, // Map imageUrl to image field
@@ -45,53 +46,12 @@ export default function App() {
           averageRating: restaurant.reviewSummary?.averageRating || 0,
         }));
 
-        // Save final restaurant list to state
         setRestaurants(enrichedRestaurants);
         setFilteredRestaurants(enrichedRestaurants);
         setSelectedRestaurant(null);
       })
       .catch((err) => {
         console.error("Error loading restaurants:", err);
-        // Fallback: try old endpoints if new one fails
-        Promise.all([
-          restaurantAPI.getAllRestaurants(),
-          addressAPI.getAllAddresses(),
-          promotionAPI.getAllPromotions(),
-          reviewAPI.getAllReviews(),
-        ])
-          .then(([resRestaurants, resAddresses, resPromotions, resReviews]) => {
-            const restaurantList = resRestaurants.data;
-            const addressList = resAddresses.data;
-            const reviewList = resReviews.data;
-
-            const finalRestaurants = restaurantList.map((restaurant) => {
-              const reviewsForThis = reviewList.filter(
-                (review) => review.fkRestaurantId === restaurant.restaurantId
-              );
-              const ratings = reviewsForThis.map((r) => Number(r.rating)).filter((r) => !isNaN(r));
-              const reviewCount = ratings.length;
-              const averageRating =
-                reviewCount > 0 ? ratings.reduce((sum, r) => sum + r, 0) / reviewCount : 0;
-              const restaurantAddress = addressList.find(
-                (addr) => addr.addressId === restaurant.fkAddressId
-              );
-
-              return {
-                ...restaurant,
-                image: restaurant.imageUrl,
-                reviewCount,
-                averageRating,
-                address: restaurantAddress,
-              };
-            });
-
-            setRestaurants(finalRestaurants);
-            setFilteredRestaurants(finalRestaurants);
-            setSelectedRestaurant(null);
-          })
-          .catch((err) => {
-            console.error("Error loading data from fallback:", err);
-          });
       });
   }, []);
 
