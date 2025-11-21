@@ -321,16 +321,16 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
 
       {/* Reviews Section */}
       <div style={{ marginTop: "var(--spacing-lg)" }}>
-        <div className="card">
-          <div className="card-header">
+        <Card>
+          <Card.Header>
             <h3 className="card-title" style={{ margin: 0 }}>
               ⭐ Reviews & Ratings
             </h3>
-          </div>
-          <div className="card-content">
+          </Card.Header>
+          <Card.Content>
             <Reviews restaurant={restaurant} onBack={onBack} />
-          </div>
-        </div>
+          </Card.Content>
+        </Card>
       </div>
     </div>
   );

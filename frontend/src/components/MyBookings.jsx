@@ -760,16 +760,8 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
             overflow: "auto",
           }}
         >
-          <div
-            className="card"
-            style={{
-              maxWidth: "800px",
-              width: "90%",
-              maxHeight: "90vh",
-              overflow: "auto",
-            }}
-          >
-            <div className="card-header">
+          <Card styles={{ maxWidth: "800px", width: "90%", maxHeight: "90vh", overflow: "auto" }}>
+            <Card.Header>
               <div className="flex-between" style={{ alignItems: "center" }}>
                 <h3 className="card-title" style={{ margin: 0 }}>
                   ⭐ Review: {reviewingBooking.restaurant?.restaurantName || "Restaurant"}
@@ -787,8 +779,8 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                   ✕
                 </button>
               </div>
-            </div>
-            <div className="card-content">
+            </Card.Header>
+            <Card.Content>
               <div
                 style={{
                   marginBottom: "var(--spacing-md)",
@@ -817,8 +809,8 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                   }
                 }}
               />
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
         </div>
       )}
     </div>

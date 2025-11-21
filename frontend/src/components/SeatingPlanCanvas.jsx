@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { seatingAPI } from "../utils/api";
+import { Card } from "./Common";
 
 export function SeatingPlanCanvas({
   tables,
@@ -14,130 +15,129 @@ export function SeatingPlanCanvas({
   getTableColor,
   getTableIcon,
 }) {
-    const canvasRef = useRef(null);
-    const [draggingId, setDraggingId] = useState(null);
-    const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef(null);
+  const [draggingId, setDraggingId] = useState(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const radius = 60;
-  
-    //Dragging function of restaurant layout
-    const getTableUniqueId = (table) => table.seatingId || table.tempId;
 
+  //Dragging function of restaurant layout
+  const getTableUniqueId = (table) => table.seatingId || table.tempId;
 
-    const handleSaveLayout = async () => {
-      try {
-        await Promise.all(
-          tables
-            .filter((t) => !String(t.seatingId).startsWith("temp-")) // ignore unsaved new tables
-            .map((t) =>
-              seatingAPI.updateSeatingPlan(t.seatingId, {
-                tableNumber: t.tableNumber,
-                tableType: t.tableType,
-                pax: t.pax,
-                x: t.x,
-                y: t.y,
-              })
-            )
-        );
-
-        alert("Layout saved");
-      } catch (err) {
-        console.error("Failed to save layout", err);
-        alert("Failed to save layout");
-      }
-    };
-
-    // Create node on canvas for add table button
-    const handleAddTable = () => {
-      if (!selectedRestaurantId) {
-        alert("Please select a restaurant first");
-        return;
-      }
-
-      // wait for click on the canvas
-      setIsAddingTable(true);
-      setSelectedTable(null);
-  };
-  
-    //Start dragging a table
-    const handleTableMouseDown = (e, table) => {
-      e.stopPropagation();
-      if (!canvasRef.current) return;
-
-      const rect = canvasRef.current.getBoundingClientRect();
-      const xInCanvas = e.clientX - rect.left;
-      const yInCanvas = e.clientY - rect.top;
-
-      setDraggingId(getTableUniqueId(table));
-      setDragOffset({
-        x: xInCanvas - table.x,
-        y: yInCanvas - table.y,
-      });
-    };
-
-    //While dragging, update the table coordinates
-    const handleCanvasMouseMove = (e) => {
-      if (!draggingId || !canvasRef.current) return;
-
-      const rect = canvasRef.current.getBoundingClientRect();
-      const xInCanvas = e.clientX - rect.left;
-      const yInCanvas = e.clientY - rect.top;
-
-      const newX = Math.max(0, Math.min(rect.width - radius, xInCanvas - dragOffset.x));
-      const newY = Math.max(0, Math.min(rect.height - radius, yInCanvas - dragOffset.y));
-
-      setTables((prev) =>
-        prev.map((t) => (getTableUniqueId(t) === draggingId ? { ...t, x: newX, y: newY } : t))
+  const handleSaveLayout = async () => {
+    try {
+      await Promise.all(
+        tables
+          .filter((t) => !String(t.seatingId).startsWith("temp-")) // ignore unsaved new tables
+          .map((t) =>
+            seatingAPI.updateSeatingPlan(t.seatingId, {
+              tableNumber: t.tableNumber,
+              tableType: t.tableType,
+              pax: t.pax,
+              x: t.x,
+              y: t.y,
+            })
+          )
       );
 
-      //also move selectedTable if it's the one we’re dragging
-      setSelectedTable((prev) => {
-        if (!prev) return prev;
-        if (getTableUniqueId(prev) !== draggingId) return prev;
-        return { ...prev, x: newX, y: newY };
-      });
-    };
+      alert("Layout saved");
+    } catch (err) {
+      console.error("Failed to save layout", err);
+      alert("Failed to save layout");
+    }
+  };
 
-    //Stop dragging
-    const handleCanvasMouseUp = () => {
-      if (draggingId) {
-        setDraggingId(null);
-      }
-    };
+  // Create node on canvas for add table button
+  const handleAddTable = () => {
+    if (!selectedRestaurantId) {
+      alert("Please select a restaurant first");
+      return;
+    }
 
-    const handleCanvasMouseDown = (e) => {
-      if (!canvasRef.current) return;
+    // wait for click on the canvas
+    setIsAddingTable(true);
+    setSelectedTable(null);
+  };
 
-      const rect = canvasRef.current.getBoundingClientRect();
-      const xInCanvas = e.clientX - rect.left;
-      const yInCanvas = e.clientY - rect.top;
+  //Start dragging a table
+  const handleTableMouseDown = (e, table) => {
+    e.stopPropagation();
+    if (!canvasRef.current) return;
 
-      // cursor is roughly in the centre
-      const newX = Math.max(0, Math.min(rect.width - radius, xInCanvas - radius / 2));
-      const newY = Math.max(0, Math.min(rect.height - radius, yInCanvas - radius / 2));
+    const rect = canvasRef.current.getBoundingClientRect();
+    const xInCanvas = e.clientX - rect.left;
+    const yInCanvas = e.clientY - rect.top;
 
-      // when adding a table, create it at this position
-      if (isAddingTable) {
-        const tempId = `temp-${Date.now()}`;
+    setDraggingId(getTableUniqueId(table));
+    setDragOffset({
+      x: xInCanvas - table.x,
+      y: yInCanvas - table.y,
+    });
+  };
 
-        const newTable = {
-          restaurantId: selectedRestaurantId || "1",
-          seatingId: tempId, // tempid for dragging to work
-          x: newX,
-          y: newY,
-          isAdding: true,
-          tableNumber: "",
-          tableType: "outdoor",
-          pax: 2,
-        };
+  //While dragging, update the table coordinates
+  const handleCanvasMouseMove = (e) => {
+    if (!draggingId || !canvasRef.current) return;
 
-        setTables((prev) => [...prev, newTable]);
-        setSelectedTable(newTable);
-        return;
-      }
+    const rect = canvasRef.current.getBoundingClientRect();
+    const xInCanvas = e.clientX - rect.left;
+    const yInCanvas = e.clientY - rect.top;
 
-      // click on empty canvas clears selection
-      setSelectedTable(null);
+    const newX = Math.max(0, Math.min(rect.width - radius, xInCanvas - dragOffset.x));
+    const newY = Math.max(0, Math.min(rect.height - radius, yInCanvas - dragOffset.y));
+
+    setTables((prev) =>
+      prev.map((t) => (getTableUniqueId(t) === draggingId ? { ...t, x: newX, y: newY } : t))
+    );
+
+    //also move selectedTable if it's the one we’re dragging
+    setSelectedTable((prev) => {
+      if (!prev) return prev;
+      if (getTableUniqueId(prev) !== draggingId) return prev;
+      return { ...prev, x: newX, y: newY };
+    });
+  };
+
+  //Stop dragging
+  const handleCanvasMouseUp = () => {
+    if (draggingId) {
+      setDraggingId(null);
+    }
+  };
+
+  const handleCanvasMouseDown = (e) => {
+    if (!canvasRef.current) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const xInCanvas = e.clientX - rect.left;
+    const yInCanvas = e.clientY - rect.top;
+
+    // cursor is roughly in the centre
+    const newX = Math.max(0, Math.min(rect.width - radius, xInCanvas - radius / 2));
+    const newY = Math.max(0, Math.min(rect.height - radius, yInCanvas - radius / 2));
+
+    // when adding a table, create it at this position
+    if (isAddingTable) {
+      const tempId = `temp-${Date.now()}`;
+
+      const newTable = {
+        restaurantId: selectedRestaurantId || "1",
+        seatingId: tempId, // tempid for dragging to work
+        x: newX,
+        y: newY,
+        isAdding: true,
+        tableNumber: "",
+        tableType: "outdoor",
+        pax: 2,
+      };
+
+      setTables((prev) => [...prev, newTable]);
+      setSelectedTable(newTable);
+      return;
+    }
+
+    // click on empty canvas clears selection
+    setSelectedTable(null);
   };
 
   const handleTableClick = (table) => {
@@ -148,8 +148,8 @@ export function SeatingPlanCanvas({
   };
 
   return (
-    <div className="card">
-      <div className="card-header">
+    <Card>
+      <Card.Header>
         <div className="flex-between">
           <h4 className="card-title">Restaurant Layout</h4>
           <div style={{ display: "flex", gap: "8px" }}>
@@ -168,9 +168,9 @@ export function SeatingPlanCanvas({
             </button>
           </div>
         </div>
-      </div>
+      </Card.Header>
 
-      <div className="card-content">
+      <Card.Content>
         {/* Legend */}
         <div
           style={{
@@ -259,9 +259,7 @@ export function SeatingPlanCanvas({
           onMouseLeave={handleCanvasMouseUp}
         >
           {tables.map((table) => {
-            const booking = bookings.find(
-              (b) => b.tableId === table.seatingId && b.date === today
-            );
+            const booking = bookings.find((b) => b.tableId === table.seatingId && b.date === today);
             const isSelected = selectedTable?.seatingId === table.seatingId;
 
             return (
@@ -275,8 +273,7 @@ export function SeatingPlanCanvas({
                   top: `${table.y}px`,
                   cursor: "grab",
                   transform: isSelected ? "scale(1.1)" : "scale(1)",
-                  transition:
-                    draggingId === getTableUniqueId(table) ? "none" : "transform 0.2s",
+                  transition: draggingId === getTableUniqueId(table) ? "none" : "transform 0.2s",
                 }}
               >
                 <div
@@ -337,7 +334,7 @@ export function SeatingPlanCanvas({
             );
           })}
         </div>
-      </div>
-    </div>
+      </Card.Content>
+    </Card>
   );
 }

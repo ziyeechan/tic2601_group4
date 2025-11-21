@@ -1,3 +1,5 @@
+import { useState, useEffect } from "react";
+
 export function Card({ children, className = "", styles }) {
   return (
     <div className={`card ${className}`} style={styles}>
@@ -84,6 +86,96 @@ export function FormInput({
           required={required}
         />
       )}
+    </div>
+  );
+}
+
+export function Toast({ type, text, onClose, duration }) {
+  let color = "";
+  const [progress, setProgress] = useState(100);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setVisible(true);
+
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev <= 0) {
+          clearInterval(interval);
+          setVisible(false);
+          setTimeout(onClose, 200);
+          return 0;
+        }
+        return prev - 100 / (duration / 100);
+      });
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [duration, onClose]);
+
+  switch (type) {
+    case "info":
+      color = "var(--info)";
+      break;
+    case "warning":
+      color = "var(--warning)";
+      break;
+    case "success":
+      color = "var(--success)";
+      break;
+    case "danger":
+      color = "var(--danger)";
+      break;
+    default:
+      color = "var(--primary)";
+      break;
+  }
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 32,
+        right: 16,
+        minWidth: 400,
+        minHeight: 50,
+        borderRadius: 8,
+        backgroundColor: "rgba(255,255,255)",
+        zIndex: 2000,
+        padding: "16px 16px 0px",
+        borderLeftColor: color,
+        borderLeftStyle: "solid",
+        borderLeftWidth: 12,
+        boxShadow: "0px 4px 12px rgba(0,0,0,0.25)",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(-10px)",
+        transition: "opacity 0.25s ease, transform 0.25s ease",
+      }}
+    >
+      <div className="flex-between mb-md">
+        <p>{text}</p>
+        <div onClick={() => onClose()} style={{ cursor: "pointer" }}>
+          {" "}
+          X
+        </div>
+      </div>
+
+      <div
+        style={{
+          width: "100%",
+          borderRadius: 8,
+          height: 4,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: color,
+            height: 4,
+            transition: "all 0.2s ease",
+            width: `${progress}%`,
+          }}
+        />
+      </div>
     </div>
   );
 }

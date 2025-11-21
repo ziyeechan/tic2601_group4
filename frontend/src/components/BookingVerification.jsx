@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { bookingAPI, reviewAPI } from "../utils/api";
-
+import { Card } from "./Common";
 export function BookingVerification({ onBookingVerified, onClose }) {
   const [searchMode, setSearchMode] = useState("email"); // "email" or "code"
   const [email, setEmail] = useState("");
@@ -146,8 +146,8 @@ export function BookingVerification({ onBookingVerified, onClose }) {
         zIndex: 1500,
       }}
     >
-      <div className="card" style={{ maxWidth: "500px", width: "90%" }}>
-        <div className="card-header">
+      <Card styles={{ maxWidth: "500px", width: "90%" }}>
+        <Card.Header>
           <div className="flex-between" style={{ alignItems: "center" }}>
             <h3 className="card-title" style={{ margin: 0 }}>
               ⭐ Verify Your Booking
@@ -165,8 +165,8 @@ export function BookingVerification({ onBookingVerified, onClose }) {
               ✕
             </button>
           </div>
-        </div>
-        <div className="card-content">
+        </Card.Header>
+        <Card.Content>
           <p className="text-muted" style={{ marginBottom: "var(--spacing-md)" }}>
             Please verify your booking to leave a review. You must have completed a booking at this
             restaurant.
@@ -270,8 +270,8 @@ export function BookingVerification({ onBookingVerified, onClose }) {
               booking status will be updated shortly.
             </p>
           </div>
-        </div>
-      </div>
+        </Card.Content>
+      </Card>
     </div>
   );
 }

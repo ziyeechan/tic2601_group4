@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { seatingAPI, restaurantAPI, bookingAPI } from "../utils/api";
 
 import { SeatingPlanTimeSlots } from "./SeatingPlanTimeslots";
 import { SeatingPlanCanvas } from "./SeatingPlanCanvas";
 import { SeatingPlanUnassignedBookings } from "./SeatingPlanUnassignedBookings";
 import { SeatingPlanTableDetail } from "./SeatingPlanTableDetail";
+
+import { Card } from "./Common";
 
 export function SeatingPlan() {
   const [tables, setTables] = useState([]);
@@ -383,11 +385,9 @@ export function SeatingPlan() {
             zIndex: 1000,
           }}
         >
-          <div className="card" style={{ maxWidth: "400px", width: "90%" }}>
-            <div className="card-header">
-              <h4 className="card-title">Assign Table</h4>
-            </div>
-            <div className="card-content">
+          <Card styles={{ maxWidth: "400px", width: "90%" }}>
+            <Card.Header title="Assign Table"/>
+            <Card.Content>
               <p className="mb-md">
                 Assign a table for <strong>{selectedBooking.customerName}</strong> (
                 {selectedBooking.partySize} people)?
@@ -437,8 +437,8 @@ export function SeatingPlan() {
               >
                 Cancel
               </button>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
         </div>
       )}
     </div>

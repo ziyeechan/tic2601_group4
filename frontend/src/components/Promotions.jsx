@@ -16,7 +16,6 @@ export function AllPromotions({ onBack }) {
     promotionAPI
       .getAllPromotions()
       .then((res) => {
-        console.log(res.data);
         setPromotions(res.data || []);
         setRefresh(true);
       })

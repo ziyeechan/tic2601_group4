@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, TextContainer, FormInput } from "./Common";
+import { Card, TextContainer, FormInput, Toast } from "./Common";
 import { restaurantAPI, addressAPI } from "../utils/api";
 
 export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
@@ -9,6 +9,9 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
   const [refresh, setRefresh] = useState(false);
   const [editedRestaurant, setEditedRestaurant] = useState({ ...restaurant });
   const [editedAddress, setEditedAddress] = useState({ ...address });
+  const [show, setShow] = useState(false);
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState("");
 
   useEffect(() => {
     restaurantAPI
@@ -31,8 +34,14 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
         });
         setRefresh(true);
       })
-      .catch((e) => console.error(e));
+      .catch((error) => console.error("Error fetching details: ", error));
   }, [refresh]);
+
+  const handleToast = (type, message) => {
+    setShow(true);
+    setType(type);
+    setMessage(message);
+  };
 
   const handleRestaurantChange = (e) => {
     const { name, value } = e.target;
@@ -60,7 +69,8 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
       !editedAddress.addressLine1.trim() ||
       !editedAddress.city.trim()
     ) {
-      alert("Please fill in all required fields");
+      handleToast("warning", "Please fill in all required fields");
+      // alert("Please fill in all required fields");
       return;
     }
 
@@ -102,10 +112,12 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
       setIsEditingRestaurant(false);
 
       // Step 4: Show success feedback to user
-      alert("Restaurant information updated successfully!");
+      handleToast("success", "Restaurant information updated successfully");
+      // alert("Restaurant information updated successfully!");
     } catch (error) {
-      console.error("Error saving changes:", error);
-      alert(error.response?.data?.message || "Failed to save changes. Please try again.");
+      console.error("Error saving changes: ", error);
+      handleToast("danger", "Failed to save changes. Please try again.");
+      // alert(error.response?.data?.message || "Failed to save changes. Please try again.");
     }
   };
 
@@ -279,7 +291,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                 </Card>
 
                 <Card className="mb-lg">
-                  <Card.Header title="Edit Address Information"/>
+                  <Card.Header title="Edit Address Information" />
                   <Card.Content>
                     <FormInput
                       name="addressLine1"
@@ -421,6 +433,9 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
               </Card.Content>
             </Card>
           </div>
+          {show && (
+            <Toast type={type} text={message} duration={2500} onClose={() => setShow(false)} />
+          )}
         </div>
       </div>
     )
