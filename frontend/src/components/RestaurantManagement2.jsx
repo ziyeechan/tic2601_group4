@@ -2,6 +2,18 @@ import { useEffect, useState } from "react";
 import { Card, TextContainer, FormInput, Toast } from "./Common";
 import { restaurantAPI, addressAPI } from "../utils/api";
 
+const SidebarButtons = ({ onClick, text }) => {
+  return (
+    <button
+      className="btn btn-secondary btn-sm btn-full"
+      style={{ textAlign: "left" }}
+      onClick={onClick}
+    >
+      {text}
+    </button>
+  );
+};
+
 export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
   const [restaurant, setRestaurant] = useState(null);
   const [address, setAddress] = useState();
@@ -178,7 +190,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                     </div>
                   </Card.Header>
                   <Card.Content>
-                    <TextContainer text="Restaurant Name">
+                    <TextContainer className="mb-md" text="Restaurant Name">
                       <p
                         style={{
                           fontWeight: "600",
@@ -189,8 +201,16 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                         {restaurant.name}
                       </p>
                     </TextContainer>
-                    <TextContainer text="Cuisine Type" data={restaurant.cuisine} />
-                    <TextContainer text="Description" data={restaurant.description} />
+                    <TextContainer
+                      className="mb-md"
+                      text="Cuisine Type"
+                      data={restaurant.cuisine}
+                    />
+                    <TextContainer
+                      className="mb-md"
+                      text="Description"
+                      data={restaurant.description}
+                    />
 
                     <div>
                       <p
@@ -217,7 +237,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                 <Card className="mb-lg">
                   <Card.Header title="Address Information" />
                   <Card.Content>
-                    <TextContainer text="📍 Full Address">
+                    <TextContainer className="mb-md" text="📍 Full Address">
                       <p style={{ fontWeight: "600", margin: 0 }}>
                         {address.addressLine1}
                         {address.addressLine2 && `, ${address.addressLine2}`}
@@ -368,8 +388,12 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
             <Card className="mb-lg">
               <Card.Header title="Quick Info" />
               <Card.Content>
-                <TextContainer text="Restaurant ID" data={restaurant.restaurantId} />
-                <TextContainer text="Status">
+                <TextContainer
+                  className="mb-md"
+                  text="Restaurant ID"
+                  data={restaurant.restaurantId}
+                />
+                <TextContainer className="mb-md" text="Status">
                   <p
                     style={{
                       fontWeight: "600",
@@ -380,20 +404,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                     ✓ Active
                   </p>
                 </TextContainer>
-
-                <div
-                  className="mb-lg"
-                  style={{
-                    paddingBottom: "var(--spacing-md)",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
-                >
-                  <p
-                    className="text-muted"
-                    style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
-                  >
-                    Related Sections
-                  </p>
+                <TextContainer className="mb-lg" text="Related Sections">
                   <div
                     style={{
                       display: "flex",
@@ -401,28 +412,16 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                       gap: "var(--spacing-xs)",
                     }}
                   >
-                    <button
-                      className="btn btn-secondary btn-sm btn-full"
-                      style={{ textAlign: "left" }}
-                    >
-                      📋 Manage Menus
-                    </button>
-                    <button
-                      className="btn btn-secondary btn-sm btn-full"
-                      style={{ textAlign: "left" }}
+                    <SidebarButtons
+                      text="🪑 Seating Plans"
                       onClick={() => onViewChange("seating")}
-                    >
-                      🪑 Seating Plans
-                    </button>
-                    <button
-                      className="btn btn-secondary btn-sm btn-full"
-                      style={{ textAlign: "left" }}
+                    />
+                    <SidebarButtons
+                      text="🎉 Promotions"
                       onClick={() => onViewChange("promotions")}
-                    >
-                      🎉 Promotions
-                    </button>
+                    />
                   </div>
-                </div>
+                </TextContainer>
 
                 <div className="alert alert-info">
                   <p style={{ margin: 0, fontSize: "14px" }}>

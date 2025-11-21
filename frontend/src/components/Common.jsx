@@ -33,10 +33,10 @@ Card.Footer = function Footer({ children, className, styles }) {
   );
 };
 
-export function TextContainer({ children, text, data }) {
+export function TextContainer({ children, text, data, className }) {
   return (
     <div
-      className="mb-md"
+      className={className}
       style={{
         paddingBottom: "var(--spacing-md)",
         borderBottom: "1px solid var(--border-color)",
