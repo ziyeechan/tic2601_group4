@@ -12,6 +12,7 @@ const Promotions = db.define(
     },
     termsNCond: {
       type: DataTypes.TEXT,
+      allowNull: false,
     },
     description: {
       type: DataTypes.TEXT,
@@ -34,6 +35,7 @@ const Promotions = db.define(
     },
     discount: {
       type: DataTypes.STRING(100),
+      allowNull: false,
     },
     fkRestaurantId: {
       type: DataTypes.INTEGER,

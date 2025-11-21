@@ -28,9 +28,38 @@ module.exports.createRestaurant = async (req, res) => {
       postalCode,
     } = req.body;
 
-    if (!name || !cuisine || !addressLine1 || !country || !city || !postalCode) {
+    if (
+      !name ||
+      !cuisine ||
+      !addressLine1 ||
+      !country ||
+      !city ||
+      !postalCode ||
+      !phone ||
+      !email
+    ) {
       return res.status(400).json({
         message: "Missing Fields",
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        message: "Invalid email format",
+      });
+    }
+
+    // Validate phone format
+    // only allow space, (), -, and +
+    const cleaned = phone.replace(/[()\-\s]/g, "");
+    const normalized = cleaned.replace(/^\+/, "");
+    const phoneRegex = /^[0-9]{8,15}$/;
+
+    if (!phoneRegex.test(normalized)) {
+      return res.status(400).json({
+        message: "Invalid phone format",
       });
     }
 
@@ -169,6 +198,26 @@ module.exports.updateRestaurant = async (req, res) => {
       city,
       postalCode,
     } = req.body;
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        message: "Invalid email format",
+      });
+    }
+
+    // Validate phone format
+    // only allow space, (), -, and +
+    const cleaned = phone.replace(/[()\-\s]/g, "");
+    const normalized = cleaned.replace(/^\+/, "");
+    const phoneRegex = /^[0-9]{8,15}$/;
+
+    if (!phoneRegex.test(normalized)) {
+      return res.status(400).json({
+        message: "Invalid phone format",
+      });
+    }
 
     if (name || description || cuisine || phone || email) {
       const formattedData = {
