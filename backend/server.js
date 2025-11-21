@@ -1,6 +1,5 @@
 const { Addresses } = require("./src/schemas/addresses.js");
 const { Bookings } = require("./src/schemas/bookings.js");
-const { Menus } = require("./src/schemas/menus.js");
 const { Promotions } = require("./src/schemas/promotions.js");
 const { Restaurants } = require("./src/schemas/restaurants.js");
 const { Reviews } = require("./src/schemas/reviews.js");
