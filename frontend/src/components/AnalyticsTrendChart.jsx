@@ -17,21 +17,16 @@ const LineChart = ({
   yLabel = "Bookings",
   tooltipLabel = "booking",
   tooltipFormatter,
+  year,
+  month,
 }) => {
   const values = data.map((d) => d.count);
-  const rawMax = Math.max(1, ...values);
+  const rawMax = values.length ? Math.max(...values) : 0;
 
-  // Adaptive Y-axis ceiling: pick a "nice" max for clearer ticks
+  // New adaptive ceiling: next multiple of 5 (min 5)
   const niceCeiling = (() => {
-    if (yLabel === "Rating") return 5;
     if (rawMax <= 5) return 5;
-    if (rawMax <= 10) return 10;
-    if (rawMax <= 20) return 20;
-    if (rawMax <= 30) return 30;
-    if (rawMax <= 50) return 50;
-    if (rawMax <= 75) return 75;
-    if (rawMax <= 100) return 100;
-    return Math.ceil(rawMax / 50) * 50; // Round to next 50
+    return Math.ceil(rawMax / 5) * 5;
   })();
 
   const w = 600,
@@ -42,7 +37,7 @@ const LineChart = ({
   const dayCount = data.length;
   const xStep = dayCount > 1 ? innerW / (dayCount - 1) : 0;
 
-  // Build polyline points for line chart
+  // Build polyline
   const pointsAttr = data
     .map((d, i) => {
       const x = margin.left + i * xStep;
@@ -51,12 +46,9 @@ const LineChart = ({
     })
     .join(" ");
 
-  // Generate Y-axis ticks (max 10 ticks)
+  // Y-axis ticks every 5
   const yTicks = [];
-  const approxTicks = Math.min(10, niceCeiling);
-  const step = Math.max(1, Math.ceil(niceCeiling / approxTicks));
-  for (let v = 0; v <= niceCeiling; v += step) yTicks.push(v);
-  if (yTicks[yTicks.length - 1] !== niceCeiling) yTicks.push(niceCeiling);
+  for (let v = 0; v <= niceCeiling; v += 5) yTicks.push(v);
 
   // Tooltip state
   const [tip, setTip] = useState(null);
@@ -72,6 +64,13 @@ const LineChart = ({
     const x = margin.left + i * xStep;
     const y = margin.top + innerH - (d.count / niceCeiling) * innerH;
     setTip({ day: d.day, count: Number(d.count), extra: d.extra, x, y, left: x + 8, top: y - 8 });
+  };
+
+  // Helper: get weekday short label (Mon, Tue, ...)
+  const getWeekday = (dayNum) => {
+    if (!year || !month) return "";
+    const dt = new Date(Number(year), Number(month) - 1, dayNum);
+    return dt.toLocaleDateString(undefined, { weekday: "short" }); // e.g. 'Mon'
   };
 
   return (
@@ -94,7 +93,7 @@ const LineChart = ({
           stroke="#ccc"
         />
 
-        {/* Y-axis ticks and gridlines */}
+        {/* Y ticks */}
         {yTicks.map((t) => {
           const yPos = margin.top + innerH - (t / niceCeiling) * innerH;
           return (
@@ -110,9 +109,10 @@ const LineChart = ({
           );
         })}
 
-        {/* X-axis ticks (day numbers) */}
+        {/* X ticks */}
         {data.map((d, i) => {
           const x = margin.left + i * xStep;
+          const weekday = getWeekday(d.day);
           return (
             <g key={d.day}>
               <line x1={x} x2={x} y1={h - margin.bottom} y2={h - margin.bottom + 6} stroke="#666" />
@@ -135,10 +135,10 @@ const LineChart = ({
           fill="#444"
           transform={`rotate(-90,18,${margin.top + innerH / 2})`}
         >
-          Bookings
+          {yLabel}
         </text>
 
-        {/* Line and data points */}
+        {/* Line + points */}
         <polyline fill="none" stroke={stroke} strokeWidth="2" points={pointsAttr} />
         {data.map((d, i) => {
           const x = margin.left + i * xStep;
@@ -146,7 +146,6 @@ const LineChart = ({
           return <circle key={i} cx={x} cy={y} r={3} fill={stroke} />;
         })}
 
-        {/* Vertical guide line on hover */}
         {tip && (
           <line
             x1={tip.x}
@@ -158,7 +157,6 @@ const LineChart = ({
           />
         )}
       </svg>
-
       {/* Tooltip */}
       {tip && (
         <div
@@ -185,9 +183,9 @@ const LineChart = ({
 
 // ----- TREND CHART COMPONENT -----
 
-export function AnalyticsTrendChart({ data }) {
+export function AnalyticsTrendChart({ data, year, month }) {
   return data?.length ? (
-    <LineChart data={data} yLabel="Bookings" tooltipLabel="booking" />
+    <LineChart data={data} yLabel="Bookings" tooltipLabel="booking" year={year} month={month} />
   ) : (
     <div className="text-muted">No data</div>
   );

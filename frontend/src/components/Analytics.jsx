@@ -289,7 +289,7 @@ export function Analytics({ onCheck }) {
           <Card>
             <Card.Header title="Daily Booking Trend" />
             <Card.Content>
-              <AnalyticsTrendChart data={dailyCount} />
+              <AnalyticsTrendChart data={dailyCount} year={year} month={month} />
             </Card.Content>
           </Card>
 
