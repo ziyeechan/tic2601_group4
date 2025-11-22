@@ -1,16 +1,54 @@
 import { useEffect, useState } from "react";
-import { Card, TextContainer, FormInput } from "./Common";
+import { Card, TextContainer, FormInput, Toast } from "./Common";
 import { restaurantAPI, addressAPI } from "../utils/api";
 
-export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
+const SidebarButtons = ({ onClick, text }) => {
+  return (
+    <button
+      className="btn btn-secondary btn-sm btn-full"
+      style={{ textAlign: "left" }}
+      onClick={onClick}
+    >
+      {text}
+    </button>
+  );
+};
+
+export function RestaurantManagement({
+  onBack,
+  onViewChange,
+  restaurantId,
+  setReload,
+  handleAppToast,
+}) {
   const [restaurant, setRestaurant] = useState(null);
   const [address, setAddress] = useState();
   const [isEditingRestaurant, setIsEditingRestaurant] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [editedRestaurant, setEditedRestaurant] = useState({ ...restaurant });
   const [editedAddress, setEditedAddress] = useState({ ...address });
+  const [show, setShow] = useState(false);
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState("");
 
   useEffect(() => {
+    if (restaurantId === -1) {
+      setRefresh(true);
+      const emptyRestaurant = { name: "", cuisine: "" };
+      const emptyAddress = {
+        addressLine1: "",
+        country: "",
+        city: "",
+        postalCode: "",
+      };
+      setAddress(emptyAddress);
+      setRestaurant(emptyRestaurant);
+      setEditedAddress(emptyAddress);
+      setEditedRestaurant(emptyRestaurant);
+      setIsEditingRestaurant(true);
+      return;
+    }
+
     restaurantAPI
       .getRestaurantById(restaurantId)
       .then((res) => {
@@ -31,8 +69,14 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
         });
         setRefresh(true);
       })
-      .catch((e) => console.error(e));
+      .catch((error) => console.error("Error fetching details: ", error));
   }, [refresh]);
+
+  const handleToast = (type, message) => {
+    setShow(true);
+    setType(type);
+    setMessage(message);
+  };
 
   const handleRestaurantChange = (e) => {
     const { name, value } = e.target;
@@ -50,6 +94,22 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
     }));
   };
 
+  const handleDelete = async (restaurantId) => {
+    if (window.confirm("Are you sure you want to delete this restaurant?")) {
+      await restaurantAPI
+        .deleteRestaurant(restaurantId)
+        .then(() => {
+          handleAppToast("success", "Restaurant has been deleted successfully!");
+          onViewChange("home");
+          setReload(false);
+        })
+        .catch((error) => {
+          console.error(error);
+          handleToast("danger", "Something went wrong. Please try again.");
+        });
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
 
@@ -60,40 +120,43 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
       !editedAddress.addressLine1.trim() ||
       !editedAddress.city.trim()
     ) {
-      alert("Please fill in all required fields");
+      handleToast("warning", "Please fill in all required fields");
+      // alert("Please fill in all required fields");
       return;
     }
 
     try {
-      // Step 1: Update restaurant information
-      const restaurantData = {
-        name: editedRestaurant.name,
-        description: editedRestaurant.description,
-        cuisine: editedRestaurant.cuisine,
-        phone: editedRestaurant.phone,
-        email: editedRestaurant.email,
-      };
+      // Step 1: Checks if it's create or update restaurant
+      if (restaurantId === -1) {
+        // Step 2: Format data for create and pass into endpoint
+        const formattedData = {
+          name: editedRestaurant.name,
+          description: editedRestaurant.description,
+          cuisine: editedRestaurant.cuisine,
+          phone: editedRestaurant.phone,
+          email: editedRestaurant.email,
+          addressLine1: editedAddress.addressLine1,
+          addressLine2: editedAddress.addressLine2,
+          country: editedAddress.country,
+          state: editedAddress.state,
+          city: editedAddress.city,
+          postalCode: editedAddress.postalCode,
+        };
 
-      await restaurantAPI.updateRestaurant(
-        restaurant.restaurantId || restaurant.restaurant_id,
-        restaurantData
-      );
-
-      // Step 2: Update address information
-      const addressData = {
-        addressLine1: editedAddress.addressLine1,
-        addressLine2: editedAddress.addressLine2,
-        country: editedAddress.country,
-        state: editedAddress.state,
-        city: editedAddress.city,
-        postalCode: editedAddress.postalCode,
-      };
-
-      if (editedAddress.addressId || editedAddress.address_id) {
-        await addressAPI.updateAddress(
-          editedAddress.addressId || editedAddress.address_id,
-          addressData
+        await restaurantAPI.createRestaurant(formattedData);
+      } else {
+        //Step 2: Pass data into update endpoint
+        await restaurantAPI.updateRestaurant(
+          editedRestaurant.restaurantId || editedRestaurant.restaurant_id,
+          editedRestaurant
         );
+
+        if (editedAddress.addressId || editedAddress.address_id) {
+          await addressAPI.updateAddress(
+            editedAddress.addressId || editedAddress.address_id,
+            editedAddress
+          );
+        }
       }
 
       // Step 3: Update local state to reflect changes
@@ -102,20 +165,27 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
       setIsEditingRestaurant(false);
 
       // Step 4: Show success feedback to user
-      alert("Restaurant information updated successfully!");
+      handleToast("success", "Restaurant information updated successfully");
+      // alert("Restaurant information updated successfully!");
     } catch (error) {
-      console.error("Error saving changes:", error);
-      alert(error.response?.data?.message || "Failed to save changes. Please try again.");
+      console.error("Error saving changes: ", error);
+      handleToast("danger", "Failed to save changes. Please try again.");
+      // alert(error.response?.data?.message || "Failed to save changes. Please try again.");
     }
   };
 
   const handleCancel = () => {
+    if (restaurantId === -1) {
+      onViewChange("home");
+      setReload("false");
+    }
     setEditedRestaurant({ ...restaurant });
     setEditedAddress({ ...address });
     setIsEditingRestaurant(false);
   };
 
   const cuisineOptions = [
+    "",
     "French",
     "Italian",
     "Japanese",
@@ -141,13 +211,26 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "2fr 1fr",
+            gridTemplateColumns: restaurantId != -1 ? "2fr 1fr" : "1fr",
             gap: "var(--spacing-lg)",
           }}
         >
           {/* Main Content */}
           <div>
-            <h2 style={{ marginBottom: "var(--spacing-lg)" }}>🍽️ Restaurant Management</h2>
+            <div className="flex-between">
+              <h2 style={{ marginBottom: "var(--spacing-lg)" }}>🍽️ Restaurant Management</h2>
+              {restaurantId != -1 && (
+                <div style={{ marginBottom: "var(--spacing-lg)" }}>
+                  <button
+                    className="btn-sm btn-danger"
+                    onClick={() => handleDelete(restaurantId)}
+                    style={{ flex: 1 }}
+                  >
+                    Delete Restaurant
+                  </button>
+                </div>
+              )}
+            </div>
 
             {!isEditingRestaurant ? (
               // View Mode
@@ -166,7 +249,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                     </div>
                   </Card.Header>
                   <Card.Content>
-                    <TextContainer text="Restaurant Name">
+                    <TextContainer className="mb-md" text="Restaurant Name">
                       <p
                         style={{
                           fontWeight: "600",
@@ -177,8 +260,16 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                         {restaurant.name}
                       </p>
                     </TextContainer>
-                    <TextContainer text="Cuisine Type" data={restaurant.cuisine} />
-                    <TextContainer text="Description" data={restaurant.description} />
+                    <TextContainer
+                      className="mb-md"
+                      text="Cuisine Type"
+                      data={restaurant.cuisine}
+                    />
+                    <TextContainer
+                      className="mb-md"
+                      text="Description"
+                      data={restaurant.description}
+                    />
 
                     <div>
                       <p
@@ -205,7 +296,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                 <Card className="mb-lg">
                   <Card.Header title="Address Information" />
                   <Card.Content>
-                    <TextContainer text="📍 Full Address">
+                    <TextContainer className="mb-md" text="📍 Full Address">
                       <p style={{ fontWeight: "600", margin: 0 }}>
                         {address.addressLine1}
                         {address.addressLine2 && `, ${address.addressLine2}`}
@@ -279,7 +370,7 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
                 </Card>
 
                 <Card className="mb-lg">
-                  <Card.Header title="Edit Address Information"/>
+                  <Card.Header title="Edit Address Information" />
                   <Card.Content>
                     <FormInput
                       name="addressLine1"
@@ -352,75 +443,59 @@ export function RestaurantManagement({ onBack, onViewChange, restaurantId }) {
           </div>
 
           {/* Sidebar */}
-          <div>
-            <Card className="mb-lg">
-              <Card.Header title="Quick Info" />
-              <Card.Content>
-                <TextContainer text="Restaurant ID" data={restaurant.restaurantId} />
-                <TextContainer text="Status">
-                  <p
-                    style={{
-                      fontWeight: "600",
-                      margin: 0,
-                      color: "var(--success)",
-                    }}
-                  >
-                    ✓ Active
-                  </p>
-                </TextContainer>
+          {restaurantId != -1 && (
+            <div>
+              <Card className="mb-lg">
+                <Card.Header title="Quick Info" />
+                <Card.Content>
+                  <TextContainer
+                    className="mb-md"
+                    text="Restaurant ID"
+                    data={restaurant.restaurantId}
+                  />
+                  <TextContainer className="mb-md" text="Status">
+                    <p
+                      style={{
+                        fontWeight: "600",
+                        margin: 0,
+                        color: "var(--success)",
+                      }}
+                    >
+                      ✓ Active
+                    </p>
+                  </TextContainer>
+                  <TextContainer className="mb-lg" text="Related Sections">
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "var(--spacing-xs)",
+                      }}
+                    >
+                      <SidebarButtons
+                        text="🪑 Seating Plans"
+                        onClick={() => onViewChange("seating")}
+                      />
+                      <SidebarButtons
+                        text="🎉 Promotions"
+                        onClick={() => onViewChange("promotions")}
+                      />
+                    </div>
+                  </TextContainer>
 
-                <div
-                  className="mb-lg"
-                  style={{
-                    paddingBottom: "var(--spacing-md)",
-                    borderBottom: "1px solid var(--border-color)",
-                  }}
-                >
-                  <p
-                    className="text-muted"
-                    style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
-                  >
-                    Related Sections
-                  </p>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "var(--spacing-xs)",
-                    }}
-                  >
-                    <button
-                      className="btn btn-secondary btn-sm btn-full"
-                      style={{ textAlign: "left" }}
-                    >
-                      📋 Manage Menus
-                    </button>
-                    <button
-                      className="btn btn-secondary btn-sm btn-full"
-                      style={{ textAlign: "left" }}
-                      onClick={() => onViewChange("seating")}
-                    >
-                      🪑 Seating Plans
-                    </button>
-                    <button
-                      className="btn btn-secondary btn-sm btn-full"
-                      style={{ textAlign: "left" }}
-                      onClick={() => onViewChange("promotions")}
-                    >
-                      🎉 Promotions
-                    </button>
+                  <div className="alert alert-info">
+                    <p style={{ margin: 0, fontSize: "14px" }}>
+                      ℹ️ Changes to restaurant information will be reflected across the platform
+                      within a few minutes.
+                    </p>
                   </div>
-                </div>
-
-                <div className="alert alert-info">
-                  <p style={{ margin: 0, fontSize: "14px" }}>
-                    ℹ️ Changes to restaurant information will be reflected across the platform
-                    within a few minutes.
-                  </p>
-                </div>
-              </Card.Content>
-            </Card>
-          </div>
+                </Card.Content>
+              </Card>
+            </div>
+          )}
+          {show && (
+            <Toast type={type} text={message} duration={2500} onClose={() => setShow(false)} />
+          )}
         </div>
       </div>
     )

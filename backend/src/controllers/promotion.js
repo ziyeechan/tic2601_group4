@@ -23,6 +23,12 @@ module.exports.createPromotions = async (req, res) => {
       });
     }
 
+    if(endAt <= startAt) {
+      return res.status(400).json({
+        message: "Start date must be before end date"
+      })
+    }
+
     const promotionInfo = {
       termsNCond: termsNCond,
       description: description,
@@ -123,6 +129,12 @@ module.exports.updatePromotions = async (req, res) => {
       return res.status(400).json({
         message: "Missing Fields",
       });
+    }
+
+    if(endAt <= startAt) {
+      return res.status(400).json({
+        message: "Start date must be before end date"
+      })
     }
 
     const promotionInfo = {

@@ -18,6 +18,10 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
     isAnonymous: false,
   });
 
+  const [show, setShow] = useState(false);
+  const [type, setType] = useState("");
+  const [text, setText] = useState("");
+
   // Initialize form with existing review data if editing
   useEffect(() => {
     if (existingReview && isEditing) {
@@ -72,17 +76,25 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
     }));
   };
 
+  const handleToast = (type, message) => {
+    setShow(true);
+    setType(type);
+    setText(message);
+  };
+
   const handleSubmitReview = async (e) => {
     e.preventDefault();
 
     if (!formData.comment.trim()) {
-      alert("Please write a comment for your review");
+      handleToast("warning", "Please write a comment for your review");
+      // alert("Please write a comment for your review");
       return;
     }
 
     // Only validate name when creating a new review, not when editing
     if (!isEditing && !formData.isAnonymous && !formData.customerName.trim()) {
-      alert("Please enter your name or choose to review anonymously");
+      handleToast("warning", "Please enter your name or choose to review anonymously");
+      // alert("Please enter your name or choose to review anonymously");
       return;
     }
 
@@ -106,7 +118,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
         });
         setShowForm(false);
         setIsEditing(false);
-        alert("Review updated successfully!");
+        handleToast("success", "Review updated successfully!");
+        // alert("Review updated successfully!");
 
         // Trigger parent refresh
         if (onBack) {
@@ -143,7 +156,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           isAnonymous: false,
         });
         setShowForm(false);
-        alert("Review submitted successfully!");
+        handleToast("success", "Review submitted successfully!");
+        // alert("Review submitted successfully!");
 
         // Trigger parent refresh if from MyBookings
         if (onBack && verifiedBookingId) {
@@ -157,13 +171,19 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
 
       // Check for duplicate review constraint (409 = Conflict)
       if (error.response?.status === 409) {
-        alert(errorMsg);
+        handleToast("danger", errorMsg);
+        // alert(errorMsg);
       } else if (error.response?.status === 400 && errorMsg.includes("UNIQUE constraint failed")) {
-        alert(
+        handleToast(
+          "danger",
           "You have already submitted a review for this booking. Please edit your existing review instead."
         );
+        // alert(
+        //   "You have already submitted a review for this booking. Please edit your existing review instead."
+        // );
       } else {
-        alert(errorMsg);
+        handleToast("danger", errorMsg);
+        // alert(errorMsg);
       }
     } finally {
       setSubmitting(false);
@@ -462,8 +482,12 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                         marginTop: "12px",
                         padding: "12px",
                         borderRadius: "8px",
-                        backgroundColor: formData.isAnonymous ? "rgba(168, 85, 247, 0.1)" : "var(--bg-light)",
-                        border: formData.isAnonymous ? "2px solid #a855f7" : "1px solid var(--border-color)",
+                        backgroundColor: formData.isAnonymous
+                          ? "rgba(168, 85, 247, 0.1)"
+                          : "var(--bg-light)",
+                        border: formData.isAnonymous
+                          ? "2px solid #a855f7"
+                          : "1px solid var(--border-color)",
                         transition: "all 0.3s ease",
                         cursor: submitting ? "not-allowed" : "pointer",
                       }}

@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { seatingAPI, restaurantAPI, bookingAPI } from "../utils/api";
 
 import { SeatingPlanTimeSlots } from "./SeatingPlanTimeslots";
 import { SeatingPlanCanvas } from "./SeatingPlanCanvas";
 import { SeatingPlanUnassignedBookings } from "./SeatingPlanUnassignedBookings";
 import { SeatingPlanTableDetail } from "./SeatingPlanTableDetail";
+
+import { Card, Toast } from "./Common";
 
 export function SeatingPlan() {
   const [tables, setTables] = useState([]);
@@ -25,6 +27,16 @@ export function SeatingPlan() {
   const [timeSlots, setTimeSlots] = useState([]);
   const [slotOverrides, setSlotOverrides] = useState({});
   const DINING_DURATION_MIN = 90;
+
+  const [show, setShow] = useState(false);
+  const [type, setType] = useState("");
+  const [text, setText] = useState("");
+
+  const handleToast = (type, message) => {
+    setShow(true);
+    setType(type);
+    setText(message);
+  };
 
   const parseTimeToMinutes = (timeStr) => {
     if (!timeStr) return null;
@@ -208,8 +220,6 @@ export function SeatingPlan() {
     }
   };
 
-
-
   // Handle assign booking to table
   const handleAssignBooking = async (tableId) => {
     if (!selectedBooking) return;
@@ -217,15 +227,20 @@ export function SeatingPlan() {
     const table = tables.find((t) => Number(t.seatingId) === Number(tableId));
 
     if (!table) {
-      alert("Table not found.");
+      handleToast("danger", "Table not found.");
+      // alert("Table not found.");
       return;
     }
 
     // prevent overlapping bookings on this table
     if (doesOverlapWithExistingBooking(selectedBooking, table)) {
-      alert(
+      handleToast(
+        "danger",
         "This table already has a booking that overlaps with this time (90 minutes window). Please choose another table."
       );
+      // alert(
+      //   "This table already has a booking that overlaps with this time (90 minutes window). Please choose another table."
+      // );
       return;
     }
 
@@ -243,11 +258,13 @@ export function SeatingPlan() {
       setSelectedBooking(null);
     } catch (err) {
       console.error("Failed to assign booking to table", err);
-      alert("Failed to assign table. Check console/server logs.");
+      handleToast("danger", "Failed to assign table. Check console/server logs.");
+      // alert("Failed to assign table. Check console/server logs.");
     }
   };
 
-  const isSameTableToday = (b, table) => b.date === today && b.tableId != null && Number(b.tableId) === Number(table.seatingId);
+  const isSameTableToday = (b, table) =>
+    b.date === today && b.tableId != null && Number(b.tableId) === Number(table.seatingId);
 
   return (
     <div>
@@ -323,33 +340,33 @@ export function SeatingPlan() {
               {selectedTable && (
                 <>
                   {/* Table Details*/}
-                    <SeatingPlanTableDetail
-                      selectedTable={selectedTable}
-                      setSelectedTable={setSelectedTable}
-                      isAddingTable={isAddingTable}
-                      setIsAddingTable={setIsAddingTable}
-                      tables={tables}
-                      setTables={setTables}
-                      bookings={bookings}
-                      setBookings={setBookings}
-                      selectedRestaurantId={selectedRestaurantId}
-                      isSameTableToday={isSameTableToday}
-                      setSelectedBooking={setSelectedBooking}
-                      setShowAssignModal={setShowAssignModal}
-                    />
+                  <SeatingPlanTableDetail
+                    selectedTable={selectedTable}
+                    setSelectedTable={setSelectedTable}
+                    isAddingTable={isAddingTable}
+                    setIsAddingTable={setIsAddingTable}
+                    tables={tables}
+                    setTables={setTables}
+                    bookings={bookings}
+                    setBookings={setBookings}
+                    selectedRestaurantId={selectedRestaurantId}
+                    isSameTableToday={isSameTableToday}
+                    setSelectedBooking={setSelectedBooking}
+                    setShowAssignModal={setShowAssignModal}
+                  />
                   {/* Time Slots Card */}
-                    <SeatingPlanTimeSlots
-                      selectedTable={selectedTable}
-                      timeSlots={timeSlots}
-                      bookings={bookings}
-                      slotOverrides={slotOverrides}
-                      setSlotOverrides={setSlotOverrides}
-                      selectedRestaurantId={selectedRestaurantId}
-                      today={today}
-                      parseTimeToMinutes={parseTimeToMinutes}
-                      isSameTableToday={isSameTableToday}
-                      DINING_DURATION_MIN={DINING_DURATION_MIN}
-                    />
+                  <SeatingPlanTimeSlots
+                    selectedTable={selectedTable}
+                    timeSlots={timeSlots}
+                    bookings={bookings}
+                    slotOverrides={slotOverrides}
+                    setSlotOverrides={setSlotOverrides}
+                    selectedRestaurantId={selectedRestaurantId}
+                    today={today}
+                    parseTimeToMinutes={parseTimeToMinutes}
+                    isSameTableToday={isSameTableToday}
+                    DINING_DURATION_MIN={DINING_DURATION_MIN}
+                  />
                 </>
               )}
 
@@ -383,11 +400,9 @@ export function SeatingPlan() {
             zIndex: 1000,
           }}
         >
-          <div className="card" style={{ maxWidth: "400px", width: "90%" }}>
-            <div className="card-header">
-              <h4 className="card-title">Assign Table</h4>
-            </div>
-            <div className="card-content">
+          <Card styles={{ maxWidth: "400px", width: "90%" }}>
+            <Card.Header title="Assign Table" />
+            <Card.Content>
               <p className="mb-md">
                 Assign a table for <strong>{selectedBooking.customerName}</strong> (
                 {selectedBooking.partySize} people)?
@@ -437,10 +452,12 @@ export function SeatingPlan() {
               >
                 Cancel
               </button>
-            </div>
-          </div>
+            </Card.Content>
+          </Card>
         </div>
       )}
+
+      {show && <Toast type={type} text={text} duration={2500} onClose={() => setShow(false)} />}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { promotionAPI } from "../utils/api";
-import { Card, FormInput } from "./Common";
+import { Card, FormInput, Toast, TextContainer } from "./Common";
 
 export function Promotions({ onBack, restaurantId }) {
   const [promotions, setPromotions] = useState(null);
@@ -12,6 +12,9 @@ export function Promotions({ onBack, restaurantId }) {
   const [expiredPromos, setExpiredPromos] = useState([]);
   const [isEditingPromotions, setIsEditingPromotions] = useState(false);
   const [isAddingPromotions, setIsAddingPromotions] = useState(false);
+  const [show, setShow] = useState(false);
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState("");
 
   useEffect(() => {
     // Get all promotions for restaurant with ID restaurantID
@@ -50,7 +53,7 @@ export function Promotions({ onBack, restaurantId }) {
     if (window.confirm("Are you sure you want to delete this promotion?")) {
       await promotionAPI
         .deletePromotion(promotionId)
-        .then(() => console.log("sucess"))
+        .then(() => handleToast("success", "Promotion has been successfully deleted!"))
         .catch((error) => console.error(error));
       setRefresh(false);
       setSelectedPromo(null);
@@ -78,27 +81,44 @@ export function Promotions({ onBack, restaurantId }) {
 
   const handleSubmitPromotion = async (e) => {
     e.preventDefault();
+
+    if (selectedPromo.startAt >= selectedPromo.endAt) {
+      handleToast("warning", "End date cannot be before start data!");
+      return;
+    }
+
     await promotionAPI
       .updatePromotion(selectedPromo.promotionId, selectedPromo)
-      .then((res) => {
-        console.log("success");
+      .then(() => {
         setRefresh(false);
         setIsEditingPromotions(false);
         setSelectedPromo(null);
+        handleToast("success", "Promotion has been successfully updated!");
       })
       .catch((error) => console.error(error));
+  };
+
+  const handleToast = (type, message) => {
+    setShow(true);
+    setType(type);
+    setMessage(message);
   };
 
   const handleCreatePromotion = async (e) => {
     e.preventDefault();
 
+    if (selectedPromo.startAt >= selectedPromo.endAt) {
+      handleToast("warning", "End date cannot be before start data!");
+      return;
+    }
+
     await promotionAPI
       .createPromotion(restaurantId, selectedPromo)
-      .then((res) => {
-        console.log("success");
+      .then(() => {
         setRefresh(false);
         setIsAddingPromotions(false);
         setSelectedPromo(null);
+        handleToast("success", "Promotion has been successfully created!");
         setIsEditingPromotions(false);
       })
       .catch((error) => console.error(error));
@@ -238,27 +258,11 @@ export function Promotions({ onBack, restaurantId }) {
                       </div>
                     </div>
 
-                    <div
+                    <TextContainer
                       className="mb-md"
-                      style={{
-                        paddingBottom: "var(--spacing-md)",
-                        borderBottom: "1px solid var(--border-color)",
-                      }}
-                    >
-                      <p
-                        className="text-muted"
-                        style={{
-                          fontSize: "12px",
-                          margin: 0,
-                          marginBottom: "4px",
-                        }}
-                      >
-                        Valid Until
-                      </p>
-                      <p style={{ margin: 0, fontWeight: "600" }}>
-                        {new Date(promo.endAt).toLocaleDateString()}
-                      </p>
-                    </div>
+                      title="Valid Until"
+                      data={new Date(promo.endAt).toLocaleDateString()}
+                    />
 
                     <p
                       className="text-muted"
@@ -376,7 +380,7 @@ export function Promotions({ onBack, restaurantId }) {
             >
               {expiredPromos.map((promo) => (
                 <Card
-                  key={promo.id}
+                  key={promo.promotionId}
                   style={{
                     borderLeft: "4px solid var(--text-muted)",
                     opacity: 0.6,
@@ -403,16 +407,26 @@ export function Promotions({ onBack, restaurantId }) {
                         {promo.description}
                       </p>
                     </div>
-                    <p className="text-muted" style={{ fontSize: "12px", margin: 0 }}>
-                      Ended on {new Date(promo.endAt).toLocaleDateString()}
-                    </p>
+                    <div className="flex-between">
+                      <p className="text-muted" style={{ fontSize: "12px", margin: 0 }}>
+                        Ended on {new Date(promo.endAt).toLocaleDateString()}
+                      </p>
+                      <p
+                        onClick={() => handleDeletePromotion(promo.promotionId)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        🗑️
+                      </p>
+                    </div>
                   </Card.Content>
                 </Card>
               ))}
             </div>
           </div>
         )}
-
+        {show && (
+          <Toast type={type} text={message} duration={2500} onClose={() => setShow(false)} />
+        )}
         {/* Details Modal */}
         {selectedPromo && (
           <div
@@ -442,45 +456,13 @@ export function Promotions({ onBack, restaurantId }) {
               </Card.Header>
               {!isEditingPromotions ? (
                 <Card.Content>
-                  <div
-                    className="mb-lg"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <p
-                      className="text-muted"
-                      style={{
-                        margin: 0,
-                        fontSize: "12px",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Restaurant
-                    </p>
+                  <TextContainer className="mb-lg" title="Restaurant">
                     <p style={{ margin: 0, fontWeight: "600", fontSize: "16px" }}>
                       {selectedPromo.restaurantName}
                     </p>
-                  </div>
+                  </TextContainer>
 
-                  <div
-                    className="mb-lg"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <p
-                      className="text-muted"
-                      style={{
-                        margin: 0,
-                        fontSize: "12px",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Discount Code
-                    </p>
+                  <TextContainer className="mb-lg" title="Discount Code">
                     <div
                       style={{
                         display: "flex",
@@ -517,29 +499,13 @@ export function Promotions({ onBack, restaurantId }) {
                         {copiedCode === selectedPromo.discount ? "✓ Copied!" : "📋 Copy"}
                       </button>
                     </div>
-                  </div>
+                  </TextContainer>
 
-                  <div
+                  <TextContainer
                     className="mb-lg"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
+                    title="Valid Period"
+                    data={`${new Date(selectedPromo.startAt).toLocaleDateString()} to${" "}${new Date(selectedPromo.endAt).toLocaleDateString()}`}
                   >
-                    <p
-                      className="text-muted"
-                      style={{
-                        margin: 0,
-                        fontSize: "12px",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Valid Period
-                    </p>
-                    <p style={{ margin: 0, fontWeight: "600" }}>
-                      {new Date(selectedPromo.startAt).toLocaleDateString()} to{" "}
-                      {new Date(selectedPromo.endAt).toLocaleDateString()}
-                    </p>
                     <p
                       className="text-muted"
                       style={{ margin: 0, fontSize: "12px", marginTop: "4px" }}
@@ -548,7 +514,7 @@ export function Promotions({ onBack, restaurantId }) {
                         ? "✓ Currently Active"
                         : "Not Active"}
                     </p>
-                  </div>
+                  </TextContainer>
 
                   <div className="mb-lg">
                     <p

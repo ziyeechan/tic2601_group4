@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
 import { bookingAPI } from "../utils/api";
-import { Card } from "./Common";
+import { Card, TextContainer } from "./Common";
 
 export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSuccess }) {
   const [formData, setFormData] = useState({
@@ -268,58 +268,20 @@ export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSu
           <Card>
             <Card.Header title="Booking Summary" />
             <Card.Content>
-              <div
-                className="mb-md"
-                style={{
-                  paddingBottom: "var(--spacing-md)",
-                  borderBottom: "1px solid var(--border-color)",
-                }}
-              >
-                <p
-                  className="text-muted"
-                  style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
-                >
-                  Restaurant
-                </p>
-                <p style={{ fontWeight: "600", margin: 0 }}>{restaurant.restaurantName}</p>
-              </div>
+              <TextContainer className="mb-md" text="Restaurant" data={restaurant.restaurantName} />
 
-              <div
-                className="mb-md"
-                style={{
-                  paddingBottom: "var(--spacing-md)",
-                  borderBottom: "1px solid var(--border-color)",
-                }}
-              >
-                <p
-                  className="text-muted"
-                  style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
-                >
-                  Date & Time
-                </p>
+              <TextContainer className="mb-md" text="Date & Time">
                 <p style={{ fontWeight: "600", margin: 0 }}>
                   {formData.date ? new Date(formData.date).toLocaleDateString() : "Not selected"}
                 </p>
                 <p style={{ fontWeight: "600", margin: 0 }}>{formData.time || "Not selected"}</p>
-              </div>
+              </TextContainer>
 
-              <div
+              <TextContainer
                 className="mb-md"
-                style={{
-                  paddingBottom: "var(--spacing-md)",
-                  borderBottom: "1px solid var(--border-color)",
-                }}
-              >
-                <p
-                  className="text-muted"
-                  style={{ fontSize: "12px", margin: 0, marginBottom: "4px" }}
-                >
-                  Party Size
-                </p>
-                <p style={{ fontWeight: "600", margin: 0 }}>
-                  {formData.partySize} {formData.partySize === 1 ? "person" : "people"}
-                </p>
-              </div>
+                title="Party Size"
+                data={`${formData.partySize} ${formData.partySize === 1 ? "person" : "people"}`}
+              />
 
               <div className="mb-lg">
                 <p
