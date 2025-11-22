@@ -342,7 +342,15 @@ export default function App() {
                   <div className="empty-state">
                     <h3>No restaurants found</h3>
                     <p>Try adjusting your filters to see more results.</p>
-                    <button className="btn btn-success mt-lg">Create Restaurant</button>
+                    <button
+                      className="btn btn-success mt-lg"
+                      onClick={() => {
+                        setSelectedRestaurantId(-1);
+                        setCurrentView("restaurant-management");
+                      }}
+                    >
+                      Create Restaurant
+                    </button>
                   </div>
                 )}
               </div>
