@@ -431,14 +431,14 @@ export function RestaurantManagement({
                       <FormInput
                         name="phone"
                         value={editedRestaurant.phone}
-                        text="📞 Phone"
+                        text="📞 Phone *"
                         type="tel"
                         onChange={handleRestaurantChange}
                       />
                       <FormInput
                         name="email"
                         value={editedRestaurant.email}
-                        text="📧 Email"
+                        text="📧 Email *"
                         type="email"
                         onChange={handleRestaurantChange}
                       />
@@ -537,7 +537,7 @@ export function RestaurantManagement({
                       <FormInput
                         name="postalCode"
                         value={editedAddress.postalCode}
-                        text="Postal Code"
+                        text="Postal Code *"
                         onChange={handleAddressChange}
                       />
                       <FormInput
