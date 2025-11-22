@@ -33,6 +33,11 @@ const Restaurants = db.define(
       allowNull: true,
       comment: "URL to restaurant image (e.g., from Unsplash)",
     },
+    closedDays: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: "Comma-Separated Days e.g. Mon,Tues,Wed....",
+    },
     openingTime: {
       type: DataTypes.TIME,
       allowNull: true,

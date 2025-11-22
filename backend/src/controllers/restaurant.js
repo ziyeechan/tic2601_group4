@@ -12,6 +12,8 @@ const {
 } = require("../models/restaurant");
 const { Addresses } = require("../models/address");
 
+const VALID_DAYS = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"];
+
 module.exports.createRestaurant = async (req, res) => {
   try {
     const {
@@ -20,6 +22,10 @@ module.exports.createRestaurant = async (req, res) => {
       cuisine,
       phone,
       email,
+      imageUrl,
+      closed,
+      openingTime,
+      closingTime,
       addressLine1,
       addressLine2,
       country,
@@ -72,8 +78,46 @@ module.exports.createRestaurant = async (req, res) => {
       postalCode,
     };
 
+    if (closingTime <= openingTime) {
+      return res.status(400).json({
+        message: "Opening time must be before closing time",
+      });
+    }
+
+    if (!new URL(imageUrl)) {
+      return res.status(400).json({
+        message: "Invalid Url",
+      });
+    }
+
+    let formattedDays = "";
+    if (closed) {
+      for (let i = 0; i < closed.length; i++) {
+        if (!VALID_DAYS.includes(closed[i])) {
+          return res.status(400).json({
+            message: "Invalid days",
+          });
+        }
+        if (i == closed.length - 1) {
+          formattedDays += closed[i];
+        } else {
+          formattedDays += closed[i] + ",";
+        }
+      }
+    }
+
     const addressId = await createAddress(addressInfo);
-    const restaurantInfo = { name, description, cuisine, phone, email };
+    const restaurantInfo = {
+      name,
+      description,
+      cuisine,
+      phone,
+      email,
+      imageUrl,
+      formattedDays,
+      openingTime,
+      closingTime,
+    };
     await createRestaurant(restaurantInfo, addressId.dataValues.addressId);
 
     return res.status(200).send("Restaurant has been successfully created");
@@ -191,6 +235,10 @@ module.exports.updateRestaurant = async (req, res) => {
       cuisine,
       phone,
       email,
+      imageUrl,
+      closed,
+      openingTime,
+      closingTime,
       addressLine1,
       addressLine2,
       country,
@@ -219,13 +267,55 @@ module.exports.updateRestaurant = async (req, res) => {
       });
     }
 
-    if (name || description || cuisine || phone || email) {
+    if (closingTime <= openingTime) {
+      return res.status(400).json({
+        message: "Opening time must be before closing time",
+      });
+    }
+
+    if (!new URL(imageUrl)) {
+      return res.status(400).json({
+        message: "Invalid Url",
+      });
+    }
+
+    let formattedDays = "";
+    if (closed) {
+      for (let i = 0; i < closed.length; i++) {
+        if (!VALID_DAYS.includes(closed[i])) {
+          return res.status(400).json({
+            message: "Invalid days",
+          });
+        }
+        if (i == closed.length - 1) {
+          formattedDays += closed[i];
+        } else {
+          formattedDays += closed[i] + ",";
+        }
+      }
+    }
+
+    if (
+      name ||
+      description ||
+      cuisine ||
+      phone ||
+      email ||
+      imageUrl ||
+      closed ||
+      openingTime ||
+      closingTime
+    ) {
       const formattedData = {
         restaurantName: name,
         description: description,
         cuisine: cuisine,
         phone: phone,
         email: email,
+        imageUrl: imageUrl,
+        closedDays: formattedDays,
+        openingTime: openingTime,
+        closingTime: closingTime,
       };
 
       await updateRestaurant(restaurantID, formattedData);

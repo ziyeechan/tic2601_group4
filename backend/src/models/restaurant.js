@@ -57,6 +57,10 @@ module.exports.createRestaurant = async (restaurantInfo, addressId) => {
     cuisine: restaurantInfo.cuisine,
     phone: restaurantInfo.phone,
     email: restaurantInfo.email,
+    imageUrl: restaurantInfo.imageUrl,
+    closedDays: restaurantInfo.formattedDays,
+    openingTime: restaurantInfo.openingTime,
+    closingTime: restaurantInfo.closingTime,
     fkAddressId: addressId,
   });
 };
