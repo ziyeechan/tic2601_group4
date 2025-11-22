@@ -53,11 +53,19 @@ export function RestaurantManagement({
       .getRestaurantById(restaurantId)
       .then((res) => {
         const { address, restaurant } = res.data;
+        let closedDays = [];
+
+        // Check if closedDays is a valid string before splitting
+        if (restaurant.closedDays) {
+          closedDays = restaurant.closedDays.split(",").map((day) => day.trim());
+        }
+        console.log(closedDays);
         setAddress({
           ...address,
         });
         setRestaurant({
           name: restaurant.restaurantName,
+          closed: closedDays,
           ...restaurant,
         });
         setEditedAddress({
@@ -65,13 +73,14 @@ export function RestaurantManagement({
         });
         setEditedRestaurant({
           name: restaurant.restaurantName,
+          closed: closedDays,
           ...restaurant,
         });
         setRefresh(true);
       })
       .catch((error) => console.error("Error fetching details: ", error));
   }, [refresh]);
-
+  console.log(editedRestaurant);
   const handleToast = (type, message) => {
     setShow(true);
     setType(type);
@@ -83,6 +92,25 @@ export function RestaurantManagement({
     setEditedRestaurant((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  console.log(editedRestaurant.closed);
+  const handleDaysChange = (e) => {
+    const { name } = e.target;
+
+    let updatedClosedDays = [...editedRestaurant.closed];
+    if (updatedClosedDays.includes(name)) {
+      // If the day is already in the closed array, remove it (uncheck the box)
+      updatedClosedDays = updatedClosedDays.filter((day) => day !== name);
+    } else {
+      // If the day is not in the closed array, add it (check the box)
+      updatedClosedDays.push(name);
+    }
+
+    setEditedRestaurant((prev) => ({
+      ...prev,
+      closed: updatedClosedDays,
     }));
   };
 
@@ -104,8 +132,12 @@ export function RestaurantManagement({
           setReload(false);
         })
         .catch((error) => {
+          const errorMessage = error.response?.data?.message;
           console.error(error);
-          handleToast("danger", "Something went wrong. Please try again.");
+          handleToast(
+            "danger",
+            `${errorMessage}.  Please try again.` || "Something went wrong. Please try again."
+          );
         });
     }
   };
@@ -168,8 +200,12 @@ export function RestaurantManagement({
       handleToast("success", "Restaurant information updated successfully");
       // alert("Restaurant information updated successfully!");
     } catch (error) {
+      const errorMessage = error.response?.data?.message;
       console.error("Error saving changes: ", error);
-      handleToast("danger", "Failed to save changes. Please try again.");
+      handleToast(
+        "danger",
+        `${errorMessage}.  Please try again.` || "Failed to save changes. Please try again."
+      );
       // alert(error.response?.data?.message || "Failed to save changes. Please try again.");
     }
   };
@@ -199,6 +235,8 @@ export function RestaurantManagement({
     "Korean",
     "Vietnamese",
   ];
+
+  const VALID_DAYS = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"];
 
   return (
     refresh && (
@@ -291,7 +329,30 @@ export function RestaurantManagement({
                     </div>
                   </Card.Content>
                 </Card>
-
+                <Card className="mb-lg">
+                  <Card.Header title="Opening Hours" />
+                  <Card.Content>
+                    {VALID_DAYS.map((day) => (
+                      <div
+                        key={day}
+                        className="flex-between mb-md"
+                        style={{
+                          paddingBottom: "var(--spacing-md)",
+                          borderBottom: "1px solid var(--border-color)",
+                        }}
+                      >
+                        <span style={{ fontWeight: "500" }}>{day}</span>
+                        {restaurant.closed && restaurant.closed.includes(day) ? (
+                          <span className="text-muted">Closed</span>
+                        ) : (
+                          <span className="text-muted">
+                            {restaurant.openingTime} - {restaurant.closingTime}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </Card.Content>
+                </Card>
                 {/* Address Card */}
                 <Card className="mb-lg">
                   <Card.Header title="Address Information" />
@@ -366,6 +427,60 @@ export function RestaurantManagement({
                         onChange={handleRestaurantChange}
                       />
                     </div>
+                    <FormInput
+                      name="imageUrl"
+                      value={editedRestaurant.imageUrl}
+                      text="Image URL"
+                      onChange={handleRestaurantChange}
+                    />
+                    <div className="form-row">
+                      <FormInput
+                        name="openingTime"
+                        value={editedRestaurant.openingTime}
+                        text="⏳ Opening Hours"
+                        type="time"
+                        onChange={handleRestaurantChange}
+                      />
+                      <FormInput
+                        name="closingTime"
+                        value={editedRestaurant.closingTime}
+                        text="⌛️ Closing Hours"
+                        type="time"
+                        onChange={handleRestaurantChange}
+                      />
+                    </div>
+                    <FormInput name="closedDays" text="☀️ Closed Days">
+                      <div className="flex gap-md">
+                        {VALID_DAYS.map((day) => (
+                          <div key={day} className="flex" style={{ alignItems: "center" }}>
+                            <input
+                              type="checkbox"
+                              name={day}
+                              id={day}
+                              checked={
+                                editedRestaurant.closed && editedRestaurant.closed.includes(day)
+                                  ? true
+                                  : false
+                              } // Check if the day is marked as closed
+                              style={{
+                                display: "block",
+                                width: "fit-content",
+                                marginRight: "var(--spacing-sm)",
+                              }}
+                              onChange={handleDaysChange}
+                            />
+                            <label
+                              htmlFor={day}
+                              style={{
+                                margin: 0,
+                              }}
+                            >
+                              {day}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </FormInput>
                   </Card.Content>
                 </Card>
 
@@ -445,6 +560,23 @@ export function RestaurantManagement({
           {/* Sidebar */}
           {restaurantId != -1 && (
             <div>
+              <div className="aspect-video image-container mb-lg">
+                <img
+                  src={restaurant.imageUrl}
+                  alt={restaurant.name}
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.parentElement.innerHTML =
+                      '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg-light);color:var(--text-muted);">No Image Available</div>';
+                  }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
+              </div>
+
               <Card className="mb-lg">
                 <Card.Header title="Quick Info" />
                 <Card.Content>

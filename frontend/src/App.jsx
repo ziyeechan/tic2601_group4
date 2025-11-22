@@ -227,7 +227,10 @@ export default function App() {
                       {userRole != "customer" && (
                         <button
                           className="btn btn-success"
-                          onClick={() => setCurrentView("restaurant-management")}
+                          onClick={() => {
+                            setSelectedRestaurantId(-1);
+                            setCurrentView("restaurant-management");
+                          }}
                         >
                           Create Restaurant
                         </button>
