@@ -1017,8 +1017,6 @@ module.exports.LoadData = async () => {
         startAt: "2024-11-01",
         endAt: "2024-11-30",
         termsNCond: "Valid for dine-in only. Not applicable to beverages.",
-        //2nd discount
-        discount: "20%",
         fkRestaurantId: 1,
       },
       {
@@ -1027,7 +1025,6 @@ module.exports.LoadData = async () => {
         startAt: "2024-11-05",
         endAt: "2024-11-20",
         termsNCond: "Valid on selected menu items only. One per customer.",
-        discount: "BOGO",
         fkRestaurantId: 3,
       },
       {
@@ -1036,7 +1033,6 @@ module.exports.LoadData = async () => {
         startAt: "2025-11-01",
         endAt: "2025-12-31",
         termsNCond: "Valid Monday to Friday, 5-7 PM. Dine-in only.",
-        discount: "50%",
         fkRestaurantId: 2,
       },
       {
@@ -1045,7 +1041,6 @@ module.exports.LoadData = async () => {
         startAt: "2025-11-01",
         endAt: "2025-12-31",
         termsNCond: "Valid on your birthday month. Must show valid ID.",
-        discount: "Free Dessert",
         fkRestaurantId: 5,
       },
       {
@@ -1054,7 +1049,6 @@ module.exports.LoadData = async () => {
         startAt: "2025-11-10",
         endAt: "2025-12-25",
         termsNCond: "Valid for 4+ people. Not combinable with other offers.",
-        discount: "30%",
         fkRestaurantId: 4,
       },
     ]);
