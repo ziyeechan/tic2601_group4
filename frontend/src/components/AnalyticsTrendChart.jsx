@@ -174,7 +174,7 @@ const LineChart = ({
             whiteSpace: "nowrap",
           }}
         >
-          {`Day ${tip.day}: ${tip.count} ${pluralize(tip.count, "booking", "bookings")}`}
+          {`Day ${tip.day} (${getWeekday(tip.day)}): ${tip.count} ${pluralize(tip.count, "booking", "bookings")}`}
         </div>
       )}
     </div>

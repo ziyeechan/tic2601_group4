@@ -1012,10 +1012,33 @@ module.exports.LoadData = async () => {
     await Promotions.bulkCreate([
       {
         description: "20% off on all main courses",
-        //1st discount (do you mean discountCode)?
+        discount: "LPRDINE20",
+        startAt: "2025-11-01",
+        endAt: "2025-11-30",
+        termsNCond: "Valid for dine-in only. Not applicable to beverages.",
+        fkRestaurantId: 1,
+      },
+      {
+        description: "20% off on all main courses",
         discount: "LPRDINE20",
         startAt: "2024-11-01",
         endAt: "2024-11-30",
+        termsNCond: "Valid for dine-in only. Not applicable to beverages.",
+        fkRestaurantId: 1,
+      },
+      {
+        description: "Season of giving! Free tiramisu for every $50 spent",
+        discount: "TIRAFREE20",
+        startAt: "2025-11-22",
+        endAt: "2025-11-30",
+        termsNCond: "Valid for dine-in only. Limited to one redemption per table.",
+        fkRestaurantId: 1,
+      },
+      {
+        description: "20% off on all main courses",
+        discount: "LPRDINE20",
+        startAt: "2026-11-01",
+        endAt: "2026-11-30",
         termsNCond: "Valid for dine-in only. Not applicable to beverages.",
         fkRestaurantId: 1,
       },

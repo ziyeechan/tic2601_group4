@@ -117,7 +117,10 @@ export function RestaurantManagement({
   const handleDaysChange = (e) => {
     const { name } = e.target;
 
-    let updatedClosedDays = [...editedRestaurant.closed];
+    let updatedClosedDays = [];
+    if (editedRestaurant.closed) {
+      updatedClosedDays = [...editedRestaurant.closed];
+    }
     if (updatedClosedDays.includes(name)) {
       // If the day is already in the closed array, remove it (uncheck the box)
       updatedClosedDays = updatedClosedDays.filter((day) => day !== name);
@@ -147,7 +150,7 @@ export function RestaurantManagement({
         .then(() => {
           handleAppToast("success", "Restaurant has been deleted successfully!");
           onViewChange("home");
-          setReload(false);
+          setReload(true);
         })
         .catch((error) => {
           const errorMessage = error.response?.data?.message;
@@ -162,12 +165,16 @@ export function RestaurantManagement({
 
   const handleSave = async (e) => {
     e.preventDefault();
-
+    console.log(editedRestaurant)
     // Validate required fields
     if (
       !editedRestaurant.name.trim() ||
       !editedRestaurant.cuisine.trim() ||
+      !editedRestaurant.phone ||
+      !editedRestaurant.email ||
       !editedAddress.addressLine1.trim() ||
+      !editedAddress.country ||
+      !editedAddress.postalCode||
       !editedAddress.city.trim()
     ) {
       handleToast("warning", "Please fill in all required fields");
@@ -185,6 +192,10 @@ export function RestaurantManagement({
           cuisine: editedRestaurant.cuisine,
           phone: editedRestaurant.phone,
           email: editedRestaurant.email,
+          imageUrl: editedRestaurant.imageUrl,
+          closed: editedRestaurant.closed,
+          openingTime: editedRestaurant.openingTime,
+          closingTime: editedRestaurant.closingTime,
           addressLine1: editedAddress.addressLine1,
           addressLine2: editedAddress.addressLine2,
           country: editedAddress.country,
@@ -217,6 +228,7 @@ export function RestaurantManagement({
       // Step 4: Show success feedback to user
       handleToast("success", "Restaurant information updated successfully");
       // alert("Restaurant information updated successfully!");
+      setReload(true);
     } catch (error) {
       const errorMessage = error.response?.data?.message;
       console.error("Error saving changes: ", error);
@@ -231,7 +243,7 @@ export function RestaurantManagement({
   const handleCancel = () => {
     if (restaurantId === -1) {
       onViewChange("home");
-      setReload("false");
+      setReload(true);
     }
     setEditedRestaurant({ ...restaurant });
     setEditedAddress({ ...address });

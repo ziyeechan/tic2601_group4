@@ -86,11 +86,11 @@ module.exports.createRestaurant = async (req, res) => {
       });
     }
 
-    if (!new URL(imageUrl)) {
-      return res.status(400).json({
-        message: "Invalid Url",
-      });
-    }
+    // if (!new URL(imageUrl)) {
+    //   return res.status(400).json({
+    //     message: "Invalid Url",
+    //   });
+    // }
 
     let formattedDays = "";
     if (closed) {
