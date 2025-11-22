@@ -50,3 +50,14 @@ module.exports.deleteReviews = async (reviewID) => {
     where: { reviewId: reviewID },
   });
 };
+
+// Fetch reviews for multiple booking IDs
+module.exports.findReviewsByMultipleBookingIDs = async (bookingIDs) => {
+  if (!bookingIDs || bookingIDs.length === 0) {
+    return [];
+  }
+
+  return await Reviews.findAll({
+    where: { fkBookingId: bookingIDs },
+  });
+};

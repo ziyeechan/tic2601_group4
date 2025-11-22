@@ -1,50 +1,8 @@
-import { useState, useEffect } from "react";
-import { mockMenuItems } from "../mockData";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
 import { Reviews } from "./Reviews";
-import { reviewAPI } from "../utils/api";
 import { Card } from "./Common";
 
 export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
-  const [averageRating, setAverageRating] = useState(0);
-  const [reviewCount, setReviewCount] = useState(0);
-
-  // Fetch reviews to calculate average rating
-  useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        if (restaurant?.restaurantId) {
-          const response = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId);
-          const reviewsArray = response.data.reviewInfo || [];
-
-          if (Array.isArray(reviewsArray) && reviewsArray.length > 0) {
-            const ratings = reviewsArray
-              .map((review) => parseInt(review.rating) || 0)
-              .filter((rating) => rating > 0);
-
-            const avgRating =
-              ratings.length > 0
-                ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1)
-                : 0;
-
-            setAverageRating(avgRating);
-            setReviewCount(reviewsArray.length);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching reviews:", error);
-        setAverageRating(0);
-        setReviewCount(0);
-      }
-    };
-
-    fetchReviews();
-  }, [restaurant?.restaurantId]);
-  const menuItems = mockMenuItems.filter((item) => item.restaurantId === restaurant.restaurantId);
-
-  // Default mock data for missing fields
-  const defaultTimeSlots = ["12:00", "13:00", "18:00", "19:00", "20:00", "21:00"];
-
   // Generate opening hours display from database times or use defaults
   const getOpeningHoursDisplay = () => {
     if (restaurant.openingTime && restaurant.closingTime) {
@@ -89,21 +47,10 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
     if (restaurant.openingTime && restaurant.closingTime) {
       return generateTimeSlots(restaurant.openingTime, restaurant.closingTime);
     }
-    return defaultTimeSlots;
   };
 
   const openingHours = getOpeningHoursDisplay();
   const availableTimeSlots = getAvailableTimeSlots();
-
-  const getAllergenBadge = (allergen) => {
-    const colors = {
-      dairy: "#fee2e2",
-      shellfish: "#fef3c7",
-      gluten: "#cffafe",
-      nuts: "#fce7f3",
-    };
-    return colors[allergen] || "#e2e8f0";
-  };
 
   return (
     <div>
@@ -132,9 +79,10 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
           gap: "var(--spacing-lg)",
           marginBottom: "var(--spacing-lg)",
         }}
+        className="restaurant-detail-grid"
       >
         {/* Left Column - Basic Info */}
-        <div>
+        <div className="detail-left-column">
           {/* Info Card */}
           <Card className="mb-lg">
             <Card.Content>
@@ -146,18 +94,6 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                   <p className="text-muted" style={{ margin: 0 }}>
                     {restaurant.cuisine || "Cuisine Not Specified"}
                   </p>
-                </div>
-              </div>
-
-              {/* Rating */}
-              <div className="flex gap-md mb-md" style={{ alignItems: "center" }}>
-                <div style={{ fontSize: "20px" }}>
-                  ⭐ {averageRating > 0 ? averageRating : "N/A"}
-                </div>
-                <div className="text-muted">
-                  {reviewCount > 0
-                    ? `(${reviewCount} ${reviewCount === 1 ? "review" : "reviews"})`
-                    : "(No reviews yet)"}
                 </div>
               </div>
 
@@ -202,7 +138,7 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
           </Card>
 
           {/* Opening Hours Card */}
-          <Card>
+          <Card className="mb-lg">
             <Card.Header title="Opening Hours" />
             <Card.Content>
               {Object.entries(openingHours).map(([day, hours]) => (
@@ -222,8 +158,160 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
           </Card>
         </div>
 
-        {/* Right Column - Menu & Booking */}
-        <div>
+        {/* Right Column - Dietary, Menus, Promotions, Booking */}
+        <div className="detail-right-column">
+          {/* Dietary Types Card */}
+          {restaurant.dietaryTypes && restaurant.dietaryTypes.length > 0 && (
+            <Card className="mb-lg">
+              <Card.Header title="Dietary Options Available" />
+              <Card.Content>
+                <div
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "var(--spacing-sm)",
+                  }}
+                >
+                  {restaurant.dietaryTypes.map((type) => {
+                    const emojiMap = {
+                      halal: "🕌",
+                      vegan: "🌱",
+                      vegetarian: "🥗",
+                      gluten_free: "🌾",
+                      kosher: "🕎",
+                    };
+                    const emoji = emojiMap[type?.toLowerCase()] || "🍽️";
+
+                    return (
+                      <div
+                        key={type}
+                        style={{
+                          background: "#f0f9ff",
+                          color: "#0369a1",
+                          border: "1px solid #0ea5e9",
+                          padding: "8px 14px",
+                          borderRadius: "20px",
+                          fontSize: "14px",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {emoji} {type}
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card.Content>
+            </Card>
+          )}
+
+          {/* Menus Card */}
+          {restaurant.menus && restaurant.menus.length > 0 && (
+            <Card className="mb-lg">
+              <Card.Header title="Available Menu Files" />
+              <Card.Content>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-sm)" }}>
+                  {restaurant.menus.map((menu) => (
+                    <div
+                      key={menu.menuId}
+                      className="flex-between"
+                      style={{
+                        padding: "12px",
+                        background: "var(--bg-light)",
+                        borderRadius: "6px",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: "600", marginBottom: "4px" }}>
+                          📄 {menu.menuTypes} Menu
+                        </div>
+                        {menu.menuFilepath && (
+                          <a
+                            href={menu.menuFilepath}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: "13px",
+                              color: "#0ea5e9",
+                              textDecoration: "none",
+                              wordBreak: "break-all",
+                            }}
+                          >
+                            View Menu
+                          </a>
+                        )}
+                      </div>
+                      <span style={{ fontSize: "18px" }}>📋</span>
+                    </div>
+                  ))}
+                </div>
+              </Card.Content>
+            </Card>
+          )}
+
+          {/* Active Promotions Card */}
+          {restaurant.promotions && restaurant.promotions.length > 0 && (
+            <Card className="mb-lg">
+              <Card.Header title="Active Promotions" />
+              <Card.Content>
+                <div style={{ display: "flex", flexDirection: "column", gap: "var(--spacing-md)" }}>
+                  {restaurant.promotions.map((promo) => (
+                    <div
+                      key={promo.promotionId}
+                      style={{
+                        padding: "var(--spacing-md)",
+                        background: "linear-gradient(135deg, #fef3c7, #fef08a)",
+                        border: "2px solid #fbbf24",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <div className="flex-between mb-sm" style={{ alignItems: "flex-start" }}>
+                        <div>
+                          <h5 style={{ margin: "0 0 6px 0", color: "#b45309" }}>
+                            🏷️ {promo.description}
+                          </h5>
+                          {promo.discount && (
+                            <div style={{ fontSize: "18px", fontWeight: "700", color: "#d97706" }}>
+                              {promo.discount}
+                              {isNaN(promo.discount) ? "" : "%"} OFF
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {promo.termsNCond && (
+                        <div
+                          className="text-muted"
+                          style={{
+                            fontSize: "13px",
+                            marginTop: "var(--spacing-sm)",
+                            paddingTop: "var(--spacing-sm)",
+                            borderTop: "1px solid rgba(180, 83, 9, 0.2)",
+                          }}
+                        >
+                          <strong>Terms:</strong> {promo.termsNCond}
+                        </div>
+                      )}
+                      <div
+                        className="text-muted"
+                        style={{
+                          fontSize: "12px",
+                          marginTop: "8px",
+                        }}
+                      >
+                        Valid until{" "}
+                        {new Date(promo.endAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card.Content>
+            </Card>
+          )}
+
           {/* Available Times Card */}
           <Card className="mb-lg">
             <Card.Header title="Available Time Slots" />
@@ -248,65 +336,6 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
               </div>
             </Card.Content>
           </Card>
-
-          {/* Menu Card */}
-          {menuItems.length > 0 && (
-            <Card className="mb-lg">
-              <Card.Header title="Sample Menu" />
-              <Card.Content>
-                {menuItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="mb-md"
-                    style={{
-                      paddingBottom: "var(--spacing-md)",
-                      borderBottom: "1px solid var(--border-color)",
-                    }}
-                  >
-                    <div className="flex-between mb-sm" style={{ alignItems: "flex-start" }}>
-                      <h5 style={{ margin: 0 }}>{item.name}</h5>
-                      <span style={{ fontWeight: "600", color: "var(--success)" }}>
-                        ${item.price.toFixed(2)}
-                      </span>
-                    </div>
-                    <p
-                      className="text-muted"
-                      style={{
-                        fontSize: "14px",
-                        marginBottom: "var(--spacing-sm)",
-                      }}
-                    >
-                      {item.description}
-                    </p>
-                    {item.allergens && item.allergens.length > 0 && (
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          gap: "var(--spacing-xs)",
-                        }}
-                      >
-                        {item.allergens.map((allergen) => (
-                          <span
-                            key={allergen}
-                            className="badge"
-                            style={{
-                              background: getAllergenBadge(allergen),
-                              color: "#000",
-                              fontSize: "12px",
-                              padding: "2px 8px",
-                            }}
-                          >
-                            {allergen}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </Card.Content>
-            </Card>
-          )}
 
           {/* Book Now Button */}
           <button

@@ -4,44 +4,45 @@ const { SeatingPlans } = require("../src/schemas/seatingPlans.js");
 const { Bookings } = require("../src/schemas/bookings.js");
 const { Promotions } = require("../src/schemas/promotions.js");
 const { Reviews } = require("../src/schemas/reviews.js");
+const { Menus } = require("../src/schemas/menus.js");
 
 module.exports.LoadData = async () => {
   try {
     await Addresses.bulkCreate([
       {
-        addressLine1: "21 Sesame Street 9",
-        country: "USA",
-        city: "Midtown",
-        state: "California",
-        postalCode: "CA 90209",
+        addressLine1: "123 Orchard Road",
+        country: "Singapore",
+        city: "Orchard",
+        state: "Singapore",
+        postalCode: "238801",
       },
       {
-        addressLine1: "123 Garden Street",
-        country: "USA",
-        city: "Downtown",
-        state: "California",
-        postalCode: "CA 90210",
+        addressLine1: "456 Marina Bay Street",
+        country: "Singapore",
+        city: "Marina Bay",
+        state: "Singapore",
+        postalCode: "018972",
       },
       {
-        addressLine1: "456 Cherry Blossom Ave",
-        country: "USA",
-        city: "Uptown",
-        state: "New York",
-        postalCode: "NY 10001",
+        addressLine1: "789 Clementi Avenue 2",
+        country: "Singapore",
+        city: "Clementi",
+        state: "Singapore",
+        postalCode: "129603",
       },
       {
-        addressLine1: "789 Little Italy Street",
-        country: "Italy",
-        city: "Rome",
-        state: "Lazio",
-        postalCode: "00184",
+        addressLine1: "321 Bukit Merah View",
+        country: "Singapore",
+        city: "Bukit Merah",
+        state: "Singapore",
+        postalCode: "150321",
       },
       {
-        addressLine1: "321 Curry Lane",
-        country: "India",
-        city: "Spice District",
-        state: "Kerala",
-        postalCode: "682001",
+        addressLine1: "654 Bedok Reservoir Road",
+        country: "Singapore",
+        city: "Bedok",
+        state: "Singapore",
+        postalCode: "479261",
       },
     ]);
 
@@ -60,8 +61,7 @@ module.exports.LoadData = async () => {
       },
       {
         restaurantName: "The Garden Bistro",
-        description:
-          "An elegant French bistro offering classic dishes with a modern twist.",
+        description: "An elegant French bistro offering classic dishes with a modern twist.",
         cuisine: "French",
         fkAddressId: 2,
         phone: "+1-555-0123",
@@ -74,8 +74,7 @@ module.exports.LoadData = async () => {
       {
         restaurantName: "Sakura Sushi & Grill",
         cuisine: "Japanese",
-        description:
-          "Fresh sushi and authentic Japanese cuisine in a contemporary setting.",
+        description: "Fresh sushi and authentic Japanese cuisine in a contemporary setting.",
         fkAddressId: 3,
         phone: "+1-555-0456",
         email: "info@sakurasushi.com",
@@ -87,8 +86,7 @@ module.exports.LoadData = async () => {
       {
         restaurantName: "Mama Rosa's Trattoria",
         cuisine: "Italian",
-        description:
-          "Traditional Italian family recipes passed down through generations.",
+        description: "Traditional Italian family recipes passed down through generations.",
         fkAddressId: 4,
         phone: "+1-555-0789",
         email: "ciao@mamarosas.com",
@@ -105,8 +103,7 @@ module.exports.LoadData = async () => {
         fkAddressId: 5,
         phone: "+1-555-0321",
         email: "hello@spiceroute.com",
-        imageUrl:
-          "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&h=800&fit=crop",
+        imageUrl: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1200&h=800&fit=crop",
         openingTime: "11:30:00",
         closingTime: "23:00:00",
       },
@@ -663,149 +660,218 @@ module.exports.LoadData = async () => {
         status: "completed",
         fkRestaurantId: 2,
         fkSeatingId: null,
-      }
+      },
     ]);
-    
+
     // Ginna's Demo: 23 Reviews - The Garden Bistro - December 2024
     await Reviews.bulkCreate([
       {
         fkBookingId: 5,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Great birthday ambiance and attentive staff."
+        comment: "Great birthday ambiance and attentive staff.",
       },
       {
         fkBookingId: 6,
         fkRestaurantId: 2,
         rating: 4,
-        comment: "Flavors were solid, pacing of courses could improve."
+        comment: "Flavors were solid, pacing of courses could improve.",
       },
       {
         fkBookingId: 10,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Window seat request handled perfectly."
+        comment: "Window seat request handled perfectly.",
       },
       {
         fkBookingId: 11,
         fkRestaurantId: 2,
         rating: 4,
-        comment: "Late evening booking, food still fresh."
+        comment: "Late evening booking, food still fresh.",
       },
       {
         fkBookingId: 16,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Excellent vegetarian options."
+        comment: "Excellent vegetarian options.",
       },
       {
         fkBookingId: 17,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Service was quick and friendly."
+        comment: "Service was quick and friendly.",
       },
       {
         fkBookingId: 19,
         fkRestaurantId: 2,
         rating: 4,
-        comment: "Celebration handled nicely, minor wait at arrival."
+        comment: "Celebration handled nicely, minor wait at arrival.",
       },
       {
         fkBookingId: 21,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Lunch seating comfortable and quiet."
+        comment: "Lunch seating comfortable and quiet.",
       },
       {
         fkBookingId: 22,
         fkRestaurantId: 2,
         rating: 4,
-        comment: "Afternoon booking smooth, staff helpful."
+        comment: "Afternoon booking smooth, staff helpful.",
       },
       {
         fkBookingId: 23,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Allergy request respected and well executed."
+        comment: "Allergy request respected and well executed.",
       },
       {
         fkBookingId: 24,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Evening rush handled efficiently."
+        comment: "Evening rush handled efficiently.",
       },
       {
         fkBookingId: 26,
         fkRestaurantId: 2,
         rating: 4,
-        comment: "Menu variety appreciated."
+        comment: "Menu variety appreciated.",
       },
       {
         fkBookingId: 27,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Good balance of seasoning and plating."
+        comment: "Good balance of seasoning and plating.",
       },
       {
         fkBookingId: 28,
         fkRestaurantId: 2,
         rating: 4,
-        comment: "Afternoon light perfect near window."
+        comment: "Afternoon light perfect near window.",
       },
       {
         fkBookingId: 29,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Family dinner went flawlessly."
+        comment: "Family dinner went flawlessly.",
       },
       {
         fkBookingId: 30,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Repeat visit—quality consistent."
+        comment: "Repeat visit—quality consistent.",
       },
       {
         fkBookingId: 31,
         fkRestaurantId: 2,
         rating: 4,
-        comment: "Quiet table delivered as requested."
+        comment: "Quiet table delivered as requested.",
       },
       {
         fkBookingId: 33,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Birthday dessert presentation was great."
+        comment: "Birthday dessert presentation was great.",
       },
       {
         fkBookingId: 34,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Evening service punctual and warm."
+        comment: "Evening service punctual and warm.",
       },
       {
         fkBookingId: 35,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Anniversary details handled perfectly."
+        comment: "Anniversary details handled perfectly.",
       },
       {
         fkBookingId: 36,
         fkRestaurantId: 2,
         rating: 4,
-        comment: "Late booking still well staffed."
+        comment: "Late booking still well staffed.",
       },
       {
         fkBookingId: 37,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Window preference granted, great view."
+        comment: "Window preference granted, great view.",
       },
       {
         fkBookingId: 39,
         fkRestaurantId: 2,
         rating: 5,
-        comment: "Birthday cake service seamless."
-      }
+        comment: "Birthday cake service seamless.",
+      },
+    ]);
+
+    // Add menu dietary types for each restaurant
+    await Menus.bulkCreate([
+      // Pasta Delights - Italian restaurant (Restaurant 1)
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/pasta_delights_vegetarian.pdf",
+        fkRestaurantId: 1,
+      },
+      {
+        menuTypes: "Vegan",
+        menuFilepath: "/menus/pasta_delights_vegan.pdf",
+        fkRestaurantId: 1,
+      },
+      // The Garden Bistro - French restaurant (Restaurant 2)
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/garden_bistro_vegetarian.pdf",
+        fkRestaurantId: 2,
+      },
+      {
+        menuTypes: "Halal",
+        menuFilepath: "/menus/garden_bistro_halal.pdf",
+        fkRestaurantId: 2,
+      },
+      // Sakura Sushi & Grill - Japanese restaurant (Restaurant 3)
+      {
+        menuTypes: "Vegan",
+        menuFilepath: "/menus/sakura_sushi_vegan.pdf",
+        fkRestaurantId: 3,
+      },
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/sakura_sushi_vegetarian.pdf",
+        fkRestaurantId: 3,
+      },
+      // Mama Rosa's Trattoria - Italian restaurant (Restaurant 4)
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/mama_rosas_vegetarian.pdf",
+        fkRestaurantId: 4,
+      },
+      {
+        menuTypes: "Vegan",
+        menuFilepath: "/menus/mama_rosas_vegan.pdf",
+        fkRestaurantId: 4,
+      },
+      {
+        menuTypes: "Halal",
+        menuFilepath: "/menus/mama_rosas_halal.pdf",
+        fkRestaurantId: 4,
+      },
+      // Spice Route - Indian restaurant (Restaurant 5)
+      {
+        menuTypes: "Vegetarian",
+        menuFilepath: "/menus/spice_route_vegetarian.pdf",
+        fkRestaurantId: 5,
+      },
+      {
+        menuTypes: "Vegan",
+        menuFilepath: "/menus/spice_route_vegan.pdf",
+        fkRestaurantId: 5,
+      },
+      {
+        menuTypes: "Halal",
+        menuFilepath: "/menus/spice_route_halal.pdf",
+        fkRestaurantId: 5,
+      },
     ]);
 
     await Promotions.bulkCreate([

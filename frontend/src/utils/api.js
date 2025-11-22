@@ -58,6 +58,23 @@ export const restaurantAPI = {
     api.put(`/restaurant/${restaurantId}`, restaurantData),
 
   deleteRestaurant: (restaurantId) => api.delete(`/restaurant/${restaurantId}`),
+
+  // Advanced restaurant search with filtering (backend search)
+  searchRestaurants: (filters = {}) => {
+    const params = new URLSearchParams();
+
+    // Only add parameters if they have values
+    if (filters.q) params.append("q", filters.q);
+    if (filters.cuisine && filters.cuisine !== "All Cuisines") params.append("cuisine", filters.cuisine);
+    if (filters.minRating) params.append("minRating", filters.minRating);
+    if (filters.maxRating) params.append("maxRating", filters.maxRating);
+    if (filters.hasPromotion) params.append("hasPromotion", filters.hasPromotion);
+    if (filters.dietaryType) params.append("dietaryType", filters.dietaryType);
+    if (filters.limit) params.append("limit", filters.limit);
+    if (filters.offset) params.append("offset", filters.offset);
+
+    return api.get(`/restaurant/search?${params.toString()}`);
+  },
 };
 
 // Seating API endpoints

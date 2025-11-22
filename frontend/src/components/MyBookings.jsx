@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { bookingAPI, reviewAPI } from "../utils/api";
+import { bookingAPI } from "../utils/api";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
 import { Reviews } from "./Reviews";
 import { Card } from "./Common";
@@ -52,6 +52,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
   };
 
   // Fetch bookings by customer email
+  // FIXED: Now uses includeReviews parameter to fetch all reviews in 1 query (fixes N+1 problem)
   const handleSearchBookings = async (e, emailParam = null) => {
     e.preventDefault();
 
@@ -69,16 +70,37 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     setMessage(null);
 
     try {
-      const response = await bookingAPI.getBookingsByEmail(emailToSearch);
-      // Backend returns { count, bookings } - extract bookings array
-      const bookingsData = response.data.bookings || [];
+      // ✅ OPTIMIZATION: Use includeReviews=true to get reviews in SINGLE query (fixes N+1)
+      const response = await fetch(
+        `http://localhost:3000/booking/email/${encodeURIComponent(emailToSearch)}?includeReviews=true`
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setMessage({
+            type: "info",
+            text: "No bookings found for this email address",
+          });
+          setBookings([]);
+          return;
+        }
+        throw new Error("Failed to fetch bookings");
+      }
+
+      const data = await response.json();
+      const bookingsData = data.bookings || [];
       setBookings(bookingsData);
       setCustomerEmail(emailToSearch);
 
-      // Fetch reviews for completed bookings
-      if (bookingsData.length > 0) {
-        fetchBookingReviews(bookingsData);
-      }
+      // ✅ NEW: Reviews are already included in bookings from backend!
+      // Build reviewsMap from included review data (no extra API calls needed)
+      const reviewsMap = {};
+      bookingsData.forEach((booking) => {
+        if (booking.review) {
+          reviewsMap[booking.bookingId] = booking.review;
+        }
+      });
+      setBookingReviews(reviewsMap);
 
       if (bookingsData.length === 0) {
         setMessage({
@@ -88,23 +110,13 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
-
-      // Handle 404 (no bookings found) as info message, not error
-      if (error.response?.status === 404) {
-        setMessage({
-          type: "info",
-          text: "No bookings found for this email address",
-        });
-        setBookings([]);
-      } else {
-        const errorMessage =
-          error.response?.data?.message || "Failed to load bookings. Please try again.";
-        setMessage({
-          type: "error",
-          text: errorMessage,
-        });
-        setBookings([]);
-      }
+      const errorMessage =
+        error.response?.data?.message || "Failed to load bookings. Please try again.";
+      setMessage({
+        type: "error",
+        text: errorMessage,
+      });
+      setBookings([]);
     } finally {
       setIsLoading(false);
     }
@@ -120,11 +132,23 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
         });
         // Refresh bookings after cancellation
         if (customerEmail) {
-          const response = await bookingAPI.getBookingsByEmail(customerEmail);
-          const bookingsData = response.data.bookings || [];
-          setBookings(bookingsData);
-          if (bookingsData.length > 0) {
-            fetchBookingReviews(bookingsData);
+          // ✅ OPTIMIZATION: Use includeReviews parameter (fixes N+1)
+          const response = await fetch(
+            `http://localhost:3000/booking/email/${encodeURIComponent(customerEmail)}?includeReviews=true`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            const bookingsData = data.bookings || [];
+            setBookings(bookingsData);
+
+            // Build reviewsMap from included review data
+            const reviewsMap = {};
+            bookingsData.forEach((booking) => {
+              if (booking.review) {
+                reviewsMap[booking.bookingId] = booking.review;
+              }
+            });
+            setBookingReviews(reviewsMap);
           }
         }
       } catch (error) {
@@ -169,11 +193,23 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
 
       // Refresh bookings
       if (customerEmail) {
-        const response = await bookingAPI.getBookingsByEmail(customerEmail);
-        const bookingsData = response.data.bookings || [];
-        setBookings(bookingsData);
-        if (bookingsData.length > 0) {
-          fetchBookingReviews(bookingsData);
+        // ✅ OPTIMIZATION: Use includeReviews parameter (fixes N+1)
+        const response = await fetch(
+          `http://localhost:3000/booking/email/${encodeURIComponent(customerEmail)}?includeReviews=true`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          const bookingsData = data.bookings || [];
+          setBookings(bookingsData);
+
+          // Build reviewsMap from included review data
+          const reviewsMap = {};
+          bookingsData.forEach((booking) => {
+            if (booking.review) {
+              reviewsMap[booking.bookingId] = booking.review;
+            }
+          });
+          setBookingReviews(reviewsMap);
         }
       }
     } catch (error) {
@@ -191,39 +227,8 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     setEditFormData({});
   };
 
-  // Fetch reviews for completed bookings
-  const fetchBookingReviews = async (bookingsList) => {
-    const reviewsMap = {};
-
-    try {
-      for (const booking of bookingsList) {
-        if (booking.status === "completed") {
-          try {
-            const response = await reviewAPI.getReviewsByBooking(booking.bookingId);
-            if (response.data && response.data.reviewInfo && response.data.reviewInfo.length > 0) {
-              const review = response.data.reviewInfo[0]; // Get first review for this booking
-              reviewsMap[booking.bookingId] = {
-                reviewId: review.reviewId,
-                rating: review.rating,
-                comment: review.comment,
-                createdAt: review.createdAt,
-              };
-            }
-          } catch (error) {
-            // 404 or no reviews means no review exists - that's fine
-            if (error.response?.status && error.response.status !== 404) {
-              console.error(`Error fetching review for booking ${booking.bookingId}:`, error);
-            }
-          }
-        }
-      }
-      setBookingReviews(reviewsMap);
-    } catch (error) {
-      console.error("Error fetching booking reviews:", error);
-    }
-  };
-
   // Fetch booking by confirmation code
+  // FIXED: Now uses includeReviews parameter to fetch review in 1 query (fixes N+1 problem)
   const handleSearchByCode = async (e) => {
     e.preventDefault();
 
@@ -239,33 +244,44 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     setMessage(null);
 
     try {
-      const response = await bookingAPI.getBookingByCode(searchCode.trim());
-      // Backend returns { booking } - extract booking object
-      const booking = response.data.booking;
+      // ✅ OPTIMIZATION: Use includeReviews=true to get review in SINGLE query (fixes N+1)
+      const response = await fetch(
+        `http://localhost:3000/booking/code/${encodeURIComponent(searchCode.trim())}?includeReviews=true`
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setMessage({
+            type: "info",
+            text: "No booking found with this confirmation code",
+          });
+          setBookings([]);
+          return;
+        }
+        throw new Error("Failed to fetch booking");
+      }
+
+      const data = await response.json();
+      const booking = data.booking;
       setBookings([booking]); // Wrap in array for consistent display
       setCustomerEmail(booking.customerEmail);
       setActiveTab("upcoming"); // Show in upcoming tab by default
 
-      // Fetch reviews for this booking
-      fetchBookingReviews([booking]);
+      // ✅ NEW: Review is already included in booking from backend!
+      // Build reviewsMap from included review data (no extra API calls needed)
+      const reviewsMap = {};
+      if (booking.review) {
+        reviewsMap[booking.bookingId] = booking.review;
+      }
+      setBookingReviews(reviewsMap);
     } catch (error) {
       console.error("Error fetching booking:", error);
 
-      if (error.response?.status === 404) {
-        setMessage({
-          type: "info",
-          text: "No booking found with this confirmation code",
-        });
-        setBookings([]);
-      } else {
-        const errorMessage =
-          error.response?.data?.message || "Failed to load booking. Please try again.";
-        setMessage({
-          type: "error",
-          text: errorMessage,
-        });
-        setBookings([]);
-      }
+      setMessage({
+        type: "error",
+        text: "Failed to load booking. Please try again.",
+      });
+      setBookings([]);
     } finally {
       setIsLoading(false);
     }
@@ -521,53 +537,44 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                   </div>
                 )}
 
-                {/* Existing Review Display (for completed bookings) */}
-                {activeTab === "past" &&
-                  booking.status === "completed" &&
-                  bookingReviews[booking.bookingId] && (
-                    <div
-                      className="mb-md"
-                      style={{
-                        paddingTop: "var(--spacing-md)",
-                        borderTop: "1px solid var(--border-color)",
-                        backgroundColor: "var(--bg-light)",
-                        padding: "var(--spacing-md)",
-                        borderRadius: "var(--radius-md)",
-                        marginTop: "var(--spacing-md)",
-                      }}
-                    >
-                      <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
-                        <h5 style={{ margin: 0, marginBottom: "var(--spacing-sm)" }}>
-                          ⭐ Your Review
-                        </h5>
-                        <span className="text-muted" style={{ fontSize: "12px" }}>
-                          {new Date(
-                            bookingReviews[booking.bookingId].createdAt
-                          ).toLocaleDateString()}
-                        </span>
-                      </div>
-
-                      <div
-                        style={{ display: "flex", gap: "2px", marginBottom: "var(--spacing-sm)" }}
-                      >
-                        {[...Array(5)].map((_, i) => (
-                          <span key={i} style={{ fontSize: "16px" }}>
-                            {i < bookingReviews[booking.bookingId].rating ? "⭐" : "☆"}
-                          </span>
-                        ))}
-                        <span
-                          className="text-muted"
-                          style={{ fontSize: "12px", marginLeft: "8px" }}
-                        >
-                          {bookingReviews[booking.bookingId].rating}.0/5.0
-                        </span>
-                      </div>
-
-                      <p style={{ margin: 0, color: "var(--text-dark)" }}>
-                        {bookingReviews[booking.bookingId].comment}
-                      </p>
+                {/* Existing Review Display (if review exists) */}
+                {activeTab === "past" && bookingReviews[booking.bookingId] && (
+                  <div
+                    className="mb-md"
+                    style={{
+                      paddingTop: "var(--spacing-md)",
+                      borderTop: "1px solid var(--border-color)",
+                      backgroundColor: "var(--bg-light)",
+                      padding: "var(--spacing-md)",
+                      borderRadius: "var(--radius-md)",
+                      marginTop: "var(--spacing-md)",
+                    }}
+                  >
+                    <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
+                      <h5 style={{ margin: 0, marginBottom: "var(--spacing-sm)" }}>
+                        ⭐ Your Review
+                      </h5>
+                      <span className="text-muted" style={{ fontSize: "12px" }}>
+                        {new Date(bookingReviews[booking.bookingId].createdAt).toLocaleDateString()}
+                      </span>
                     </div>
-                  )}
+
+                    <div style={{ display: "flex", gap: "2px", marginBottom: "var(--spacing-sm)" }}>
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} style={{ fontSize: "16px" }}>
+                          {i < bookingReviews[booking.bookingId].rating ? "⭐" : "☆"}
+                        </span>
+                      ))}
+                      <span className="text-muted" style={{ fontSize: "12px", marginLeft: "8px" }}>
+                        {bookingReviews[booking.bookingId].rating}.0/5.0
+                      </span>
+                    </div>
+
+                    <p style={{ margin: 0, color: "var(--text-dark)" }}>
+                      {bookingReviews[booking.bookingId].comment}
+                    </p>
+                  </div>
+                )}
 
                 {/* Booking Date */}
                 {booking.createdAt && (
@@ -706,27 +713,28 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                     </>
                   )}
 
-                  {/* Past bookings - Single review button (Write or Edit) for completed */}
-                  {activeTab === "past" && booking.status === "completed" && (
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => setReviewingBooking(booking)}
-                      style={{ flex: 1 }}
-                    >
-                      {bookingReviews[booking.bookingId] ? "✏️ Edit Review" : "⭐ Write a Review"}
-                    </button>
-                  )}
+                  {/* Past bookings - Allow review if not cancelled/no_show */}
+                  {activeTab === "past" &&
+                    booking.status !== "cancelled" &&
+                    booking.status !== "no_show" && (
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => setReviewingBooking(booking)}
+                        style={{ flex: 1 }}
+                      >
+                        {bookingReviews[booking.bookingId] ? "✏️ Edit Review" : "⭐ Write a Review"}
+                      </button>
+                    )}
 
-                  {/* Other past statuses - no action */}
-                  {activeTab === "past" && booking.status !== "completed" && (
-                    <div className="text-muted" style={{ fontSize: "12px" }}>
-                      {booking.status === "cancelled"
-                        ? "❌ This booking was cancelled"
-                        : booking.status === "no_show"
-                          ? "⏭️ You didn't show up for this booking"
-                          : "You can leave a review once the booking is completed"}
-                    </div>
-                  )}
+                  {/* Cancelled or no-show bookings - no review option */}
+                  {activeTab === "past" &&
+                    (booking.status === "cancelled" || booking.status === "no_show") && (
+                      <div className="text-muted" style={{ fontSize: "12px" }}>
+                        {booking.status === "cancelled"
+                          ? "❌ This booking was cancelled"
+                          : "⏭️ You didn't show up for this booking"}
+                      </div>
+                    )}
                 </Card.Footer>
               )}
             </Card>
@@ -772,7 +780,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
             <div className="card-header">
               <div className="flex-between" style={{ alignItems: "center" }}>
                 <h3 className="card-title" style={{ margin: 0 }}>
-                  ⭐ Review: {reviewingBooking.restaurant?.restaurantName || "Restaurant"}
+                  ⭐ Review: {reviewingBooking.Restaurant?.restaurantName || "Restaurant"}
                 </h3>
                 <button
                   onClick={() => setReviewingBooking(null)}
@@ -811,9 +819,25 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                 existingReview={bookingReviews[reviewingBooking.bookingId] || null}
                 onBack={() => {
                   setReviewingBooking(null);
-                  // Refresh booking reviews
+                  // Refresh bookings with updated review data
                   if (customerEmail) {
-                    fetchBookingReviews(bookings);
+                    // ✅ OPTIMIZATION: Use includeReviews=true to refresh reviews efficiently
+                    fetch(
+                      `http://localhost:3000/booking/email/${encodeURIComponent(customerEmail)}?includeReviews=true`
+                    )
+                      .then((res) => res.json())
+                      .then((data) => {
+                        const bookingsData = data.bookings || [];
+                        setBookings(bookingsData);
+                        const reviewsMap = {};
+                        bookingsData.forEach((booking) => {
+                          if (booking.review) {
+                            reviewsMap[booking.bookingId] = booking.review;
+                          }
+                        });
+                        setBookingReviews(reviewsMap);
+                      })
+                      .catch((error) => console.error("Error refreshing bookings:", error));
                   }
                 }}
               />

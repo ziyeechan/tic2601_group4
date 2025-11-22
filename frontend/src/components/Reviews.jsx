@@ -6,7 +6,7 @@ import { BookingVerification } from "./BookingVerification";
 export function Reviews({ restaurant, onBack, bookingId, existingReview = null }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(!!existingReview); // Show form immediately if editing
   const [showVerification, setShowVerification] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [verifiedBookingId, setVerifiedBookingId] = useState(bookingId || null);
@@ -80,7 +80,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
       return;
     }
 
-    if (!formData.isAnonymous && !formData.customerName.trim()) {
+    // Only validate name when creating a new review, not when editing
+    if (!isEditing && !formData.isAnonymous && !formData.customerName.trim()) {
       alert("Please enter your name or choose to review anonymously");
       return;
     }
@@ -94,7 +95,7 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           comment: formData.comment,
         };
 
-        const response = await reviewAPI.updateReview(existingReview.reviewId, updatePayload);
+        await reviewAPI.updateReview(existingReview.reviewId, updatePayload);
 
         // Update local state
         setFormData({
@@ -184,6 +185,81 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
     return (
       <div style={{ textAlign: "center", padding: "var(--spacing-lg)" }}>
         <p>Loading reviews...</p>
+      </div>
+    );
+  }
+
+  // If editing an existing review, only show the form (no need for reviews list)
+  if (isEditing && showForm) {
+    return (
+      <div>
+        {/* Inline edit form - no reviews list shown */}
+        <form onSubmit={handleSubmitReview}>
+          <div className="form-group">
+            <label htmlFor="rating">⭐ Rating *</label>
+            <div style={{ display: "flex", gap: "var(--spacing-sm)", alignItems: "center" }}>
+              <select
+                id="rating"
+                name="rating"
+                value={formData.rating}
+                onChange={handleChange}
+                style={{ flex: 1 }}
+                required
+                disabled={submitting}
+              >
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Good</option>
+                <option value="3">3 - Average</option>
+                <option value="2">2 - Poor</option>
+                <option value="1">1 - Very Poor</option>
+              </select>
+              <div style={{ display: "flex", gap: "2px" }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{ fontSize: "24px" }}>
+                    {i < formData.rating ? "⭐" : "☆"}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="comment">💬 Your Review *</label>
+            <textarea
+              id="comment"
+              name="comment"
+              value={formData.comment}
+              onChange={handleChange}
+              placeholder="Share your experience..."
+              style={{ minHeight: "120px" }}
+              required
+              disabled={submitting}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
+            <button type="submit" className="btn btn-primary btn-full" disabled={submitting}>
+              {submitting ? "⏳ Updating..." : "✓ Update Review"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-full"
+              onClick={() => {
+                // Close the edit form and return to parent (MyBookings)
+                if (onBack) {
+                  onBack();
+                } else {
+                  // Fallback: just close the form
+                  setShowForm(false);
+                  setIsEditing(false);
+                }
+              }}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     );
   }
@@ -362,7 +438,7 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           }}
         >
           <Card styles={{ maxWidth: "500px", width: "90%" }}>
-            <Card.Header title={`${isEditing ? "✏️ Edit Your Review" : "⭐ Write Your Review"}`} />"
+            <Card.Header title={`${isEditing ? "✏️ Edit Your Review" : "⭐ Write Your Review"}`} />
             <Card.Content>
               <form onSubmit={handleSubmitReview}>
                 {/* Only show name field when creating new review, not when editing */}
@@ -381,23 +457,56 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                       required={!formData.isAnonymous}
                       disabled={submitting || formData.isAnonymous}
                     />
-                    <div style={{ marginTop: "8px" }}>
-                      <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                        <input
-                          type="checkbox"
-                          checked={formData.isAnonymous}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              isAnonymous: e.target.checked,
-                              customerName: e.target.checked ? "" : prev.customerName,
-                            }))
-                          }
-                          disabled={submitting}
-                          style={{ marginRight: "8px" }}
-                        />
-                        <span style={{ fontSize: "14px" }}>🤫 Post anonymously</span>
-                      </label>
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        padding: "12px",
+                        borderRadius: "8px",
+                        backgroundColor: formData.isAnonymous ? "rgba(168, 85, 247, 0.1)" : "var(--bg-light)",
+                        border: formData.isAnonymous ? "2px solid #a855f7" : "1px solid var(--border-color)",
+                        transition: "all 0.3s ease",
+                        cursor: submitting ? "not-allowed" : "pointer",
+                      }}
+                      onClick={() => {
+                        if (!submitting) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            isAnonymous: !prev.isAnonymous,
+                            customerName: !prev.isAnonymous ? "" : prev.customerName,
+                          }));
+                        }
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div
+                          style={{
+                            width: "24px",
+                            height: "24px",
+                            borderRadius: "6px",
+                            backgroundColor: formData.isAnonymous ? "#a855f7" : "var(--bg-light)",
+                            border: formData.isAnonymous ? "none" : "2px solid var(--border-color)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transition: "all 0.3s ease",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {formData.isAnonymous && (
+                            <span style={{ fontSize: "14px", color: "white" }}>✓</span>
+                          )}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: "14px", fontWeight: "600", marginBottom: "2px" }}>
+                            🤫 Post anonymously
+                          </div>
+                          <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                            {formData.isAnonymous
+                              ? "Your name will not be displayed"
+                              : "Your name will be displayed with your review"}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
