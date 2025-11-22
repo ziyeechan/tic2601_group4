@@ -4,15 +4,6 @@ import { bookingAPI } from "../utils/api";
 import { Card } from "./Common";
 
 export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSuccess }) {
-  // Generate time slots based on restaurant opening/closing hours
-  const availableTimeSlots = useMemo(() => {
-    if (restaurant?.openingTime && restaurant?.closingTime) {
-      return generateTimeSlots(restaurant.openingTime, restaurant.closingTime);
-    }
-    // Fallback to default slots if hours not available
-    return ["12:00", "12:30", "13:00", "13:30", "18:00", "18:30", "19:00", "19:30"];
-  }, [restaurant?.openingTime, restaurant?.closingTime]);
-
   const [formData, setFormData] = useState({
     customerName: "",
     customerEmail: "",
@@ -25,6 +16,27 @@ export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSu
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState(null);
+
+  // Generate time slots based on restaurant opening/closing hours
+  const availableTimeSlots = useMemo(() => {
+    if (restaurant?.openingTime && restaurant?.closingTime) {
+      let slots = generateTimeSlots(restaurant.openingTime, restaurant.closingTime);
+
+      // Filter out past times if booking is for today
+      const today = new Date().toISOString().split("T")[0];
+      if (formData.date === today) {
+        const now = new Date();
+        const currentHour = String(now.getHours()).padStart(2, "0");
+        const currentMinute = String(now.getMinutes()).padStart(2, "0");
+        const currentTime = `${currentHour}:${currentMinute}`;
+
+        // Keep only times >= current time
+        slots = slots.filter((time) => time >= currentTime);
+      }
+
+      return slots;
+    }
+  }, [restaurant?.openingTime, restaurant?.closingTime, formData.date]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

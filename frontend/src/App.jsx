@@ -36,7 +36,6 @@ export default function App() {
       .searchRestaurants({})
       .then((response) => {
         const restaurantList = response.data.restaurants;
-        console.log(restaurantList, "restaurantList");
 
         // Map fields for component compatibility
         const enrichedRestaurants = restaurantList.map((restaurant) => ({
