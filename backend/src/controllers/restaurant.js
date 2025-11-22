@@ -14,7 +14,7 @@ const { Addresses } = require("../schemas/addresses");
 const { Promotions } = require("../schemas/promotions");
 const { Menus } = require("../schemas/menus");
 
-const VALID_DAYS = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"];
+const VALID_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 module.exports.createRestaurant = async (req, res) => {
   try {
@@ -411,6 +411,7 @@ module.exports.searchRestaurants = async (req, res) => {
         imageUrl: restaurantJSON.imageUrl,
         openingTime: restaurantJSON.openingTime,
         closingTime: restaurantJSON.closingTime,
+        closed: restaurantJSON.closedDays,
         fkAddressId: restaurantJSON.fkAddressId,
 
         // Related data (explicitly returned)

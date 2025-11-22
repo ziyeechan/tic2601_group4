@@ -36,7 +36,7 @@ const Restaurants = db.define(
     closedDays: {
       type: DataTypes.STRING,
       allowNull: true,
-      comment: "Comma-Separated Days e.g. Mon,Tues,Wed....",
+      comment: "Comma-Separated Days e.g. Monday, Tuesday, Wednesday....",
     },
     openingTime: {
       type: DataTypes.TIME,

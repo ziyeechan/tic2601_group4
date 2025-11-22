@@ -80,7 +80,26 @@ export function RestaurantManagement({
       })
       .catch((error) => console.error("Error fetching details: ", error));
   }, [refresh]);
-  console.log(editedRestaurant);
+
+  // Generate opening hours display from database times or use defaults
+  const getOpeningHoursDisplay = () => {
+    if (restaurant.openingTime && restaurant.closingTime) {
+      // Convert 24-hour format to 12-hour for display
+      const convertTo12Hour = (time24) => {
+        const [hour] = time24.split(":").map(Number);
+        const ampm = hour >= 12 ? "PM" : "AM";
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:00 ${ampm}`;
+      };
+
+      const hours = `${convertTo12Hour(
+        restaurant.openingTime
+      )} - ${convertTo12Hour(restaurant.closingTime)}`;
+
+      return hours;
+    }
+  };
+
   const handleToast = (type, message) => {
     setShow(true);
     setType(type);
@@ -95,7 +114,6 @@ export function RestaurantManagement({
     }));
   };
 
-  console.log(editedRestaurant.closed);
   const handleDaysChange = (e) => {
     const { name } = e.target;
 
@@ -236,7 +254,7 @@ export function RestaurantManagement({
     "Vietnamese",
   ];
 
-  const VALID_DAYS = ["Mon", "Tues", "Wed", "Thurs", "Fri", "Sat", "Sun"];
+  const VALID_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   return (
     refresh && (
@@ -345,9 +363,7 @@ export function RestaurantManagement({
                         {restaurant.closed && restaurant.closed.includes(day) ? (
                           <span className="text-muted">Closed</span>
                         ) : (
-                          <span className="text-muted">
-                            {restaurant.openingTime} - {restaurant.closingTime}
-                          </span>
+                          <span className="text-muted">{getOpeningHoursDisplay()}</span>
                         )}
                       </div>
                     ))}

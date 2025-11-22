@@ -18,17 +18,11 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
       )} - ${convertTo12Hour(restaurant.closingTime)}`;
 
       // Display the same hours for all days (since we don't have per-day hours)
-      return {
-        Monday: hours,
-        Tuesday: hours,
-        Wednesday: hours,
-        Thursday: hours,
-        Friday: hours,
-        Saturday: hours,
-        Sunday: hours,
-      };
+      return hours;
     }
   };
+
+  const VALID_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
   const openingHours = getOpeningHoursDisplay();
 
@@ -121,7 +115,7 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
           <Card className="mb-lg">
             <Card.Header title="Opening Hours" />
             <Card.Content>
-              {Object.entries(openingHours).map(([day, hours]) => (
+              {VALID_DAYS.map((day) => (
                 <div
                   key={day}
                   className="flex-between mb-md"
@@ -131,7 +125,11 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                   }}
                 >
                   <span style={{ fontWeight: "500" }}>{day}</span>
-                  <span className="text-muted">{hours}</span>
+                  {restaurant.closed && restaurant.closed.includes(day) ? (
+                    <span className="text-muted">Closed</span>
+                  ) : (
+                    <span className="text-muted">{getOpeningHoursDisplay()}</span>
+                  )}
                 </div>
               ))}
             </Card.Content>
