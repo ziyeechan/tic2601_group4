@@ -1,4 +1,3 @@
-import { generateTimeSlots } from "../utils/timeSlotUtils";
 import { Reviews } from "./Reviews";
 import { Card } from "./Common";
 
@@ -29,28 +28,9 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
         Sunday: hours,
       };
     }
-
-    // Default if not available
-    return {
-      Monday: "10:00 AM - 10:00 PM",
-      Tuesday: "10:00 AM - 10:00 PM",
-      Wednesday: "10:00 AM - 10:00 PM",
-      Thursday: "10:00 AM - 10:00 PM",
-      Friday: "10:00 AM - 11:00 PM",
-      Saturday: "11:00 AM - 11:00 PM",
-      Sunday: "11:00 AM - 10:00 PM",
-    };
-  };
-
-  // Generate available time slots from opening/closing times
-  const getAvailableTimeSlots = () => {
-    if (restaurant.openingTime && restaurant.closingTime) {
-      return generateTimeSlots(restaurant.openingTime, restaurant.closingTime);
-    }
   };
 
   const openingHours = getOpeningHoursDisplay();
-  const availableTimeSlots = getAvailableTimeSlots();
 
   return (
     <div>
@@ -311,31 +291,6 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
               </Card.Content>
             </Card>
           )}
-
-          {/* Available Times Card */}
-          <Card className="mb-lg">
-            <Card.Header title="Available Time Slots" />
-            <Card.Content>
-              {" "}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: "var(--spacing-sm)",
-                }}
-              >
-                {availableTimeSlots.map((time) => (
-                  <button
-                    key={time}
-                    className="btn btn-secondary"
-                    style={{ padding: "8px 12px", fontSize: "14px" }}
-                  >
-                    {time}
-                  </button>
-                ))}
-              </div>
-            </Card.Content>
-          </Card>
 
           {/* Book Now Button */}
           <button

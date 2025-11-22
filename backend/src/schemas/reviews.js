@@ -40,9 +40,9 @@ const Reviews = db.define(
 );
 
 Bookings.hasOne(Reviews, { foreignKey: "fkBookingId" });
-Reviews.belongsTo(Bookings, { foreignKey: "fkBookingId" });
+Reviews.belongsTo(Bookings, { foreignKey: "fkBookingId", as: "booking" });
 
 Restaurants.hasMany(Reviews, { foreignKey: "fkRestaurantId" });
 Reviews.belongsTo(Restaurants, { foreignKey: "fkRestaurantId" });
 
-module.exports = { Reviews };
+module.exports = { Reviews, sequelize: db };

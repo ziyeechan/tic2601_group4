@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { reviewAPI, bookingAPI } from "../utils/api";
+import { reviewAPI } from "../utils/api";
 import { Card } from "./Common";
 import { BookingVerification } from "./BookingVerification";
 
@@ -13,6 +13,9 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
   const [isEditing, setIsEditing] = useState(!!existingReview);
   const [currentPage, setCurrentPage] = useState(1);
   const reviewsPerPage = 5;
+  const [averageRating, setAverageRating] = useState(0);
+  const [ratingDistribution, setRatingDistribution] = useState({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+  const [totalReviews, setTotalReviews] = useState(0);
   const [formData, setFormData] = useState({
     customerName: "",
     rating: 5,
@@ -42,7 +45,11 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
     const fetchReviews = async () => {
       try {
         if (restaurant?.restaurantId) {
-          const response = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId);
+          const response = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId, {
+            limit: 100, // Fetch more for display
+            offset: 0,
+            sort: "newest",
+          });
           // Transform API response to match component state format
           const reviewsArray = response.data.reviewInfo || response.data.data || [];
           const transformedReviews = (Array.isArray(reviewsArray) ? reviewsArray : []).map(
@@ -57,6 +64,15 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
             })
           );
           setReviews(transformedReviews);
+
+          // Use backend-calculated stats instead of calculating in frontend
+          if (response.data.stats) {
+            setAverageRating(response.data.stats.averageRating || 0);
+            setRatingDistribution(
+              response.data.stats.distribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+            );
+            setTotalReviews(response.data.stats.totalReviews || 0);
+          }
         }
       } catch (error) {
         console.error("Error fetching reviews:", error);
@@ -89,14 +105,14 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
 
     if (!formData.comment.trim()) {
       handleToast("warning", "Please write a comment for your review");
-      // alert("Please write a comment for your review");
+
       return;
     }
 
     // Only validate name when creating a new review, not when editing
     if (!isEditing && !formData.isAnonymous && !formData.customerName.trim()) {
       handleToast("warning", "Please enter your name or choose to review anonymously");
-      // alert("Please enter your name or choose to review anonymously");
+
       return;
     }
 
@@ -121,7 +137,6 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
         setShowForm(false);
         setIsEditing(false);
         handleToast("success", "Review updated successfully!");
-        // alert("Review updated successfully!");
 
         // Trigger parent refresh
         if (onBack) {
@@ -150,7 +165,35 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           createdAt: response.data.data?.createdAt || new Date().toISOString(),
         };
 
-        setReviews([newReview, ...reviews]);
+        // Refresh reviews to get updated stats from backend
+        const refreshResponse = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId, {
+          limit: 100,
+          offset: 0,
+          sort: "newest",
+        });
+        const refreshedArray = refreshResponse.data.reviewInfo || [];
+        const refreshedReviews = (Array.isArray(refreshedArray) ? refreshedArray : []).map(
+          (review) => ({
+            id: review.reviewId,
+            reviewId: review.reviewId,
+            restaurantId: review.fkRestaurantId,
+            customerName: review.booking?.customerName || "Anonymous",
+            rating: parseInt(review.rating) || 0,
+            comment: review.comment,
+            createdAt: review.createdAt,
+          })
+        );
+        setReviews(refreshedReviews);
+
+        // Update stats from backend
+        if (refreshResponse.data.stats) {
+          setAverageRating(refreshResponse.data.stats.averageRating || 0);
+          setRatingDistribution(
+            refreshResponse.data.stats.distribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+          );
+          setTotalReviews(refreshResponse.data.stats.totalReviews || 0);
+        }
+
         setCurrentPage(1); // Reset to page 1 to show the new review
         setFormData({
           customerName: "",
@@ -160,7 +203,6 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
         });
         setShowForm(false);
         handleToast("success", "Review submitted successfully!");
-        // alert("Review submitted successfully!");
 
         // Trigger parent refresh if from MyBookings
         if (onBack && verifiedBookingId) {
@@ -175,18 +217,13 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
       // Check for duplicate review constraint (409 = Conflict)
       if (error.response?.status === 409) {
         handleToast("danger", errorMsg);
-        // alert(errorMsg);
       } else if (error.response?.status === 400 && errorMsg.includes("UNIQUE constraint failed")) {
         handleToast(
           "danger",
           "You have already submitted a review for this booking. Please edit your existing review instead."
         );
-        // alert(
-        //   "You have already submitted a review for this booking. Please edit your existing review instead."
-        // );
       } else {
         handleToast("danger", errorMsg);
-        // alert(errorMsg);
       }
     } finally {
       setSubmitting(false);
@@ -205,11 +242,6 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
       setCurrentPage(1);
     }
   }, [totalPages, currentPage]);
-
-  const averageRating =
-    reviews.length > 0
-      ? (reviews.reduce((sum, r) => sum + (parseInt(r.rating) || 0), 0) / reviews.length).toFixed(1)
-      : 0;
 
   const getRatingColor = (rating) => {
     if (rating >= 4) return "#10b981"; // green
@@ -307,7 +339,9 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
         <div>
           {reviews.length > 0 ? (
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-md)" }}>
+              <div
+                style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-md)" }}
+              >
                 {paginatedReviews.map((review) => (
                   <Card key={review.id || review.reviewId}>
                     <Card.Content>
@@ -388,7 +422,9 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                               currentPage === pageNum ? "#0ea5e9" : "var(--bg-secondary)",
                             color: currentPage === pageNum ? "white" : "var(--text-dark)",
                             border:
-                              currentPage === pageNum ? "1px solid #0ea5e9" : "1px solid var(--border-color)",
+                              currentPage === pageNum
+                                ? "1px solid #0ea5e9"
+                                : "1px solid var(--border-color)",
                             borderRadius: "6px",
                             cursor: "pointer",
                             transition: "all 0.2s",
@@ -425,7 +461,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                   color: "var(--text-muted)",
                 }}
               >
-                Showing {startIndex + 1} - {Math.min(endIndex, reviews.length)} of {reviews.length} reviews
+                Showing {startIndex + 1} - {Math.min(endIndex, reviews.length)} of {totalReviews}{" "}
+                reviews
               </div>
             </div>
           ) : (
@@ -467,7 +504,7 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                 ))}
               </div>
               <p className="text-muted" style={{ margin: 0, marginBottom: "var(--spacing-md)" }}>
-                Based on {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                Based on {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
               </p>
 
               {/* Review Distribution */}
@@ -479,8 +516,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                 }}
               >
                 {[5, 4, 3, 2, 1].map((rating) => {
-                  const count = reviews.filter((r) => r.rating === rating).length;
-                  const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                  const count = ratingDistribution[rating] || 0;
+                  const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
 
                   return (
                     <div key={rating} className="mb-md">

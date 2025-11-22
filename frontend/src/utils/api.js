@@ -147,8 +147,15 @@ export const reviewAPI = {
   // Get review by ID
   getReviewById: (reviewId) => api.get(`/review/${reviewId}`),
 
-  // Get all reviews for a specific restaurant
-  getReviewsByRestaurant: (restaurantId) => api.get(`/review/restaurant/${restaurantId}`),
+  // Get all reviews for a specific restaurant with pagination and sorting
+  getReviewsByRestaurant: (restaurantId, options = {}) => {
+    const { limit = 20, offset = 0, sort = "newest" } = options;
+    const params = new URLSearchParams();
+    params.append("limit", limit);
+    params.append("offset", offset);
+    params.append("sort", sort);
+    return api.get(`/review/restaurant/${restaurantId}?${params.toString()}`);
+  },
 
   // Get all reviews for a specific booking
   getReviewsByBooking: (bookingId) => api.get(`/review/booking/${bookingId}`),

@@ -7,10 +7,10 @@ const {
   updateRestaurant,
   deleteRestaurantByID,
 } = require("../models/restaurant");
-const { Op, sequelize } = require("sequelize");
+const { getReviewStatsForRestaurants } = require("../models/review");
+const { Op } = require("sequelize");
 const { Restaurants } = require("../schemas/restaurants.js");
 const { Addresses } = require("../schemas/addresses");
-const { Reviews } = require("../schemas/reviews");
 const { Promotions } = require("../schemas/promotions");
 const { Menus } = require("../schemas/menus");
 
@@ -242,31 +242,16 @@ module.exports.searchRestaurants = async (req, res) => {
 
     // Build WHERE clause for restaurants
     const where = {};
-    if (q) {
-      where[Op.or] = [
-        sequelize.where(
-          sequelize.fn("LOWER", sequelize.col("restaurantName")),
-          Op.like,
-          `%${q.toLowerCase()}%`
-        ),
-        sequelize.where(
-          sequelize.fn("LOWER", sequelize.col("description")),
-          Op.like,
-          `%${q.toLowerCase()}%`
-        ),
-      ];
-    }
     if (cuisine) {
       const cuisines = cuisine.split(",").map((c) => c.trim());
       where.cuisine = { [Op.in]: cuisines };
     }
 
-    // Fetch restaurants with eager loading (JOINs) - only loads data for filtered restaurants
-    const restaurants = await Restaurants.findAll({
+    // Fetch restaurants with eager loading (JOINs)
+    let restaurants = await Restaurants.findAll({
       where,
       include: [
         { model: Addresses, required: false },
-        { model: Reviews, required: false },
         { model: Promotions, required: false },
         { model: Menus, required: false },
       ],
@@ -275,74 +260,39 @@ module.exports.searchRestaurants = async (req, res) => {
       nest: true,
     });
 
+    // Filter by search query in JavaScript (after eager loading) to avoid ambiguity with joined tables
+    if (q) {
+      const searchLower = q.toLowerCase();
+      restaurants = restaurants.filter(
+        (r) =>
+          r.restaurantName.toLowerCase().includes(searchLower) ||
+          (r.description && r.description.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Fetch review stats for ALL restaurants in a single database query
+    const restaurantIds = restaurants.map((r) => r.restaurantId);
+    const reviewStats = await getReviewStatsForRestaurants(restaurantIds);
+
+    // Create a map for quick lookup: restaurantId -> stats
+    const statsMap = new Map(reviewStats.map((stat) => [stat.restaurantId, stat.stats]));
+
     // Enrich restaurants with calculated data
     const now = new Date();
     const enrichedRestaurants = restaurants.map((restaurant) => {
       const restaurantJSON = restaurant.toJSON ? restaurant.toJSON() : restaurant;
 
-      // Get reviews for this restaurant and calculate average rating
-      // Reviews are already loaded via eager loading (as lowercase key from toJSON)
-      const restaurantReviews = Array.isArray(restaurantJSON.reviews) ? restaurantJSON.reviews : [];
-      const ratings = restaurantReviews.map((r) => parseInt(r.rating)).filter((r) => !isNaN(r));
-
-      // Calculate rating distribution
-      const ratingDistribution = {
-        5: {
-          count: ratings.filter((r) => r === 5).length,
-          percentage:
-            ratings.length > 0
-              ? parseFloat(
-                  ((ratings.filter((r) => r === 5).length / ratings.length) * 100).toFixed(1)
-                )
-              : 0,
+      // Get stats from database map (already calculated in SQL)
+      const reviewSummary = statsMap.get(restaurantJSON.restaurantId) || {
+        averageRating: 0,
+        totalReviews: 0,
+        ratingDistribution: {
+          5: { count: 0, percentage: 0 },
+          4: { count: 0, percentage: 0 },
+          3: { count: 0, percentage: 0 },
+          2: { count: 0, percentage: 0 },
+          1: { count: 0, percentage: 0 },
         },
-        4: {
-          count: ratings.filter((r) => r === 4).length,
-          percentage:
-            ratings.length > 0
-              ? parseFloat(
-                  ((ratings.filter((r) => r === 4).length / ratings.length) * 100).toFixed(1)
-                )
-              : 0,
-        },
-        3: {
-          count: ratings.filter((r) => r === 3).length,
-          percentage:
-            ratings.length > 0
-              ? parseFloat(
-                  ((ratings.filter((r) => r === 3).length / ratings.length) * 100).toFixed(1)
-                )
-              : 0,
-        },
-        2: {
-          count: ratings.filter((r) => r === 2).length,
-          percentage:
-            ratings.length > 0
-              ? parseFloat(
-                  ((ratings.filter((r) => r === 2).length / ratings.length) * 100).toFixed(1)
-                )
-              : 0,
-        },
-        1: {
-          count: ratings.filter((r) => r === 1).length,
-          percentage:
-            ratings.length > 0
-              ? parseFloat(
-                  ((ratings.filter((r) => r === 1).length / ratings.length) * 100).toFixed(1)
-                )
-              : 0,
-        },
-      };
-
-      const averageRating =
-        ratings.length > 0
-          ? parseFloat((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
-          : 0;
-
-      const reviewSummary = {
-        averageRating,
-        totalReviews: ratings.length,
-        ratingDistribution,
       };
 
       // Promotions are already loaded via eager loading, just filter by date
@@ -375,12 +325,12 @@ module.exports.searchRestaurants = async (req, res) => {
 
         // Related data (explicitly returned)
         address: restaurantAddress || null,
-        reviews: restaurantReviews, // ← Actual review objects for this restaurant
+        reviews: [], // ← Empty array (no review details needed, just stats in reviewSummary)
         promotions: restaurantPromotions, // ← Filtered active promotions for this restaurant
         menus: restaurantMenus, // ← Menus for this restaurant
 
-        // Calculated/enriched data
-        reviewSummary, // ← Aggregate review stats
+        // Calculated/enriched data (now from database, not JavaScript)
+        reviewSummary, //  Aggregate review stats
         dietaryTypes,
         hasActivePromotion: restaurantPromotions.length > 0,
       };
