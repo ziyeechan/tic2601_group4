@@ -39,14 +39,10 @@ export default function App() {
   const [restaurants, setRestaurants] = useState(false);
   const [filteredRestaurants, setFilteredRestaurants] = useState(false);
   const [reload, setReload] = useState(false);
-  //Address table
-  const [addresses, setAddresses] = useState([]);
 
-  //Promotion table
-  const [promotions, setPromotions] = useState([]);
-
-  //Review table
-  const [reviews, setReviews] = useState([]);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const restaurantsPerPage = 6; // 3 columns x 2 rows
 
   // Track booking confirmation for auto-fill
   const [lastBookingEmail, setLastBookingEmail] = useState("");
@@ -83,6 +79,19 @@ export default function App() {
         console.error("Error loading restaurants:", err);
       });
   }, [reload]);
+
+  // Pagination logic
+  const totalPages = Math.ceil((filteredRestaurants?.length || 0) / restaurantsPerPage);
+  const startIndex = (currentPage - 1) * restaurantsPerPage;
+  const endIndex = startIndex + restaurantsPerPage;
+  const paginatedRestaurants = filteredRestaurants
+    ? filteredRestaurants.slice(startIndex, endIndex)
+    : [];
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredRestaurants]);
 
   const handleViewChange = (view) => {
     setCurrentView(view);
@@ -220,24 +229,111 @@ export default function App() {
                 </div>
 
                 {filteredRestaurants.length > 0 ? (
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(3, 1fr)",
-                      gap: "var(--spacing-md)",
-                    }}
-                    className="restaurant-grid"
-                  >
-                    {filteredRestaurants.map((restaurant) => (
-                      <RestaurantCard
-                        key={restaurant.restaurantId}
-                        restaurant={restaurant}
-                        onViewDetails={handleRestaurantSelect}
-                        onBookNow={handleBookNow}
-                        isAdmin={userRole}
-                        onViewChange={handleRestaurantView}
-                      />
-                    ))}
+                  <div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        gap: "var(--spacing-md)",
+                      }}
+                      className="restaurant-grid"
+                    >
+                      {paginatedRestaurants.map((restaurant) => (
+                        <RestaurantCard
+                          key={restaurant.restaurantId}
+                          restaurant={restaurant}
+                          onViewDetails={handleRestaurantSelect}
+                          onBookNow={handleBookNow}
+                          isAdmin={userRole}
+                          onViewChange={handleRestaurantView}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          gap: "var(--spacing-sm)",
+                          marginTop: "var(--spacing-lg)",
+                          padding: "var(--spacing-md)",
+                          backgroundColor: "var(--bg-light)",
+                          borderRadius: "8px",
+                        }}
+                      >
+                        <button
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          disabled={currentPage === 1}
+                          className="btn btn-secondary"
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: "14px",
+                            opacity: currentPage === 1 ? 0.5 : 1,
+                            cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          ← Previous
+                        </button>
+
+                        <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                          {[...Array(totalPages)].map((_, index) => {
+                            const pageNum = index + 1;
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => setCurrentPage(pageNum)}
+                                style={{
+                                  padding: "8px 12px",
+                                  fontSize: "12px",
+                                  backgroundColor:
+                                    currentPage === pageNum ? "#0ea5e9" : "var(--bg-secondary)",
+                                  color: currentPage === pageNum ? "white" : "var(--text-dark)",
+                                  border:
+                                    currentPage === pageNum
+                                      ? "1px solid #0ea5e9"
+                                      : "1px solid var(--border-color)",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  transition: "all 0.2s",
+                                }}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <button
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          disabled={currentPage === totalPages}
+                          className="btn btn-secondary"
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: "14px",
+                            opacity: currentPage === totalPages ? 0.5 : 1,
+                            cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          Next →
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Page Info */}
+                    <div
+                      style={{
+                        textAlign: "center",
+                        marginTop: "var(--spacing-md)",
+                        fontSize: "12px",
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      Showing {startIndex + 1} - {Math.min(endIndex, filteredRestaurants.length)} of{" "}
+                      {filteredRestaurants.length} restaurants
+                    </div>
                   </div>
                 ) : (
                   <div className="empty-state">
