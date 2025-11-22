@@ -1,16 +1,21 @@
 import { useState, useEffect } from "react";
-import { reviewAPI, bookingAPI } from "../utils/api";
+import { reviewAPI } from "../utils/api";
 import { Card } from "./Common";
 import { BookingVerification } from "./BookingVerification";
 
 export function Reviews({ restaurant, onBack, bookingId, existingReview = null }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(!!existingReview); // Show form immediately if editing
   const [showVerification, setShowVerification] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [verifiedBookingId, setVerifiedBookingId] = useState(bookingId || null);
   const [isEditing, setIsEditing] = useState(!!existingReview);
+  const [currentPage, setCurrentPage] = useState(1);
+  const reviewsPerPage = 5;
+  const [averageRating, setAverageRating] = useState(0);
+  const [ratingDistribution, setRatingDistribution] = useState({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+  const [totalReviews, setTotalReviews] = useState(0);
   const [formData, setFormData] = useState({
     customerName: "",
     rating: 5,
@@ -40,7 +45,11 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
     const fetchReviews = async () => {
       try {
         if (restaurant?.restaurantId) {
-          const response = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId);
+          const response = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId, {
+            limit: 100, // Fetch more for display
+            offset: 0,
+            sort: "newest",
+          });
           // Transform API response to match component state format
           const reviewsArray = response.data.reviewInfo || response.data.data || [];
           const transformedReviews = (Array.isArray(reviewsArray) ? reviewsArray : []).map(
@@ -55,6 +64,15 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
             })
           );
           setReviews(transformedReviews);
+
+          // Use backend-calculated stats instead of calculating in frontend
+          if (response.data.stats) {
+            setAverageRating(response.data.stats.averageRating || 0);
+            setRatingDistribution(
+              response.data.stats.distribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+            );
+            setTotalReviews(response.data.stats.totalReviews || 0);
+          }
         }
       } catch (error) {
         console.error("Error fetching reviews:", error);
@@ -87,13 +105,14 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
 
     if (!formData.comment.trim()) {
       handleToast("warning", "Please write a comment for your review");
-      // alert("Please write a comment for your review");
+
       return;
     }
 
-    if (!formData.isAnonymous && !formData.customerName.trim()) {
+    // Only validate name when creating a new review, not when editing
+    if (!isEditing && !formData.isAnonymous && !formData.customerName.trim()) {
       handleToast("warning", "Please enter your name or choose to review anonymously");
-      // alert("Please enter your name or choose to review anonymously");
+
       return;
     }
 
@@ -106,7 +125,7 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           comment: formData.comment,
         };
 
-        const response = await reviewAPI.updateReview(existingReview.reviewId, updatePayload);
+        await reviewAPI.updateReview(existingReview.reviewId, updatePayload);
 
         // Update local state
         setFormData({
@@ -118,7 +137,6 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
         setShowForm(false);
         setIsEditing(false);
         handleToast("success", "Review updated successfully!");
-        // alert("Review updated successfully!");
 
         // Trigger parent refresh
         if (onBack) {
@@ -147,7 +165,36 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           createdAt: response.data.data?.createdAt || new Date().toISOString(),
         };
 
-        setReviews([newReview, ...reviews]);
+        // Refresh reviews to get updated stats from backend
+        const refreshResponse = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId, {
+          limit: 100,
+          offset: 0,
+          sort: "newest",
+        });
+        const refreshedArray = refreshResponse.data.reviewInfo || [];
+        const refreshedReviews = (Array.isArray(refreshedArray) ? refreshedArray : []).map(
+          (review) => ({
+            id: review.reviewId,
+            reviewId: review.reviewId,
+            restaurantId: review.fkRestaurantId,
+            customerName: review.booking?.customerName || "Anonymous",
+            rating: parseInt(review.rating) || 0,
+            comment: review.comment,
+            createdAt: review.createdAt,
+          })
+        );
+        setReviews(refreshedReviews);
+
+        // Update stats from backend
+        if (refreshResponse.data.stats) {
+          setAverageRating(refreshResponse.data.stats.averageRating || 0);
+          setRatingDistribution(
+            refreshResponse.data.stats.distribution || { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+          );
+          setTotalReviews(refreshResponse.data.stats.totalReviews || 0);
+        }
+
+        setCurrentPage(1); // Reset to page 1 to show the new review
         setFormData({
           customerName: "",
           rating: 5,
@@ -156,7 +203,6 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
         });
         setShowForm(false);
         handleToast("success", "Review submitted successfully!");
-        // alert("Review submitted successfully!");
 
         // Trigger parent refresh if from MyBookings
         if (onBack && verifiedBookingId) {
@@ -171,28 +217,31 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
       // Check for duplicate review constraint (409 = Conflict)
       if (error.response?.status === 409) {
         handleToast("danger", errorMsg);
-        // alert(errorMsg);
       } else if (error.response?.status === 400 && errorMsg.includes("UNIQUE constraint failed")) {
         handleToast(
           "danger",
           "You have already submitted a review for this booking. Please edit your existing review instead."
         );
-        // alert(
-        //   "You have already submitted a review for this booking. Please edit your existing review instead."
-        // );
       } else {
         handleToast("danger", errorMsg);
-        // alert(errorMsg);
       }
     } finally {
       setSubmitting(false);
     }
   };
 
-  const averageRating =
-    reviews.length > 0
-      ? (reviews.reduce((sum, r) => sum + (parseInt(r.rating) || 0), 0) / reviews.length).toFixed(1)
-      : 0;
+  // Pagination logic
+  const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+  const startIndex = (currentPage - 1) * reviewsPerPage;
+  const endIndex = startIndex + reviewsPerPage;
+  const paginatedReviews = reviews.slice(startIndex, endIndex);
+
+  // Reset to page 1 if current page exceeds total pages
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
 
   const getRatingColor = (rating) => {
     if (rating >= 4) return "#10b981"; // green
@@ -208,49 +257,213 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
     );
   }
 
+  // If editing an existing review, only show the form (no need for reviews list)
+  if (isEditing && showForm) {
+    return (
+      <div>
+        {/* Inline edit form - no reviews list shown */}
+        <form onSubmit={handleSubmitReview}>
+          <div className="form-group">
+            <label htmlFor="rating">⭐ Rating *</label>
+            <div style={{ display: "flex", gap: "var(--spacing-sm)", alignItems: "center" }}>
+              <select
+                id="rating"
+                name="rating"
+                value={formData.rating}
+                onChange={handleChange}
+                style={{ flex: 1 }}
+                required
+                disabled={submitting}
+              >
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Good</option>
+                <option value="3">3 - Average</option>
+                <option value="2">2 - Poor</option>
+                <option value="1">1 - Very Poor</option>
+              </select>
+              <div style={{ display: "flex", gap: "2px" }}>
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} style={{ fontSize: "24px" }}>
+                    {i < formData.rating ? "⭐" : "☆"}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="comment">💬 Your Review *</label>
+            <textarea
+              id="comment"
+              name="comment"
+              value={formData.comment}
+              onChange={handleChange}
+              placeholder="Share your experience..."
+              style={{ minHeight: "120px" }}
+              required
+              disabled={submitting}
+            />
+          </div>
+
+          <div style={{ display: "flex", gap: "var(--spacing-sm)" }}>
+            <button type="submit" className="btn btn-primary btn-full" disabled={submitting}>
+              {submitting ? "⏳ Updating..." : "✓ Update Review"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-full"
+              onClick={() => {
+                // Close the edit form and return to parent (MyBookings)
+                if (onBack) {
+                  onBack();
+                } else {
+                  // Fallback: just close the form
+                  setShowForm(false);
+                  setIsEditing(false);
+                }
+              }}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "var(--spacing-lg)" }}>
         {/* Reviews List */}
         <div>
           {reviews.length > 0 ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-md)" }}>
-              {reviews.map((review) => (
-                <Card key={review.id || review.reviewId}>
-                  <Card.Content>
-                    <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
-                      <div>
-                        <h5 style={{ margin: 0, marginBottom: "var(--spacing-xs)" }}>
-                          {review.customerName}
-                        </h5>
-                        <div
+            <div>
+              <div
+                style={{ display: "grid", gridTemplateColumns: "1fr", gap: "var(--spacing-md)" }}
+              >
+                {paginatedReviews.map((review) => (
+                  <Card key={review.id || review.reviewId}>
+                    <Card.Content>
+                      <div className="flex-between mb-md" style={{ alignItems: "flex-start" }}>
+                        <div>
+                          <h5 style={{ margin: 0, marginBottom: "var(--spacing-xs)" }}>
+                            {review.customerName}
+                          </h5>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "var(--spacing-sm)",
+                              alignItems: "center",
+                            }}
+                          >
+                            <div style={{ display: "flex", gap: "2px" }}>
+                              {[...Array(5)].map((_, i) => (
+                                <span key={i} style={{ fontSize: "16px" }}>
+                                  {i < review.rating ? "⭐" : "☆"}
+                                </span>
+                              ))}
+                            </div>
+                            <span className="text-muted" style={{ fontSize: "12px" }}>
+                              {review.rating}.0/5.0
+                            </span>
+                          </div>
+                        </div>
+                        <span className="text-muted" style={{ fontSize: "12px" }}>
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <p style={{ margin: 0, color: "var(--text-dark)" }}>{review.comment}</p>
+                    </Card.Content>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    gap: "var(--spacing-sm)",
+                    marginTop: "var(--spacing-lg)",
+                    padding: "var(--spacing-md)",
+                    backgroundColor: "var(--bg-light)",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className="btn btn-secondary"
+                    style={{
+                      padding: "8px 12px",
+                      fontSize: "14px",
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    ← Previous
+                  </button>
+
+                  <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                    {[...Array(totalPages)].map((_, index) => {
+                      const pageNum = index + 1;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
                           style={{
-                            display: "flex",
-                            gap: "var(--spacing-sm)",
-                            alignItems: "center",
+                            padding: "8px 12px",
+                            fontSize: "12px",
+                            backgroundColor:
+                              currentPage === pageNum ? "#0ea5e9" : "var(--bg-secondary)",
+                            color: currentPage === pageNum ? "white" : "var(--text-dark)",
+                            border:
+                              currentPage === pageNum
+                                ? "1px solid #0ea5e9"
+                                : "1px solid var(--border-color)",
+                            borderRadius: "6px",
+                            cursor: "pointer",
+                            transition: "all 0.2s",
                           }}
                         >
-                          <div style={{ display: "flex", gap: "2px" }}>
-                            {[...Array(5)].map((_, i) => (
-                              <span key={i} style={{ fontSize: "16px" }}>
-                                {i < review.rating ? "⭐" : "☆"}
-                              </span>
-                            ))}
-                          </div>
-                          <span className="text-muted" style={{ fontSize: "12px" }}>
-                            {review.rating}.0/5.0
-                          </span>
-                        </div>
-                      </div>
-                      <span className="text-muted" style={{ fontSize: "12px" }}>
-                        {new Date(review.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                    <p style={{ margin: 0, color: "var(--text-dark)" }}>{review.comment}</p>
-                  </Card.Content>
-                </Card>
-              ))}
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className="btn btn-secondary"
+                    style={{
+                      padding: "8px 12px",
+                      fontSize: "14px",
+                      opacity: currentPage === totalPages ? 0.5 : 1,
+                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    Next →
+                  </button>
+                </div>
+              )}
+
+              {/* Page Info */}
+              <div
+                style={{
+                  textAlign: "center",
+                  marginTop: "var(--spacing-md)",
+                  fontSize: "12px",
+                  color: "var(--text-muted)",
+                }}
+              >
+                Showing {startIndex + 1} - {Math.min(endIndex, reviews.length)} of {totalReviews}{" "}
+                reviews
+              </div>
             </div>
           ) : (
             <div className="empty-state">
@@ -291,7 +504,7 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                 ))}
               </div>
               <p className="text-muted" style={{ margin: 0, marginBottom: "var(--spacing-md)" }}>
-                Based on {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                Based on {totalReviews} {totalReviews === 1 ? "review" : "reviews"}
               </p>
 
               {/* Review Distribution */}
@@ -303,8 +516,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                 }}
               >
                 {[5, 4, 3, 2, 1].map((rating) => {
-                  const count = reviews.filter((r) => r.rating === rating).length;
-                  const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                  const count = ratingDistribution[rating] || 0;
+                  const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
 
                   return (
                     <div key={rating} className="mb-md">
@@ -382,7 +595,7 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           }}
         >
           <Card styles={{ maxWidth: "500px", width: "90%" }}>
-            <Card.Header title={`${isEditing ? "✏️ Edit Your Review" : "⭐ Write Your Review"}`} />"
+            <Card.Header title={`${isEditing ? "✏️ Edit Your Review" : "⭐ Write Your Review"}`} />
             <Card.Content>
               <form onSubmit={handleSubmitReview}>
                 {/* Only show name field when creating new review, not when editing */}
@@ -401,23 +614,60 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
                       required={!formData.isAnonymous}
                       disabled={submitting || formData.isAnonymous}
                     />
-                    <div style={{ marginTop: "8px" }}>
-                      <label style={{ display: "flex", alignItems: "center", cursor: "pointer" }}>
-                        <input
-                          type="checkbox"
-                          checked={formData.isAnonymous}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              isAnonymous: e.target.checked,
-                              customerName: e.target.checked ? "" : prev.customerName,
-                            }))
-                          }
-                          disabled={submitting}
-                          style={{ marginRight: "8px" }}
-                        />
-                        <span style={{ fontSize: "14px" }}>🤫 Post anonymously</span>
-                      </label>
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        padding: "12px",
+                        borderRadius: "8px",
+                        backgroundColor: formData.isAnonymous
+                          ? "rgba(168, 85, 247, 0.1)"
+                          : "var(--bg-light)",
+                        border: formData.isAnonymous
+                          ? "2px solid #a855f7"
+                          : "1px solid var(--border-color)",
+                        transition: "all 0.3s ease",
+                        cursor: submitting ? "not-allowed" : "pointer",
+                      }}
+                      onClick={() => {
+                        if (!submitting) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            isAnonymous: !prev.isAnonymous,
+                            customerName: !prev.isAnonymous ? "" : prev.customerName,
+                          }));
+                        }
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <div
+                          style={{
+                            width: "24px",
+                            height: "24px",
+                            borderRadius: "6px",
+                            backgroundColor: formData.isAnonymous ? "#a855f7" : "var(--bg-light)",
+                            border: formData.isAnonymous ? "none" : "2px solid var(--border-color)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transition: "all 0.3s ease",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {formData.isAnonymous && (
+                            <span style={{ fontSize: "14px", color: "white" }}>✓</span>
+                          )}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: "14px", fontWeight: "600", marginBottom: "2px" }}>
+                            🤫 Post anonymously
+                          </div>
+                          <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
+                            {formData.isAnonymous
+                              ? "Your name will not be displayed"
+                              : "Your name will be displayed with your review"}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}

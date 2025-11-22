@@ -83,3 +83,4 @@ $ npm run dev
 - React
 - Express
 - Sequelize
+- SQLite

@@ -58,6 +58,23 @@ export const restaurantAPI = {
     api.put(`/restaurant/${restaurantId}`, restaurantData),
 
   deleteRestaurant: (restaurantId) => api.delete(`/restaurant/${restaurantId}`),
+
+  // Advanced restaurant search with filtering (backend search)
+  searchRestaurants: (filters = {}) => {
+    const params = new URLSearchParams();
+
+    // Only add parameters if they have values
+    if (filters.q) params.append("q", filters.q);
+    if (filters.cuisine && filters.cuisine !== "All Cuisines") params.append("cuisine", filters.cuisine);
+    if (filters.minRating) params.append("minRating", filters.minRating);
+    if (filters.maxRating) params.append("maxRating", filters.maxRating);
+    if (filters.hasPromotion) params.append("hasPromotion", filters.hasPromotion);
+    if (filters.dietaryType) params.append("dietaryType", filters.dietaryType);
+    if (filters.limit) params.append("limit", filters.limit);
+    if (filters.offset) params.append("offset", filters.offset);
+
+    return api.get(`/restaurant/search?${params.toString()}`);
+  },
 };
 
 // Seating API endpoints
@@ -130,8 +147,15 @@ export const reviewAPI = {
   // Get review by ID
   getReviewById: (reviewId) => api.get(`/review/${reviewId}`),
 
-  // Get all reviews for a specific restaurant
-  getReviewsByRestaurant: (restaurantId) => api.get(`/review/restaurant/${restaurantId}`),
+  // Get all reviews for a specific restaurant with pagination and sorting
+  getReviewsByRestaurant: (restaurantId, options = {}) => {
+    const { limit = 20, offset = 0, sort = "newest" } = options;
+    const params = new URLSearchParams();
+    params.append("limit", limit);
+    params.append("offset", offset);
+    params.append("sort", sort);
+    return api.get(`/review/restaurant/${restaurantId}?${params.toString()}`);
+  },
 
   // Get all reviews for a specific booking
   getReviewsByBooking: (bookingId) => api.get(`/review/booking/${bookingId}`),

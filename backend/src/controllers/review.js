@@ -40,15 +40,23 @@ module.exports.findReviewsByID = async (req, res) => {
 module.exports.findReviewsByRestaurantID = async (req, res) => {
   try {
     const restaurantID = parseInt(req.params.restaurantID);
+    const { limit = 20, offset = 0, sort = "newest" } = req.query;
 
     if (isNaN(restaurantID))
       return res.status(400).json({
         message: "Invalid Parameter",
       });
 
-    const reviewInfo = await findReviewsByRestaurantID(restaurantID);
+    const result = await findReviewsByRestaurantID(restaurantID, {
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      sort,
+    });
+
     return res.status(200).json({
-      reviewInfo,
+      count: result.count,
+      reviewInfo: result.rows,
+      stats: result.stats,
     });
   } catch (err) {
     console.log(err);

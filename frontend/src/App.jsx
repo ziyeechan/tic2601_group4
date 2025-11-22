@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "./styles.css";
-import { restaurantAPI, promotionAPI, reviewAPI, addressAPI } from "./utils/api";
+import { restaurantAPI } from "./utils/api";
 import { Header } from "./components/Header";
 import { RestaurantCard } from "./components/RestaurantCard";
 import { SearchFilters } from "./components/SearchFilters";
@@ -39,14 +39,10 @@ export default function App() {
   const [restaurants, setRestaurants] = useState(false);
   const [filteredRestaurants, setFilteredRestaurants] = useState(false);
   const [reload, setReload] = useState(false);
-  //Address table
-  const [addresses, setAddresses] = useState([]);
 
-  //Promotion table
-  const [promotions, setPromotions] = useState([]);
-
-  //Review table
-  const [reviews, setReviews] = useState([]);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const restaurantsPerPage = 6; // 3 columns x 2 rows
 
   // Track booking confirmation for auto-fill
   const [lastBookingEmail, setLastBookingEmail] = useState("");
@@ -59,63 +55,43 @@ export default function App() {
 
   //USEEFFECT
   useEffect(() => {
-    Promise.all([
-      restaurantAPI.getAllRestaurants(),
-      addressAPI.getAllAddresses(),
-      promotionAPI.getAllPromotions(),
-      reviewAPI.getAllReviews(),
-    ])
-      .then(([resRestaurants, resAddresses, resPromotions, resReviews]) => {
-        const restaurantList = resRestaurants.data;
-        const addressList = resAddresses.data;
-        const promotionList = resPromotions.data;
-        const reviewList = resReviews.data;
+    // Fetch all restaurants with enriched data (reviews, promotions, menus, address)
+    // Single API call replaces the previous multi-call approach
+    restaurantAPI
+      .searchRestaurants({})
+      .then((response) => {
+        const restaurantList = response.data.restaurants;
 
-        // Save raw data to state
-        setAddresses(addressList);
-        setPromotions(promotionList);
-        setReviews(reviewList);
+        // Map fields for component compatibility
+        const enrichedRestaurants = restaurantList.map((restaurant) => ({
+          ...restaurant,
+          image: restaurant.imageUrl, // Map imageUrl to image field
+          reviewCount: restaurant.reviewSummary?.totalReviews || 0,
+          averageRating: restaurant.reviewSummary?.averageRating || 0,
+        }));
 
-        // Build final restaurant objects with extra info
-        const finalRestaurants = restaurantList.map((restaurant) => {
-          // Get reviews for this restaurant
-          const reviewsForThis = reviewList.filter(
-            (review) => review.fkRestaurantId === restaurant.restaurantId
-          );
-
-          // Extract valid ratings
-          const ratings = reviewsForThis.map((r) => Number(r.rating)).filter((r) => !isNaN(r));
-
-          // Calculate average rating
-          const reviewCount = ratings.length;
-          const averageRating =
-            reviewCount > 0 ? ratings.reduce((sum, r) => sum + r, 0) / reviewCount : 0;
-
-          // Find matching address
-          const restaurantAddress = addressList.find(
-            (addr) => addr.addressId === restaurant.fkAddressId
-          );
-
-          // Return the final restaurant object
-          return {
-            ...restaurant,
-            image: restaurant.imageUrl,
-            reviewCount,
-            averageRating,
-            address: restaurantAddress,
-          };
-        });
-
-        // Save final restaurant list to state
-        setRestaurants(finalRestaurants);
-        setFilteredRestaurants(finalRestaurants);
+        setRestaurants(enrichedRestaurants);
+        setFilteredRestaurants(enrichedRestaurants);
         setSelectedRestaurant(null);
         setReload(true);
       })
       .catch((err) => {
-        console.error("Error loading data:", err);
+        console.error("Error loading restaurants:", err);
       });
   }, [reload]);
+
+  // Pagination logic
+  const totalPages = Math.ceil((filteredRestaurants?.length || 0) / restaurantsPerPage);
+  const startIndex = (currentPage - 1) * restaurantsPerPage;
+  const endIndex = startIndex + restaurantsPerPage;
+  const paginatedRestaurants = filteredRestaurants
+    ? filteredRestaurants.slice(startIndex, endIndex)
+    : [];
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredRestaurants]);
 
   const handleViewChange = (view) => {
     setCurrentView(view);
@@ -135,19 +111,26 @@ export default function App() {
 
   const handleRestaurantSelect = async (restaurant) => {
     try {
-      // Fetch detailed restaurant info with address
-      const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
-      const { restaurant: restaurantData, address } = response.data;
+      // Check if restaurant already has enriched data from search endpoint
+      if (restaurant.promotions && restaurant.dietaryTypes) {
+        // Use existing enriched data
+        setSelectedRestaurant(restaurant);
+        setCurrentView("restaurant-detail");
+      } else {
+        // Fetch detailed restaurant info with address (fallback for old data)
+        const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
+        const { restaurant: restaurantData, address } = response.data;
 
-      // Combine restaurant data with address information
-      const enrichedRestaurant = {
-        ...restaurantData,
-        address,
-        image: restaurantData.imageUrl, // Map imageUrl to image for components
-      };
+        // Combine restaurant data with address information
+        const enrichedRestaurant = {
+          ...restaurantData,
+          address,
+          image: restaurantData.imageUrl, // Map imageUrl to image for components
+        };
 
-      setSelectedRestaurant(enrichedRestaurant);
-      setCurrentView("restaurant-detail");
+        setSelectedRestaurant(enrichedRestaurant);
+        setCurrentView("restaurant-detail");
+      }
     } catch (err) {
       console.error("Error fetching restaurant details:", err);
       // Fallback to using the restaurant data passed from card
@@ -158,19 +141,26 @@ export default function App() {
 
   const handleBookNow = async (restaurant) => {
     try {
-      // Fetch detailed restaurant info with address
-      const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
-      const { restaurant: restaurantData, address } = response.data;
+      // Check if restaurant already has enriched data from search endpoint
+      if (restaurant.promotions && restaurant.dietaryTypes) {
+        // Use existing enriched data
+        setSelectedRestaurant(restaurant);
+        setCurrentView("booking-form");
+      } else {
+        // Fetch detailed restaurant info with address (fallback for old data)
+        const response = await restaurantAPI.getRestaurantById(restaurant.restaurantId);
+        const { restaurant: restaurantData, address } = response.data;
 
-      // Combine restaurant data with address information
-      const enrichedRestaurant = {
-        ...restaurantData,
-        address,
-        image: restaurantData.imageUrl, // Map imageUrl to image for components
-      };
+        // Combine restaurant data with address information
+        const enrichedRestaurant = {
+          ...restaurantData,
+          address,
+          image: restaurantData.imageUrl, // Map imageUrl to image for components
+        };
 
-      setSelectedRestaurant(enrichedRestaurant);
-      setCurrentView("booking-form");
+        setSelectedRestaurant(enrichedRestaurant);
+        setCurrentView("booking-form");
+      }
     } catch (err) {
       console.error("Error fetching restaurant details:", err);
       // Fallback to using the restaurant data passed from card
@@ -206,7 +196,6 @@ export default function App() {
               <div className="sidebar" style={{ gridColumn: "span 1" }}>
                 <SearchFilters
                   restaurants={restaurants || []}
-                  promotions={promotions || []}
                   onFiltered={setFilteredRestaurants}
                 />
               </div>
@@ -243,24 +232,111 @@ export default function App() {
                 </div>
 
                 {filteredRestaurants.length > 0 ? (
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "repeat(3, 1fr)",
-                      gap: "var(--spacing-md)",
-                    }}
-                    className="restaurant-grid"
-                  >
-                    {filteredRestaurants.map((restaurant) => (
-                      <RestaurantCard
-                        key={restaurant.restaurantId}
-                        restaurant={restaurant}
-                        onViewDetails={handleRestaurantSelect}
-                        onBookNow={handleBookNow}
-                        isAdmin={userRole}
-                        onViewChange={handleRestaurantView}
-                      />
-                    ))}
+                  <div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(3, 1fr)",
+                        gap: "var(--spacing-md)",
+                      }}
+                      className="restaurant-grid"
+                    >
+                      {paginatedRestaurants.map((restaurant) => (
+                        <RestaurantCard
+                          key={restaurant.restaurantId}
+                          restaurant={restaurant}
+                          onViewDetails={handleRestaurantSelect}
+                          onBookNow={handleBookNow}
+                          isAdmin={userRole}
+                          onViewChange={handleRestaurantView}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {totalPages > 1 && (
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          gap: "var(--spacing-sm)",
+                          marginTop: "var(--spacing-lg)",
+                          padding: "var(--spacing-md)",
+                          backgroundColor: "var(--bg-light)",
+                          borderRadius: "8px",
+                        }}
+                      >
+                        <button
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          disabled={currentPage === 1}
+                          className="btn btn-secondary"
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: "14px",
+                            opacity: currentPage === 1 ? 0.5 : 1,
+                            cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          ← Previous
+                        </button>
+
+                        <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                          {[...Array(totalPages)].map((_, index) => {
+                            const pageNum = index + 1;
+                            return (
+                              <button
+                                key={pageNum}
+                                onClick={() => setCurrentPage(pageNum)}
+                                style={{
+                                  padding: "8px 12px",
+                                  fontSize: "12px",
+                                  backgroundColor:
+                                    currentPage === pageNum ? "#0ea5e9" : "var(--bg-secondary)",
+                                  color: currentPage === pageNum ? "white" : "var(--text-dark)",
+                                  border:
+                                    currentPage === pageNum
+                                      ? "1px solid #0ea5e9"
+                                      : "1px solid var(--border-color)",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  transition: "all 0.2s",
+                                }}
+                              >
+                                {pageNum}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        <button
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          disabled={currentPage === totalPages}
+                          className="btn btn-secondary"
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: "14px",
+                            opacity: currentPage === totalPages ? 0.5 : 1,
+                            cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          Next →
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Page Info */}
+                    <div
+                      style={{
+                        textAlign: "center",
+                        marginTop: "var(--spacing-md)",
+                        fontSize: "12px",
+                        color: "var(--text-muted)",
+                      }}
+                    >
+                      Showing {startIndex + 1} - {Math.min(endIndex, filteredRestaurants.length)} of{" "}
+                      {filteredRestaurants.length} restaurants
+                    </div>
                   </div>
                 ) : (
                   <div className="empty-state">

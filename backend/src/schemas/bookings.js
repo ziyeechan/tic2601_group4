@@ -59,6 +59,14 @@ const Bookings = db.define(
         key: "seatingId",
       },
     },
+    fkRestaurantId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Restaurants,
+        key: "restaurantId",
+      },
+    },
   },
   {
     freezeTableName: true,

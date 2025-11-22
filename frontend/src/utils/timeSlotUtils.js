@@ -1,5 +1,5 @@
 /**
- * Generate 1-hour time slots between opening and closing time
+ * Generate 30-minute time slots between opening and closing time
  * Stops 1 hour before closing time (last seating)
  *
  * @param {string} openingTime - Time in HH:MM or HH:MM:SS format (e.g., "11:00" or "11:00:00")
@@ -8,7 +8,7 @@
  *
  * @example
  * generateTimeSlots("11:00", "22:00")
- * // Returns: ["11:00", "12:00", "13:00", ..., "21:00"]
+ * // Returns: ["11:00", "11:30", "12:00", "12:30", ..., "20:30"]
  */
 export function generateTimeSlots(openingTime, closingTime) {
   if (!openingTime || !closingTime) {
@@ -20,24 +20,33 @@ export function generateTimeSlots(openingTime, closingTime) {
   // Parse times - handle both "HH:MM" and "HH:MM:SS" formats
   const parseTime = (timeStr) => {
     const parts = timeStr.split(":");
-    return parseInt(parts[0]); // Extract hour
+    const hour = parseInt(parts[0]);
+    const minute = parts.length > 1 ? parseInt(parts[1]) : 0;
+    return { hour, minute };
   };
 
-  const openHour = parseTime(openingTime);
-  const closeHour = parseTime(closingTime);
+  const { hour: openHour, minute: openMinute } = parseTime(openingTime);
+  const { hour: closeHour, minute: closeMinute } = parseTime(closingTime);
 
-  // Generate 1-hour slots from opening until 1 hour before closing
-  // If closing is 22:00, last seating is 21:00, so we include hour 21
-  for (let hour = openHour; hour < closeHour; hour++) {
+  // Convert to total minutes for easier calculation
+  let currentMinutes = openHour * 60 + openMinute;
+  const closeMinutes = closeHour * 60 + closeMinute - 60; // 1 hour before closing
+
+  // Generate 30-minute slots
+  while (currentMinutes <= closeMinutes) {
+    const hour = Math.floor(currentMinutes / 60);
+    const minute = currentMinutes % 60;
     const paddedHour = String(hour).padStart(2, "0");
-    slots.push(`${paddedHour}:00`);
+    const paddedMinute = String(minute).padStart(2, "0");
+    slots.push(`${paddedHour}:${paddedMinute}`);
+    currentMinutes += 30; // Add 30 minutes for next slot
   }
 
-  // If no slots were generated (restaurant open for less than 1 hour),
-  // return just the opening time as the only available slot
+  // If no slots were generated, return just the opening time
   if (slots.length === 0 && openHour < closeHour) {
     const paddedHour = String(openHour).padStart(2, "0");
-    slots.push(`${paddedHour}:00`);
+    const paddedMinute = String(openMinute).padStart(2, "0");
+    slots.push(`${paddedHour}:${paddedMinute}`);
   }
 
   return slots;
