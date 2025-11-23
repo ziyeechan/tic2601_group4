@@ -316,13 +316,6 @@ export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSu
                     : "Hours not available"}
                 </p>
               </div>
-
-              <div className="alert alert-info">
-                <p style={{ margin: 0, fontSize: "14px" }}>
-                  ℹ️ You'll receive a confirmation email with your booking details and confirmation
-                  code.
-                </p>
-              </div>
             </Card.Content>
           </Card>
         </div>

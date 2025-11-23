@@ -11,7 +11,7 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow, isAdmin, 
       if (i < fullStars) {
         stars.push("⭐");
       } else if (i === fullStars && hasHalfStar) {
-        stars.push("✨");
+        stars.push("⭐");
       } else {
         stars.push("☆");
       }
@@ -92,7 +92,7 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow, isAdmin, 
 
         {/* Visual Star Rating */}
         <div className="mb-md">
-          <div style={{ fontSize: "18px", letterSpacing: "2px" }}>
+          <div style={{ fontSize: "18px", letterSpacing: "0.5px" }}>
             {renderStarRating(reviewSummary.averageRating)}
           </div>
           <div className="flex gap-sm" style={{ alignItems: "center", marginTop: "4px" }}>
@@ -197,10 +197,7 @@ export function RestaurantCard({ restaurant, onViewDetails, onBookNow, isAdmin, 
           View Details
         </button>
         {isAdmin === "customer" && (
-          <button
-            className="btn btn-primary"
-            onClick={() => onBookNow(restaurant)}
-          >
+          <button className="btn btn-primary" onClick={() => onBookNow(restaurant)}>
             Book Now
           </button>
         )}
