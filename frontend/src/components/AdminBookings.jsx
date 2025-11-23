@@ -606,7 +606,7 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
       </div>
 
       {/* Toast Notification */}
-      {/* <Toast show={show} type={type} text={text} onClose={() => setShow(false)} /> */}
+      {show && <Toast show={show} type={type} text={text} onClose={() => setShow(false)} />}
     </div>
   );
 }
