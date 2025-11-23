@@ -173,9 +173,11 @@ module.exports.findBookingByConfirmationCode = async (req, res) => {
 
     const booking = await findBookingByConfirmationCode(confirmationCode);
 
+    // Return 200 regardless of whether booking exists
     if (!booking) {
-      return res.status(404).json({
-        message: "Booking not found",
+      return res.status(200).json({
+        booking: null,
+        message: "No booking found with this confirmation code",
       });
     }
 
@@ -230,12 +232,6 @@ module.exports.findBookingsByCustomerEmail = async (req, res) => {
     }
 
     const bookings = await findBookingsByCustomerEmail(email);
-
-    if (bookings.length === 0) {
-      return res.status(404).json({
-        message: "No bookings found for this email",
-      });
-    }
 
     //If includeReviews=true, fetch all reviews in ONE query
     let reviewsMap = {};

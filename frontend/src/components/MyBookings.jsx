@@ -71,6 +71,9 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       setBookingReviews(buildReviewsMap(bookingsData));
     } catch (error) {
       console.error("Error refreshing bookings:", error);
+      // On error, clear bookings to avoid stale data
+      setBookings([]);
+      setBookingReviews({});
     }
   };
 
@@ -106,18 +109,11 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
-      if (error.response?.status === 404) {
-        setMessage({
-          type: "info",
-          text: "No bookings found for this email address",
-        });
-      } else {
-        const errorMessage = error.response?.data?.message || "Failed to load bookings. Please try again.";
-        setMessage({
-          type: "error",
-          text: errorMessage,
-        });
-      }
+      const errorMessage = error.response?.data?.message || "Failed to load bookings. Please try again.";
+      setMessage({
+        type: "error",
+        text: errorMessage,
+      });
       setBookings([]);
     } finally {
       setIsLoading(false);
@@ -128,11 +124,18 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     if (window.confirm("Are you sure you want to cancel this booking?")) {
       try {
         await bookingAPI.deleteBooking(bookingId);
+
+        // Optimistically remove from UI immediately
+        setBookings((prevBookings) =>
+          prevBookings.filter((b) => b.bookingId !== bookingId)
+        );
+
         setMessage({
           type: "success",
           text: "Booking cancelled successfully",
         });
-        // Refresh bookings after cancellation
+
+        // Refresh in background to ensure consistency
         if (customerEmail) {
           await refreshBookingsData(customerEmail);
         }
@@ -213,23 +216,27 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     try {
       const response = await bookingAPI.getBookingByCode(searchCode.trim(), true);
       const booking = response.data.booking;
+
+      // Handle case where no booking found (returns null)
+      if (!booking) {
+        setMessage({
+          type: "info",
+          text: "No booking found with this confirmation code",
+        });
+        setBookings([]);
+        return;
+      }
+
       setBookings([booking]); // Wrap in array for consistent display
       setCustomerEmail(booking.customerEmail);
       setActiveTab("upcoming"); // Show in upcoming tab by default
       setBookingReviews(buildReviewsMap([booking]));
     } catch (error) {
       console.error("Error fetching booking:", error);
-      if (error.response?.status === 404) {
-        setMessage({
-          type: "info",
-          text: "No booking found with this confirmation code",
-        });
-      } else {
-        setMessage({
-          type: "error",
-          text: "Failed to load booking. Please try again.",
-        });
-      }
+      setMessage({
+        type: "error",
+        text: "Failed to load booking. Please try again.",
+      });
       setBookings([]);
     } finally {
       setIsLoading(false);
@@ -590,8 +597,11 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
 
                     <div>
                       <label htmlFor={`edit-party-size-${booking.bookingId}`}>👥 Party Size</label>
-                      <select
+                      <input
                         id={`edit-party-size-${booking.bookingId}`}
+                        type="number"
+                        min="1"
+                        max="100"
                         value={editFormData.partySize}
                         onChange={(e) =>
                           setEditFormData({
@@ -599,13 +609,8 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                             partySize: parseInt(e.target.value),
                           })
                         }
-                      >
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map((size) => (
-                          <option key={size} value={size}>
-                            {size} {size === 1 ? "person" : "people"}
-                          </option>
-                        ))}
-                      </select>
+                        placeholder="Enter number of people"
+                      />
                     </div>
                   </div>
 
