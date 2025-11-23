@@ -150,7 +150,7 @@ module.exports.getReviewStatsForRestaurants = async (restaurantIDs) => {
     // Transform to match expected format
     return result.map((row) => {
       const totalReviews = parseInt(row.totalReviews) || 0;
-      // ✅ Convert to number, not string!
+      // Convert to number, not string!
       const avgRating = parseFloat(row.averageRating) || 0;
 
       return {

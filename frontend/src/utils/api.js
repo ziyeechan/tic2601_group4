@@ -21,10 +21,16 @@ export const bookingAPI = {
   getAllBookings: () => api.get("/booking/all"),
 
   // Get booking by confirmation code
-  getBookingByCode: (confirmationCode) => api.get(`/booking/code/${confirmationCode}`),
+  getBookingByCode: (confirmationCode, includeReviews = false) =>
+    api.get(`/booking/code/${confirmationCode}`, {
+      params: { includeReviews },
+    }),
 
   // Get all bookings by customer email
-  getBookingsByEmail: (email) => api.get(`/booking/email/${email}`),
+  getBookingsByEmail: (email, includeReviews = false) =>
+    api.get(`/booking/email/${email}`, {
+      params: { includeReviews },
+    }),
 
   // Get booking by ID
   getBookingById: (bookingId) => api.get(`/booking/${bookingId}`),

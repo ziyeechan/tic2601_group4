@@ -51,8 +51,30 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     return statusClasses[status] || "";
   };
 
+  // Build reviews map from bookings data
+  const buildReviewsMap = (bookingsData) => {
+    const reviewsMap = {};
+    bookingsData.forEach((booking) => {
+      if (booking.review) {
+        reviewsMap[booking.bookingId] = booking.review;
+      }
+    });
+    return reviewsMap;
+  };
+
+  // Refresh bookings data from API
+  const refreshBookingsData = async (email) => {
+    try {
+      const response = await bookingAPI.getBookingsByEmail(email, true);
+      const bookingsData = response.data.bookings || [];
+      setBookings(bookingsData);
+      setBookingReviews(buildReviewsMap(bookingsData));
+    } catch (error) {
+      console.error("Error refreshing bookings:", error);
+    }
+  };
+
   // Fetch bookings by customer email
-  // FIXED: Now uses includeReviews parameter to fetch all reviews in 1 query (fixes N+1 problem)
   const handleSearchBookings = async (e, emailParam = null) => {
     e.preventDefault();
 
@@ -70,37 +92,11 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     setMessage(null);
 
     try {
-      // ✅ OPTIMIZATION: Use includeReviews=true to get reviews in SINGLE query (fixes N+1)
-      const response = await fetch(
-        `http://localhost:3000/booking/email/${encodeURIComponent(emailToSearch)}?includeReviews=true`
-      );
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          setMessage({
-            type: "info",
-            text: "No bookings found for this email address",
-          });
-          setBookings([]);
-          return;
-        }
-        throw new Error("Failed to fetch bookings");
-      }
-
-      const data = await response.json();
-      const bookingsData = data.bookings || [];
+      const response = await bookingAPI.getBookingsByEmail(emailToSearch, true);
+      const bookingsData = response.data.bookings || [];
       setBookings(bookingsData);
       setCustomerEmail(emailToSearch);
-
-      // ✅ NEW: Reviews are already included in bookings from backend!
-      // Build reviewsMap from included review data (no extra API calls needed)
-      const reviewsMap = {};
-      bookingsData.forEach((booking) => {
-        if (booking.review) {
-          reviewsMap[booking.bookingId] = booking.review;
-        }
-      });
-      setBookingReviews(reviewsMap);
+      setBookingReviews(buildReviewsMap(bookingsData));
 
       if (bookingsData.length === 0) {
         setMessage({
@@ -110,12 +106,18 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
       }
     } catch (error) {
       console.error("Error fetching bookings:", error);
-      const errorMessage =
-        error.response?.data?.message || "Failed to load bookings. Please try again.";
-      setMessage({
-        type: "error",
-        text: errorMessage,
-      });
+      if (error.response?.status === 404) {
+        setMessage({
+          type: "info",
+          text: "No bookings found for this email address",
+        });
+      } else {
+        const errorMessage = error.response?.data?.message || "Failed to load bookings. Please try again.";
+        setMessage({
+          type: "error",
+          text: errorMessage,
+        });
+      }
       setBookings([]);
     } finally {
       setIsLoading(false);
@@ -132,24 +134,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
         });
         // Refresh bookings after cancellation
         if (customerEmail) {
-          // ✅ OPTIMIZATION: Use includeReviews parameter (fixes N+1)
-          const response = await fetch(
-            `http://localhost:3000/booking/email/${encodeURIComponent(customerEmail)}?includeReviews=true`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            const bookingsData = data.bookings || [];
-            setBookings(bookingsData);
-
-            // Build reviewsMap from included review data
-            const reviewsMap = {};
-            bookingsData.forEach((booking) => {
-              if (booking.review) {
-                reviewsMap[booking.bookingId] = booking.review;
-              }
-            });
-            setBookingReviews(reviewsMap);
-          }
+          await refreshBookingsData(customerEmail);
         }
       } catch (error) {
         console.error("Error cancelling booking:", error);
@@ -193,24 +178,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
 
       // Refresh bookings
       if (customerEmail) {
-        // ✅ OPTIMIZATION: Use includeReviews parameter (fixes N+1)
-        const response = await fetch(
-          `http://localhost:3000/booking/email/${encodeURIComponent(customerEmail)}?includeReviews=true`
-        );
-        if (response.ok) {
-          const data = await response.json();
-          const bookingsData = data.bookings || [];
-          setBookings(bookingsData);
-
-          // Build reviewsMap from included review data
-          const reviewsMap = {};
-          bookingsData.forEach((booking) => {
-            if (booking.review) {
-              reviewsMap[booking.bookingId] = booking.review;
-            }
-          });
-          setBookingReviews(reviewsMap);
-        }
+        await refreshBookingsData(customerEmail);
       }
     } catch (error) {
       console.error("Error updating booking:", error);
@@ -228,7 +196,6 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
   };
 
   // Fetch booking by confirmation code
-  // FIXED: Now uses includeReviews parameter to fetch review in 1 query (fixes N+1 problem)
   const handleSearchByCode = async (e) => {
     e.preventDefault();
 
@@ -244,43 +211,25 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
     setMessage(null);
 
     try {
-      // ✅ OPTIMIZATION: Use includeReviews=true to get review in SINGLE query (fixes N+1)
-      const response = await fetch(
-        `http://localhost:3000/booking/code/${encodeURIComponent(searchCode.trim())}?includeReviews=true`
-      );
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          setMessage({
-            type: "info",
-            text: "No booking found with this confirmation code",
-          });
-          setBookings([]);
-          return;
-        }
-        throw new Error("Failed to fetch booking");
-      }
-
-      const data = await response.json();
-      const booking = data.booking;
+      const response = await bookingAPI.getBookingByCode(searchCode.trim(), true);
+      const booking = response.data.booking;
       setBookings([booking]); // Wrap in array for consistent display
       setCustomerEmail(booking.customerEmail);
       setActiveTab("upcoming"); // Show in upcoming tab by default
-
-      // ✅ NEW: Review is already included in booking from backend!
-      // Build reviewsMap from included review data (no extra API calls needed)
-      const reviewsMap = {};
-      if (booking.review) {
-        reviewsMap[booking.bookingId] = booking.review;
-      }
-      setBookingReviews(reviewsMap);
+      setBookingReviews(buildReviewsMap([booking]));
     } catch (error) {
       console.error("Error fetching booking:", error);
-
-      setMessage({
-        type: "error",
-        text: "Failed to load booking. Please try again.",
-      });
+      if (error.response?.status === 404) {
+        setMessage({
+          type: "info",
+          text: "No booking found with this confirmation code",
+        });
+      } else {
+        setMessage({
+          type: "error",
+          text: "Failed to load booking. Please try again.",
+        });
+      }
       setBookings([]);
     } finally {
       setIsLoading(false);
@@ -813,23 +762,7 @@ export function MyBookings({ autoFillEmail = "", highlightConfirmationCode = "" 
                   setReviewingBooking(null);
                   // Refresh bookings with updated review data
                   if (customerEmail) {
-                    // ✅ OPTIMIZATION: Use includeReviews=true to refresh reviews efficiently
-                    fetch(
-                      `http://localhost:3000/booking/email/${encodeURIComponent(customerEmail)}?includeReviews=true`
-                    )
-                      .then((res) => res.json())
-                      .then((data) => {
-                        const bookingsData = data.bookings || [];
-                        setBookings(bookingsData);
-                        const reviewsMap = {};
-                        bookingsData.forEach((booking) => {
-                          if (booking.review) {
-                            reviewsMap[booking.bookingId] = booking.review;
-                          }
-                        });
-                        setBookingReviews(reviewsMap);
-                      })
-                      .catch((error) => console.error("Error refreshing bookings:", error));
+                    refreshBookingsData(customerEmail);
                   }
                 }}
               />
