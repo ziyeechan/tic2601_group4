@@ -60,7 +60,15 @@ export default function App() {
     restaurantAPI
       .searchRestaurants({})
       .then((response) => {
-        const restaurantList = response.data.restaurants;
+        const restaurantList = response.data?.restaurants;
+
+        // Handle missing data
+        if (!restaurantList || !Array.isArray(restaurantList)) {
+          console.error("Invalid response format:", response.data);
+          setRestaurants([]);
+          setFilteredRestaurants([]);
+          return;
+        }
 
         // Map fields for component compatibility
         const enrichedRestaurants = restaurantList.map((restaurant) => ({
@@ -77,6 +85,8 @@ export default function App() {
       })
       .catch((err) => {
         console.error("Error loading restaurants:", err);
+        setRestaurants([]);
+        setFilteredRestaurants([]);
       });
   }, [reload]);
 

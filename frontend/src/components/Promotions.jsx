@@ -90,7 +90,7 @@ export function AllPromotions({ onBack }) {
               }}
             >
               {activePromos.map((promo) => (
-                <Card key={promo.id} styles={{ borderLeft: "4px solid var(--success)" }}>
+                <Card key={promo.promotionId} styles={{ borderLeft: "4px solid var(--success)" }}>
                   <Card.Content>
                     <div className="mb-md">
                       <h5
@@ -224,7 +224,7 @@ export function AllPromotions({ onBack }) {
             >
               {upcomingPromos.map((promo) => (
                 <Card
-                  key={promo.id}
+                  key={promo.promotionId}
                   styles={{
                     borderLeft: "4px solid var(--warning)",
                     opacity: 0.8,
@@ -291,7 +291,7 @@ export function AllPromotions({ onBack }) {
             >
               {expiredPromos.map((promo) => (
                 <Card
-                  key={promo.id}
+                  key={promo.promotionId}
                   styles={{
                     borderLeft: "4px solid var(--text-muted)",
                     opacity: 0.6,
