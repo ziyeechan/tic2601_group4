@@ -228,7 +228,7 @@ export function SeatingPlan() {
 
     if (!table) {
       handleToast("danger", "Table not found.");
-      // alert("Table not found.");
+
       return;
     }
 
@@ -238,9 +238,6 @@ export function SeatingPlan() {
         "danger",
         "This table already has a booking that overlaps with this time (90 minutes window). Please choose another table."
       );
-      // alert(
-      //   "This table already has a booking that overlaps with this time (90 minutes window). Please choose another table."
-      // );
       return;
     }
 
@@ -259,7 +256,6 @@ export function SeatingPlan() {
     } catch (err) {
       console.error("Failed to assign booking to table", err);
       handleToast("danger", "Failed to assign table. Check console/server logs.");
-      // alert("Failed to assign table. Check console/server logs.");
     }
   };
 

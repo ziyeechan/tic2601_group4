@@ -1,5 +1,6 @@
 import { Reviews } from "./Reviews";
 import { Card } from "./Common";
+import { formatFullAddress } from "../utils/addressUtils";
 
 export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
   // Generate opening hours display from database times or use defaults
@@ -84,17 +85,7 @@ export function RestaurantDetail({ restaurant, onBack, onBookNow }) {
                 <div className="text-muted" style={{ fontSize: "14px" }}>
                   📍 Address
                 </div>
-                <p>
-                  {restaurant.address
-                    ? `${restaurant.address.addressLine1}${
-                        restaurant.address.addressLine2
-                          ? ", " + restaurant.address.addressLine2
-                          : ""
-                      }, ${restaurant.address.city}, ${
-                        restaurant.address.state || ""
-                      }, ${restaurant.address.country}`
-                    : "Address not available"}
-                </p>
+                <p>{formatFullAddress(restaurant.address)}</p>
               </div>
               <div className="mb-md">
                 <div className="text-muted" style={{ fontSize: "14px" }}>

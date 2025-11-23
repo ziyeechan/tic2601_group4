@@ -116,7 +116,8 @@ module.exports.createReviews = async (req, res) => {
     // Handle UNIQUE constraint violation on fkBookingId
     if (err.name === "SequelizeUniqueConstraintError") {
       return res.status(409).json({
-        message: "You have already submitted a review for this booking. Please edit your existing review instead."
+        message:
+          "You have already submitted a review for this booking. Please edit your existing review instead.",
       });
     }
 

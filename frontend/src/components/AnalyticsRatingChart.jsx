@@ -48,7 +48,9 @@ const LineChart = ({
 
   // Collect rated indices (days with a non-null rating)
   const ratedIndices = [];
-  data.forEach((d, i) => { if (d.count != null) ratedIndices.push(i); });
+  data.forEach((d, i) => {
+    if (d.count != null) ratedIndices.push(i);
+  });
 
   // Build dashed segments bridging gaps (non-consecutive rated days)
   const dashedSegments = [];
@@ -81,23 +83,43 @@ const LineChart = ({
   };
 
   if (!hasAnyRatings) {
-    return <div className="text-muted" style={{ fontSize: 12 }}>No reviews this month</div>;
+    return (
+      <div className="text-muted" style={{ fontSize: 12 }}>
+        No reviews this month
+      </div>
+    );
   }
 
   return (
     <div style={{ position: "relative", width: "100%", overflowX: "auto" }}>
       <svg width={w} height={h} onMouseMove={handleMove} onMouseLeave={() => setTip(null)}>
         {/* Axes */}
-        <line x1={margin.left} y1={margin.top} x2={margin.left} y2={h - margin.bottom} stroke="#ccc" />
-        <line x1={margin.left} y1={h - margin.bottom} x2={w - margin.right} y2={h - margin.bottom} stroke="#ccc" />
+        <line
+          x1={margin.left}
+          y1={margin.top}
+          x2={margin.left}
+          y2={h - margin.bottom}
+          stroke="#ccc"
+        />
+        <line
+          x1={margin.left}
+          y1={h - margin.bottom}
+          x2={w - margin.right}
+          y2={h - margin.bottom}
+          stroke="#ccc"
+        />
         {/* Y ticks */}
         {yTicks.map((t) => {
           const yPos = margin.top + innerH - (t / niceCeiling) * innerH;
           return (
             <g key={t}>
               <line x1={margin.left - 6} x2={margin.left} y1={yPos} y2={yPos} stroke="#666" />
-              <text x={margin.left - 10} y={yPos + 4} fontSize="11" textAnchor="end" fill="#555">{t}</text>
-              {t !== 0 && t !== niceCeiling && <line x1={margin.left} x2={w - margin.right} y1={yPos} y2={yPos} stroke="#eee" />}
+              <text x={margin.left - 10} y={yPos + 4} fontSize="11" textAnchor="end" fill="#555">
+                {t}
+              </text>
+              {t !== 0 && t !== niceCeiling && (
+                <line x1={margin.left} x2={w - margin.right} y1={yPos} y2={yPos} stroke="#eee" />
+              )}
             </g>
           );
         })}
@@ -107,18 +129,32 @@ const LineChart = ({
           return (
             <g key={d.day}>
               <line x1={x} x2={x} y1={h - margin.bottom} y2={h - margin.bottom + 6} stroke="#666" />
-              <text x={x} y={h - margin.bottom + 18} fontSize="11" textAnchor="middle" fill="#555">{d.day}</text>
+              <text x={x} y={h - margin.bottom + 18} fontSize="11" textAnchor="middle" fill="#555">
+                {d.day}
+              </text>
             </g>
           );
         })}
         {/* Labels */}
-        <text x={margin.left + innerW / 2} y={h - 8} fontSize="12" textAnchor="middle" fill="#444">Day of Month</text>
-        <text x={18} y={margin.top + innerH / 2} fontSize="12" textAnchor="middle" fill="#444"
-              transform={`rotate(-90,18,${margin.top + innerH / 2})`}>Rating</text>
+        <text x={margin.left + innerW / 2} y={h - 8} fontSize="12" textAnchor="middle" fill="#444">
+          Day of Month
+        </text>
+        <text
+          x={18}
+          y={margin.top + innerH / 2}
+          fontSize="12"
+          textAnchor="middle"
+          fill="#444"
+          transform={`rotate(-90,18,${margin.top + innerH / 2})`}
+        >
+          Rating
+        </text>
         {/* Solid polylines for contiguous rated segments */}
-        {segments.map((seg, i) => seg.length > 1 ? (
-          <polyline key={i} fill="none" stroke={stroke} strokeWidth="2" points={seg.join(' ')} />
-        ) : null)}
+        {segments.map((seg, i) =>
+          seg.length > 1 ? (
+            <polyline key={i} fill="none" stroke={stroke} strokeWidth="2" points={seg.join(" ")} />
+          ) : null
+        )}
         {/* Dashed lines bridging gaps */}
         {dashedSegments.map((s, i) => (
           <line
@@ -137,25 +173,43 @@ const LineChart = ({
         {data.map((d, i) => {
           if (d.count == null) return null;
           const x = margin.left + i * xStep;
-            const y = margin.top + innerH - (d.count / niceCeiling) * innerH;
+          const y = margin.top + innerH - (d.count / niceCeiling) * innerH;
           return <circle key={i} cx={x} cy={y} r={3} fill={stroke} />;
         })}
         {/* Hover guide */}
-        {tip && <line x1={tip.x} x2={tip.x} y1={margin.top} y2={h - margin.bottom} stroke="#999" strokeDasharray="3 3" />}
+        {tip && (
+          <line
+            x1={tip.x}
+            x2={tip.x}
+            y1={margin.top}
+            y2={h - margin.bottom}
+            stroke="#999"
+            strokeDasharray="3 3"
+          />
+        )}
       </svg>
       {/* Tooltip */}
       {tip && (
-        <div style={{
-          position: "absolute", left: tip.left, top: tip.top,
-          background: "#fff", border: "1px solid #ddd", padding: "4px 8px",
-          fontSize: 12, borderRadius: 4, boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-          pointerEvents: "none", whiteSpace: "nowrap"
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            left: tip.left,
+            top: tip.top,
+            background: "#fff",
+            border: "1px solid #ddd",
+            padding: "4px 8px",
+            fontSize: 12,
+            borderRadius: 4,
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            pointerEvents: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
           {tip.count == null
             ? `Day ${tip.day}: No reviews`
-            : (typeof tooltipFormatter === "function"
-                ? tooltipFormatter(tip)
-                : `Day ${tip.day}: ${tip.count} ★`)}
+            : typeof tooltipFormatter === "function"
+              ? tooltipFormatter(tip)
+              : `Day ${tip.day}: ${tip.count} ★`}
         </div>
       )}
     </div>
@@ -169,7 +223,7 @@ export function AnalyticsRatingChart({ data }) {
       data={data.map((d) => ({
         day: d.day,
         count: d.averageRating == null ? null : Number(d.averageRating), // preserve null
-        extra: d.reviewCount
+        extra: d.reviewCount,
       }))}
       tooltipFormatter={(tip) => {
         if (tip.count == null) return `Day ${tip.day}: No reviews`;

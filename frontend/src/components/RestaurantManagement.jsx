@@ -79,7 +79,7 @@ export function RestaurantManagement({
         setRefresh(true);
       })
       .catch((error) => console.error("Error fetching details: ", error));
-  }, [refresh]);
+  }, [restaurantId, refresh]);
 
   // Generate opening hours display from database times or use defaults
   const getOpeningHoursDisplay = () => {
@@ -165,7 +165,7 @@ export function RestaurantManagement({
 
   const handleSave = async (e) => {
     e.preventDefault();
-    console.log(editedRestaurant)
+    console.log(editedRestaurant);
     // Validate required fields
     if (
       !editedRestaurant.name.trim() ||
@@ -174,11 +174,10 @@ export function RestaurantManagement({
       !editedRestaurant.email ||
       !editedAddress.addressLine1.trim() ||
       !editedAddress.country ||
-      !editedAddress.postalCode||
+      !editedAddress.postalCode ||
       !editedAddress.city.trim()
     ) {
       handleToast("warning", "Please fill in all required fields");
-      // alert("Please fill in all required fields");
       return;
     }
 
@@ -227,7 +226,6 @@ export function RestaurantManagement({
 
       // Step 4: Show success feedback to user
       handleToast("success", "Restaurant information updated successfully");
-      // alert("Restaurant information updated successfully!");
       setReload(true);
     } catch (error) {
       const errorMessage = error.response?.data?.message;
@@ -236,7 +234,6 @@ export function RestaurantManagement({
         "danger",
         `${errorMessage}.  Please try again.` || "Failed to save changes. Please try again."
       );
-      // alert(error.response?.data?.message || "Failed to save changes. Please try again.");
     }
   };
 

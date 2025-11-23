@@ -51,11 +51,9 @@ export function SeatingPlanCanvas({
       );
 
       handleToast("success", "Layout saved.");
-      // alert("Layout saved");
     } catch (err) {
       console.error("Failed to save layout", err);
       handleToast("danger", "Failed to save layout.");
-      // alert("Failed to save layout");
     }
   };
 
@@ -63,7 +61,6 @@ export function SeatingPlanCanvas({
   const handleAddTable = () => {
     if (!selectedRestaurantId) {
       handleToast("warning", "Please select a restaurant first.");
-      // alert("Please select a restaurant first");
       return;
     }
 
@@ -156,7 +153,6 @@ export function SeatingPlanCanvas({
   const handleTableClick = (table) => {
     if (isAddingTable) {
       handleToast("warning", "Please fill in the new table before changing.");
-      // alert("Please fill in the new table before changing");
     } else {
       setSelectedTable(table);
     }

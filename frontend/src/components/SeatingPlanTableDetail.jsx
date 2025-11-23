@@ -45,7 +45,6 @@ export function SeatingPlanTableDetail({
   const submitAddTable = async () => {
     if (!selectedRestaurantId) {
       handleToast("warning", "Please select a restaurant first.");
-      // alert("Please select a restaurant first");
       return;
     }
 
@@ -65,7 +64,6 @@ export function SeatingPlanTableDetail({
     } catch (error) {
       console.error("Failed to create seating plan", error);
       handleToast("danger", "Failed to create table. Check console/server logs.");
-      // alert("Failed to create table. Check console/server logs.");
     }
   };
 
@@ -83,7 +81,6 @@ export function SeatingPlanTableDetail({
     if (!tableId) {
       console.error("No valid tableId for update", { selectedTable });
       handleToast("warning", "Cannot update table: missing seatingId.");
-      // alert("Cannot update table: missing seatingId.");
       return;
     }
 
@@ -110,7 +107,6 @@ export function SeatingPlanTableDetail({
     } catch (error) {
       console.error("Failed to update seating plan", error);
       handleToast("danger", "Failed to edit table. Check console/server logs.");
-      // alert("Failed to edit table. Check console/server logs.");
     }
   };
 
@@ -142,7 +138,6 @@ export function SeatingPlanTableDetail({
       } catch (error) {
         console.error("Failed to delete seating plan", error);
         handleToast("danger", "Failed to delete table. Check console/server logs.");
-        // alert("Failed to delete table. Check console/server logs.");
         return;
       }
 
@@ -170,11 +165,9 @@ export function SeatingPlanTableDetail({
       setBookings((prev) => prev.map((b) => (b.id === booking.id ? { ...b, tableId: null } : b)));
 
       handleToast("success", "Booking unassigned from table.");
-      // alert("Booking unassigned from table.");
     } catch (err) {
       console.error("Failed to unassign booking from table", err);
       handleToast("danger", "Failed to unassign booking. Check console/server logs.");
-      // alert("Failed to unassign booking. Check console/server logs.");
     }
   };
 

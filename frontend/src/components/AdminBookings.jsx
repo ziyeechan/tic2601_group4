@@ -102,24 +102,27 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
       const transformedBookings = bookingsData.map((booking) => {
         // Handle Sequelize dataValues if present
         const bookingData = booking.dataValues || booking;
-        const restaurant = bookingData.Restaurant?.dataValues || bookingData.Restaurant || bookingData.restaurant;
-        const seatingPlan = bookingData.SeatingPlan?.dataValues || bookingData.SeatingPlan || bookingData.seatingPlan;
+        const restaurant =
+          bookingData.Restaurant?.dataValues || bookingData.Restaurant || bookingData.restaurant;
+        const seatingPlan =
+          bookingData.SeatingPlan?.dataValues || bookingData.SeatingPlan || bookingData.seatingPlan;
 
         // Get restaurant name from the relation or fallback
-        const restaurantName = restaurant?.restaurantName || 
+        const restaurantName =
+          restaurant?.restaurantName ||
           restaurants.find((r) => r.restaurantId === bookingData.fkRestaurantId)?.restaurantName ||
           "Unknown Restaurant";
 
         // Handle date conversion - convert Date objects or ISO strings to Date objects
         let bookingDate = bookingData.date || bookingData.bookingDate;
-        if (bookingDate && typeof bookingDate === 'string') {
+        if (bookingDate && typeof bookingDate === "string") {
           bookingDate = new Date(bookingDate);
         } else if (bookingDate && !(bookingDate instanceof Date)) {
           bookingDate = new Date(bookingDate);
         }
 
         // Format date as YYYY-MM-DD for filtering
-        const dateString = bookingDate ? bookingDate.toISOString().split('T')[0] : null;
+        const dateString = bookingDate ? bookingDate.toISOString().split("T")[0] : null;
 
         return {
           id: bookingData.bookingId,
@@ -155,7 +158,10 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
       console.error("Error details:", error.response?.data || error.message);
       console.error("Error stack:", error.stack);
       setBookings([]);
-      const errorMessage = error.response?.data?.message || error.message || "Failed to fetch bookings. Please check if the backend server is running.";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to fetch bookings. Please check if the backend server is running.";
       handleToast("danger", errorMessage);
     } finally {
       // Always reset fetching state
@@ -205,7 +211,8 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
   if (dateFilter) {
     // Compare date strings (YYYY-MM-DD format)
     filtered = filtered.filter((b) => {
-      const bookingDateStr = b.dateString || (b.date ? new Date(b.date).toISOString().split('T')[0] : null);
+      const bookingDateStr =
+        b.dateString || (b.date ? new Date(b.date).toISOString().split("T")[0] : null);
       return bookingDateStr === dateFilter;
     });
   }
@@ -368,7 +375,9 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
             <select
               id="restaurantSelect"
               value={selectedRestaurantId || "all"}
-              onChange={(e) => setSelectedRestaurantId(e.target.value === "all" ? "" : e.target.value)}
+              onChange={(e) =>
+                setSelectedRestaurantId(e.target.value === "all" ? "" : e.target.value)
+              }
             >
               <option value="all">📋 All Restaurants</option>
               {restaurants.map((restaurant) => (
@@ -469,10 +478,11 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
                     <td>
                       <div>
                         <p style={{ margin: 0 }}>
-                          📅 {booking.date 
-                            ? (booking.date instanceof Date 
-                                ? booking.date.toLocaleDateString() 
-                                : new Date(booking.date).toLocaleDateString())
+                          📅{" "}
+                          {booking.date
+                            ? booking.date instanceof Date
+                              ? booking.date.toLocaleDateString()
+                              : new Date(booking.date).toLocaleDateString()
                             : "N/A"}
                         </p>
                         <p
@@ -521,7 +531,7 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
         <div className="empty-state">
           <h3>No bookings found</h3>
           <p>
-            {bookings.length === 0 
+            {bookings.length === 0
               ? "No bookings exist yet. Create bookings through the customer booking form."
               : "Try adjusting your filters to see more results."}
           </p>

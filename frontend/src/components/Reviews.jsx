@@ -3,6 +3,18 @@ import { reviewAPI } from "../utils/api";
 import { Card } from "./Common";
 import { BookingVerification } from "./BookingVerification";
 
+function transformReviewsData(reviewsArray) {
+  return (Array.isArray(reviewsArray) ? reviewsArray : []).map((review) => ({
+    id: review.reviewId,
+    reviewId: review.reviewId,
+    restaurantId: review.fkRestaurantId,
+    customerName: review.booking?.customerName || "Anonymous",
+    rating: parseInt(review.rating) || 0,
+    comment: review.comment,
+    createdAt: review.createdAt,
+  }));
+}
+
 export function Reviews({ restaurant, onBack, bookingId, existingReview = null }) {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,22 +62,9 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
             offset: 0,
             sort: "newest",
           });
-          // Transform API response to match component state format
           const reviewsArray = response.data.reviewInfo || response.data.data || [];
-          const transformedReviews = (Array.isArray(reviewsArray) ? reviewsArray : []).map(
-            (review) => ({
-              id: review.reviewId,
-              reviewId: review.reviewId,
-              restaurantId: review.fkRestaurantId,
-              customerName: review.booking?.customerName || "Anonymous",
-              rating: parseInt(review.rating) || 0,
-              comment: review.comment,
-              createdAt: review.createdAt,
-            })
-          );
-          setReviews(transformedReviews);
+          setReviews(transformReviewsData(reviewsArray));
 
-          // Use backend-calculated stats instead of calculating in frontend
           if (response.data.stats) {
             setAverageRating(response.data.stats.averageRating || 0);
             setRatingDistribution(
@@ -105,14 +104,12 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
 
     if (!formData.comment.trim()) {
       handleToast("warning", "Please write a comment for your review");
-
       return;
     }
 
     // Only validate name when creating a new review, not when editing
     if (!isEditing && !formData.isAnonymous && !formData.customerName.trim()) {
       handleToast("warning", "Please enter your name or choose to review anonymously");
-
       return;
     }
 
@@ -154,17 +151,6 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           }
         );
 
-        // Add new review to local state (from API response)
-        const newReview = {
-          id: response.data.data?.reviewId || response.data.reviewId,
-          reviewId: response.data.data?.reviewId || response.data.reviewId,
-          restaurantId: response.data.data?.fkRestaurantId || restaurant.restaurantId,
-          customerName: formData.customerName || "Anonymous",
-          rating: parseInt(response.data.data?.rating || formData.rating),
-          comment: response.data.data?.comment || formData.comment,
-          createdAt: response.data.data?.createdAt || new Date().toISOString(),
-        };
-
         // Refresh reviews to get updated stats from backend
         const refreshResponse = await reviewAPI.getReviewsByRestaurant(restaurant.restaurantId, {
           limit: 100,
@@ -172,20 +158,8 @@ export function Reviews({ restaurant, onBack, bookingId, existingReview = null }
           sort: "newest",
         });
         const refreshedArray = refreshResponse.data.reviewInfo || [];
-        const refreshedReviews = (Array.isArray(refreshedArray) ? refreshedArray : []).map(
-          (review) => ({
-            id: review.reviewId,
-            reviewId: review.reviewId,
-            restaurantId: review.fkRestaurantId,
-            customerName: review.booking?.customerName || "Anonymous",
-            rating: parseInt(review.rating) || 0,
-            comment: review.comment,
-            createdAt: review.createdAt,
-          })
-        );
-        setReviews(refreshedReviews);
+        setReviews(transformReviewsData(refreshedArray));
 
-        // Update stats from backend
         if (refreshResponse.data.stats) {
           setAverageRating(refreshResponse.data.stats.averageRating || 0);
           setRatingDistribution(

@@ -153,7 +153,7 @@ export function Toast({ type, text, onClose, duration }) {
       }}
     >
       <div className="flex-between mb-md">
-        <p style={{marginRight: "var(--spacing-md)"}}>{text}</p>
+        <p style={{ marginRight: "var(--spacing-md)" }}>{text}</p>
         <div onClick={() => onClose()} style={{ cursor: "pointer" }}>
           {" "}
           X

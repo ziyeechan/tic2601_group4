@@ -1,6 +1,6 @@
 // ----- IMPORTS -----
 
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnalyticsTrendChart } from "./AnalyticsTrendChart";
 import { AnalyticsOutcomePie } from "./AnalyticsOutcomePie";
 import { AnalyticsHourlyHeatmap } from "./AnalyticsHourlyHeatmap";

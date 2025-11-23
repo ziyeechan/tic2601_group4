@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { generateTimeSlots } from "../utils/timeSlotUtils";
 import { bookingAPI } from "../utils/api";
 import { Card, TextContainer } from "./Common";
+import { formatFullAddress } from "../utils/addressUtils";
 
 export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSuccess }) {
   const [formData, setFormData] = useState({
@@ -291,15 +292,7 @@ export function BookingForm({ restaurant, onBack, onBookingComplete, onBookingSu
                   Location
                 </p>
                 <p style={{ fontWeight: "600", margin: 0, fontSize: "14px" }}>
-                  {restaurant.address
-                    ? `${restaurant.address.addressLine1}${
-                        restaurant.address.addressLine2
-                          ? ", " + restaurant.address.addressLine2
-                          : ""
-                      }, ${restaurant.address.city}, ${
-                        restaurant.address.state || ""
-                      }, ${restaurant.address.country}`
-                    : "Address not available"}
+                  {formatFullAddress(restaurant.address)}
                 </p>
               </div>
 

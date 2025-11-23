@@ -166,8 +166,6 @@ VITE v4.x.x ready in xxx ms
 
 ## Features Overview
 
-### For Customers (UC1-UC5)
-
 1. **UC1: Discover & Filter Restaurants**
 
    - Search by name, cuisine, rating, dietary type
@@ -181,11 +179,10 @@ VITE v4.x.x ready in xxx ms
    - Instant confirmation code
 
 3. **UC3: Manage Reservations**
+
    - View all bookings by email (no login required)
    - Modify or cancel reservations
    - Track confirmation codes
-
-### For Administrators (UC4-UC10)
 
 4. **UC4: View All Bookings**
 

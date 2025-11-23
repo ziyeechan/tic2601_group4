@@ -67,7 +67,8 @@ export const restaurantAPI = {
 
     // Only add parameters if they have values
     if (filters.q) params.append("q", filters.q);
-    if (filters.cuisine && filters.cuisine !== "All Cuisines") params.append("cuisine", filters.cuisine);
+    if (filters.cuisine && filters.cuisine !== "All Cuisines")
+      params.append("cuisine", filters.cuisine);
     if (filters.minRating) params.append("minRating", filters.minRating);
     if (filters.maxRating) params.append("maxRating", filters.maxRating);
     if (filters.hasPromotion) params.append("hasPromotion", filters.hasPromotion);
