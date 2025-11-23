@@ -29,16 +29,18 @@ export function AllPromotions({ onBack }) {
       {
         setActivePromos(
           promotions.filter((p) => {
-            return isActive(p.startAt, p.endAt);
+            return isActive(p.startAt?.split("T")[0], p.endAt?.split("T")[0]);
           })
         );
 
         setUpcomingPromos(
-          promotions.filter((p) => p.startAt > new Date().toISOString().split("T")[0])
+          promotions.filter(
+            (p) => p.startAt?.split("T")[0] > new Date().toISOString().split("T")[0]
+          )
         );
 
         setExpiredPromos(
-          promotions.filter((p) => p.endAt < new Date().toISOString().split("T")[0])
+          promotions.filter((p) => p.endAt?.split("T")[0] < new Date().toISOString().split("T")[0])
         );
       }
     }
