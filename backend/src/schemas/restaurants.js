@@ -47,6 +47,13 @@ const Restaurants = db.define(
       type: DataTypes.TIME,
       allowNull: true,
       comment: "Restaurant closing time (HH:MM:SS format)",
+      validate: {
+        isAfterStart(value) {
+          if (value <= this.openingTime) {
+            throw new Error("closingTime must be before openingTime!");
+          }
+        },
+      },
     },
   },
   { freezeTableName: true }
