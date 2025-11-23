@@ -86,10 +86,10 @@ export function RestaurantManagement({
     if (restaurant.openingTime && restaurant.closingTime) {
       // Convert 24-hour format to 12-hour for display
       const convertTo12Hour = (time24) => {
-        const [hour] = time24.split(":").map(Number);
+        const [hour, minutes] = time24.split(":").map(Number);
         const ampm = hour >= 12 ? "PM" : "AM";
         const displayHour = hour % 12 || 12;
-        return `${displayHour}:00 ${ampm}`;
+        return `${displayHour}:${minutes.toString().padStart(2, "0")}  ${ampm}`;
       };
 
       const hours = `${convertTo12Hour(
