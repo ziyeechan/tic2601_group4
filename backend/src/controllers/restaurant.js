@@ -80,17 +80,13 @@ module.exports.createRestaurant = async (req, res) => {
       postalCode,
     };
 
-    if (closingTime <= openingTime) {
-      return res.status(400).json({
-        message: "Opening time must be before closing time",
-      });
+    if (closingTime && openingTime) {
+      if (closingTime <= openingTime) {
+        return res.status(400).json({
+          message: "Opening time must be before closing time",
+        });
+      }
     }
-
-    // if (!new URL(imageUrl)) {
-    //   return res.status(400).json({
-    //     message: "Invalid Url",
-    //   });
-    // }
 
     let formattedDays = "";
     if (closed) {
@@ -224,16 +220,12 @@ module.exports.updateRestaurant = async (req, res) => {
       });
     }
 
-    if (closingTime <= openingTime) {
-      return res.status(400).json({
-        message: "Opening time must be before closing time",
-      });
-    }
-
-    if (!new URL(imageUrl)) {
-      return res.status(400).json({
-        message: "Invalid Url",
-      });
+    if (closingTime && openingTime) {
+      if (closingTime <= openingTime) {
+        return res.status(400).json({
+          message: "Opening time must be before closing time",
+        });
+      }
     }
 
     let formattedDays = "";

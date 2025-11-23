@@ -83,7 +83,7 @@ export function Promotions({ onBack, restaurantId }) {
     e.preventDefault();
 
     if (selectedPromo.startAt >= selectedPromo.endAt) {
-      handleToast("warning", "End date cannot be before start data!");
+      handleToast("warning", "Start date must be before end date!");
       return;
     }
 
@@ -108,7 +108,7 @@ export function Promotions({ onBack, restaurantId }) {
     e.preventDefault();
 
     if (selectedPromo.startAt >= selectedPromo.endAt) {
-      handleToast("warning", "End date cannot be before start data!");
+      handleToast("warning", "Start date must be before end date!");
       return;
     }
 
@@ -553,7 +553,7 @@ export function Promotions({ onBack, restaurantId }) {
               ) : (
                 <form onSubmit={isAddingPromotions ? handleCreatePromotion : handleSubmitPromotion}>
                   <Card.Content>
-                    <FormInput name="description" text="Description">
+                    <FormInput name="description" text="Description *">
                       <textarea
                         id="description"
                         name="description"
@@ -565,13 +565,13 @@ export function Promotions({ onBack, restaurantId }) {
                     </FormInput>
                     <FormInput
                       name="discount"
-                      text="Discount"
+                      text="Discount *"
                       placeholder="Enter discount"
                       value={selectedPromo.discount}
                       onChange={handlePromotionChange}
                       required={true}
                     />
-                    <FormInput name="termsNCond" text="Terms and Condition">
+                    <FormInput name="termsNCond" text="Terms and Condition *">
                       <textarea
                         id="termsNCond"
                         name="termsNCond"
@@ -584,7 +584,7 @@ export function Promotions({ onBack, restaurantId }) {
                     <div className="form-row">
                       <FormInput
                         name="startAt"
-                        text="Start Date"
+                        text="Start Date *"
                         type="datetime-local"
                         value={selectedPromo.startAt.slice(0, 16)}
                         onChange={handlePromotionChange}
@@ -592,7 +592,7 @@ export function Promotions({ onBack, restaurantId }) {
                       />
                       <FormInput
                         name="endAt"
-                        text="End Date"
+                        text="End Date *"
                         type="datetime-local"
                         value={selectedPromo.endAt.slice(0, 16)}
                         onChange={handlePromotionChange}
