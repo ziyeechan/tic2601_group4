@@ -5,12 +5,14 @@ import { Card, Toast } from "./Common";
 export function AdminBookings({ restaurantId: propRestaurantId }) {
   const [bookings, setBookings] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
+  // Default to empty string (show all bookings) unless a restaurant is passed as prop
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(propRestaurantId || "");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [updatingBookings, setUpdatingBookings] = useState(new Set());
+  const [isFetching, setIsFetching] = useState(false);
 
   const [show, setShow] = useState(false);
   const [type, setType] = useState("");
@@ -23,11 +25,6 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
         const response = await restaurantAPI.getAllRestaurants();
         const restaurantList = response.data || [];
         setRestaurants(restaurantList);
-
-        // If no restaurant selected yet, select the first one
-        if (!selectedRestaurantId && restaurantList.length > 0) {
-          setSelectedRestaurantId(restaurantList[0].restaurantId);
-        }
       } catch (error) {
         console.error("Error loading restaurants:", error);
       }
@@ -36,35 +33,93 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
     loadRestaurants();
   }, []);
 
-  // Fetch bookings when restaurant changes
+  // Fetch bookings on mount and when restaurant selection changes
   useEffect(() => {
-    if (selectedRestaurantId) {
-      fetchBookings();
-    }
+    // Always fetch bookings on mount or when selection changes
+    fetchBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRestaurantId]);
 
-  const fetchBookings = async () => {
+  const fetchBookings = async (showLoading = true) => {
+    // Prevent multiple simultaneous fetches
+    if (isFetching) {
+      console.log("Fetch already in progress, skipping...");
+      // Don't modify loading state if a fetch is already in progress
+      return;
+    }
+
     try {
-      setLoading(true);
+      setIsFetching(true);
+      if (showLoading) {
+        setLoading(true);
+      }
+      console.log("Fetching bookings...", { selectedRestaurantId });
 
-      // Get restaurant-specific bookings
-      const response =
-        selectedRestaurantId && selectedRestaurantId > 0
-          ? await bookingAPI.getBookingsByRestaurantId(selectedRestaurantId)
-          : { data: { bookings: [] } };
-      const bookingsData = response.data.bookings || [];
+      let response;
+      let bookingsData;
 
-      // Get the selected restaurant's name from the restaurants list
-      const selectedRestaurant = restaurants.find(
-        (r) => r.restaurantId === parseInt(selectedRestaurantId)
-      );
-      const restaurantName = selectedRestaurant?.restaurantName || "Unknown Restaurant";
+      // If "all" is selected or no restaurant is selected, fetch all bookings
+      if (!selectedRestaurantId || selectedRestaurantId === "all" || selectedRestaurantId === "") {
+        console.log("Fetching all bookings...");
+        response = await bookingAPI.getAllBookings();
+        console.log("All bookings response:", response);
+        console.log("Response data:", response.data);
+        // Handle response structure: { totalBookings: X, bookings: [...] }
+        if (response.data) {
+          if (response.data.bookings && Array.isArray(response.data.bookings)) {
+            bookingsData = response.data.bookings;
+          } else if (Array.isArray(response.data)) {
+            bookingsData = response.data;
+          } else {
+            bookingsData = [];
+          }
+        } else {
+          bookingsData = [];
+        }
+      } else {
+        // Get restaurant-specific bookings
+        console.log("Fetching restaurant bookings for:", selectedRestaurantId);
+        response = await bookingAPI.getBookingsByRestaurantId(selectedRestaurantId);
+        console.log("Restaurant bookings response:", response);
+        // Handle response structure: { bookings: [...] }
+        if (response.data) {
+          if (response.data.bookings && Array.isArray(response.data.bookings)) {
+            bookingsData = response.data.bookings;
+          } else if (Array.isArray(response.data)) {
+            bookingsData = response.data;
+          } else {
+            bookingsData = [];
+          }
+        } else {
+          bookingsData = [];
+        }
+      }
+
+      console.log("Bookings data extracted:", bookingsData.length, "bookings found");
+      console.log("First booking sample:", bookingsData[0] || "None");
 
       // Transform backend data to frontend format
       const transformedBookings = bookingsData.map((booking) => {
         // Handle Sequelize dataValues if present
         const bookingData = booking.dataValues || booking;
-        const seatingPlan = bookingData.SeatingPlan?.dataValues || bookingData.SeatingPlan;
+        const restaurant = bookingData.Restaurant?.dataValues || bookingData.Restaurant || bookingData.restaurant;
+        const seatingPlan = bookingData.SeatingPlan?.dataValues || bookingData.SeatingPlan || bookingData.seatingPlan;
+
+        // Get restaurant name from the relation or fallback
+        const restaurantName = restaurant?.restaurantName || 
+          restaurants.find((r) => r.restaurantId === bookingData.fkRestaurantId)?.restaurantName ||
+          "Unknown Restaurant";
+
+        // Handle date conversion - convert Date objects or ISO strings to Date objects
+        let bookingDate = bookingData.date || bookingData.bookingDate;
+        if (bookingDate && typeof bookingDate === 'string') {
+          bookingDate = new Date(bookingDate);
+        } else if (bookingDate && !(bookingDate instanceof Date)) {
+          bookingDate = new Date(bookingDate);
+        }
+
+        // Format date as YYYY-MM-DD for filtering
+        const dateString = bookingDate ? bookingDate.toISOString().split('T')[0] : null;
 
         return {
           id: bookingData.bookingId,
@@ -76,8 +131,9 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
           partySize: bookingData.partySize,
           party_size: bookingData.partySize,
           specialRequests: bookingData.specialRequests,
-          date: bookingData.date || bookingData.bookingDate,
-          booking_date: bookingData.date || bookingData.bookingDate,
+          date: bookingDate, // Keep as Date object for display
+          dateString: dateString, // String format for filtering
+          booking_date: bookingDate,
           time: bookingData.time || bookingData.bookingTime,
           booking_time: bookingData.time || bookingData.bookingTime,
           status: bookingData.status,
@@ -89,13 +145,25 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
         };
       });
 
+      console.log("Transformed bookings:", transformedBookings.length, "bookings");
       setBookings(transformedBookings);
+      if (transformedBookings.length === 0) {
+        console.log("No bookings found in the response");
+      }
     } catch (error) {
       console.error("Error fetching bookings:", error);
       console.error("Error details:", error.response?.data || error.message);
+      console.error("Error stack:", error.stack);
       setBookings([]);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to fetch bookings. Please check if the backend server is running.";
+      handleToast("danger", errorMessage);
     } finally {
+      // Always reset fetching state
+      setIsFetching(false);
+      // ALWAYS set loading to false in finally block to ensure it's reset
+      // regardless of success, error, or showLoading parameter
       setLoading(false);
+      console.log("Fetch complete, loading set to false");
     }
   };
 
@@ -123,9 +191,10 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
   if (searchTerm) {
     filtered = filtered.filter(
       (b) =>
-        b.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.restaurantName.toLowerCase().includes(searchTerm.toLowerCase())
+        b.customerName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        b.customerEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        b.restaurantName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        b.confirmation_code?.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }
 
@@ -134,7 +203,11 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
   }
 
   if (dateFilter) {
-    filtered = filtered.filter((b) => b.date === dateFilter);
+    // Compare date strings (YYYY-MM-DD format)
+    filtered = filtered.filter((b) => {
+      const bookingDateStr = b.dateString || (b.date ? new Date(b.date).toISOString().split('T')[0] : null);
+      return bookingDateStr === dateFilter;
+    });
   }
 
   // Handle status updates
@@ -161,13 +234,15 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
       );
 
       // Refresh bookings from server to ensure consistency
-      await fetchBookings();
+      // Don't show loading spinner when refreshing after status update
+      await fetchBookings(false);
     } catch (error) {
       console.error("Error updating booking status:", error);
       console.error("Error response:", error.response?.data);
 
       // Revert optimistic update on error by refreshing
-      await fetchBookings();
+      // Don't show loading spinner when refreshing after error
+      await fetchBookings(false);
 
       const errorMessage =
         error.response?.data?.message || "Failed to update booking status. Please try again.";
@@ -292,10 +367,10 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
             <label htmlFor="restaurantSelect">🏪 Restaurant</label>
             <select
               id="restaurantSelect"
-              value={selectedRestaurantId}
-              onChange={(e) => setSelectedRestaurantId(e.target.value)}
+              value={selectedRestaurantId || "all"}
+              onChange={(e) => setSelectedRestaurantId(e.target.value === "all" ? "" : e.target.value)}
             >
-              <option value="">-- Select a restaurant --</option>
+              <option value="all">📋 All Restaurants</option>
               {restaurants.map((restaurant) => (
                 <option key={restaurant.restaurantId} value={restaurant.restaurantId}>
                   {restaurant.restaurantName}
@@ -363,7 +438,7 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
       </Card>
 
       {/* Bookings Table */}
-      {loading ? (
+      {loading && bookings.length === 0 ? (
         <div className="empty-state">
           <h3>Loading bookings...</h3>
         </div>
@@ -394,7 +469,11 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
                     <td>
                       <div>
                         <p style={{ margin: 0 }}>
-                          📅 {booking.date ? new Date(booking.date).toLocaleDateString() : "N/A"}
+                          📅 {booking.date 
+                            ? (booking.date instanceof Date 
+                                ? booking.date.toLocaleDateString() 
+                                : new Date(booking.date).toLocaleDateString())
+                            : "N/A"}
                         </p>
                         <p
                           style={{
@@ -438,12 +517,16 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
             </table>
           </div>
         </Card>
-      ) : (
+      ) : !loading ? (
         <div className="empty-state">
           <h3>No bookings found</h3>
-          <p>Try adjusting your filters to see more results.</p>
+          <p>
+            {bookings.length === 0 
+              ? "No bookings exist yet. Create bookings through the customer booking form."
+              : "Try adjusting your filters to see more results."}
+          </p>
         </div>
-      )}
+      ) : null}
 
       {/* Summary Stats */}
       <div
@@ -521,6 +604,9 @@ export function AdminBookings({ restaurantId: propRestaurantId }) {
           </Card.Content>
         </Card>
       </div>
+
+      {/* Toast Notification */}
+      {/* <Toast show={show} type={type} text={text} onClose={() => setShow(false)} /> */}
     </div>
   );
 }

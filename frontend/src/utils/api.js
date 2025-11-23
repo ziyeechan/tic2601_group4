@@ -1,7 +1,9 @@
 import axios from "axios";
 
-// Create axios instance with base URL for localhost:3000
-const API_BASE_URL = "http://localhost:3000";
+// Create axios instance with base URL
+// In development, use /api prefix which is proxied by Vite to http://localhost:3000
+// In production, you might want to use the full backend URL
+const API_BASE_URL = "/api";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
