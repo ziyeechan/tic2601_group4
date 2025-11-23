@@ -23,7 +23,7 @@ module.exports.createPromotions = async (req, res) => {
       });
     }
 
-    if (endAt <= startAt) {
+    if (endAt < startAt) {
       return res.status(400).json({
         message: "Start date must be before end date",
       });
@@ -131,7 +131,7 @@ module.exports.updatePromotions = async (req, res) => {
       });
     }
 
-    if (endAt <= startAt) {
+    if (endAt < startAt) {
       return res.status(400).json({
         message: "Start date must be before end date",
       });

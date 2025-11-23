@@ -81,8 +81,9 @@ export function Promotions({ onBack, restaurantId }) {
 
   const handleSubmitPromotion = async (e) => {
     e.preventDefault();
-
-    if (selectedPromo.startAt >= selectedPromo.endAt) {
+    console.log(selectedPromo.startAt, selectedPromo.endAt);
+    if (selectedPromo.startAt > selectedPromo.endAt) {
+      console.log("here");
       handleToast("warning", "Start date must be before end date!");
       return;
     }
@@ -107,7 +108,7 @@ export function Promotions({ onBack, restaurantId }) {
   const handleCreatePromotion = async (e) => {
     e.preventDefault();
 
-    if (selectedPromo.startAt >= selectedPromo.endAt) {
+    if (selectedPromo.startAt > selectedPromo.endAt) {
       handleToast("warning", "Start date must be before end date!");
       return;
     }
@@ -147,8 +148,8 @@ export function Promotions({ onBack, restaurantId }) {
                 description: "",
                 discount: "",
                 termsNCond: "",
-                startAt: new Date().toISOString(),
-                endAt: new Date().toISOString(),
+                startAt: new Date().toISOString().split("T")[0],
+                endAt: new Date().toISOString().split("T")[0],
               });
               setIsAddingPromotions(true);
             }}
@@ -543,6 +544,11 @@ export function Promotions({ onBack, restaurantId }) {
                       className="btn btn-primary btn-full"
                       style={{ marginLeft: "20px" }}
                       onClick={() => {
+                        setSelectedPromo((prev) => ({
+                          ...prev,
+                          startAt: prev.startAt.split("T")[0],
+                          endAt: prev.endAt.split("T")[0],
+                        }));
                         setIsEditingPromotions(true);
                       }}
                     >
@@ -585,16 +591,16 @@ export function Promotions({ onBack, restaurantId }) {
                       <FormInput
                         name="startAt"
                         text="Start Date *"
-                        type="datetime-local"
-                        value={selectedPromo.startAt.slice(0, 16)}
+                        type="date"
+                        value={selectedPromo.startAt?.split("T")[0]}
                         onChange={handlePromotionChange}
                         required={true}
                       />
                       <FormInput
                         name="endAt"
                         text="End Date *"
-                        type="datetime-local"
-                        value={selectedPromo.endAt.slice(0, 16)}
+                        type="date"
+                        value={selectedPromo.endAt?.split("T")[0]}
                         onChange={handlePromotionChange}
                         required={true}
                       />

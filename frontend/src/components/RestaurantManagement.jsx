@@ -59,7 +59,7 @@ export function RestaurantManagement({
         if (restaurant.closedDays) {
           closedDays = restaurant.closedDays.split(",").map((day) => day.trim());
         }
-        console.log(closedDays);
+
         setAddress({
           ...address,
         });
